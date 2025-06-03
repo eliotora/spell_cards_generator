@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QMainWindow, QFileDialog, QVBoxLayout, QPushButton, QWidget, QTableView
-from model.data_model import JSONTableModel
+from model.spell_model import JSONTableModel
 from export.pdf_export import exporter_pdf
 from export.html_export import exporter_html
 import json
