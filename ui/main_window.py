@@ -15,11 +15,13 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QLineEdit,
     QRadioButton,
-    QButtonGroup
+    QButtonGroup,
+    QMessageBox,
+    QFileDialog,
 )
 from PyQt6.QtCore import Qt
 from export.pdf_export import exporter_pdf
-from export.html_export import exporter_html
+from export.html_export import html_export
 from spell_loader import load_spells_from_folder
 from ui.spell_detail_window import SpellDetailWindow
 
@@ -359,7 +361,8 @@ class MainWindow(QMainWindow):
                     continue
                 value = spell.get(key, "")
                 if isinstance(value, list):
-                    value = ", ".join(value)
+                    values = [v.split("(")[0].strip() for v in value if v]
+                    value = ", ".join(values)
                 elif isinstance(value, bool):
                     value = "Oui" if value else "Non"
                 elif key == "temps_d'incantation":
@@ -421,7 +424,7 @@ class MainWindow(QMainWindow):
         self.toggle_class_selection_box.blockSignals(False)
 
     def description_checkbox_event(self, state):
-        if state == 2: #Qt.CheckState.Checked
+        if state == Qt.CheckState.Checked:
             self.description_filter.setVisible(True)
         else:
             self.description_filter.setVisible(False)
@@ -464,5 +467,24 @@ class MainWindow(QMainWindow):
             exporter_pdf(self.data, "export.pdf")
 
     def export_html(self):
-        if self.data:
-            exporter_html(self.data, "export.html")
+        selected_spells = self.get_selected_spells()
+        if not selected_spells:
+            QMessageBox.warning(
+                self, "Aucun sort sélectionné", "Veuillez sélectionner au moins un sort à exporter."
+            )
+            return
+        
+        print(f"Exporting {len(selected_spells)} spells to HTML...")
+        path, _ = QFileDialog.getSaveFileName(self, "Enregistrer HTML", "", "Fichier HTML (*.html)")
+        if not path:
+            return  # L'utilisateur a annulé
+        
+        if self.radio_rules.isChecked():
+            mode= 'rules'
+        elif self.radio_grimoire.isChecked():
+            mode = 'grimoire'
+        elif self.radio_cards.isChecked():
+            mode = 'cards'
+
+        if selected_spells and path:
+            html_export(selected_spells, path, mode)
