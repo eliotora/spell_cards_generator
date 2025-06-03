@@ -1,0 +1,12 @@
+{
+    "nom": "Décharge occulte",
+    "niveau": 0,
+    "école": "évocation",
+    "temps_d'incantation": "1 action",
+    "portée": "36 mètres",
+    "composantes": ["V", "S"],
+    "durée": "instantanée",
+    "concentration": false,
+    "rituel": false,
+    "description": "Un rayon d'énergie crépitante zigzague jusqu'à une créature à portée. Effectuez une attaque à distance avec un sort contre la cible. En cas de réussite, la cible subit 1d10 dégâts de force.\nCe sort crée plus d'un rayon lorsque vous montez en niveau : deux rayons au niveau 5, trois rayons au niveau 11, et quatre rayons au niveau 17. Vous pouvez diriger les rayons sur une cible unique et les répartir entre différentes créatures. Effectuez un jet d'attaque séparé pour chaque rayon."
+}

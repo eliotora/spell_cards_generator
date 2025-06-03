@@ -1,0 +1,12 @@
+{
+    "nom": "Aspersion d'acide",
+    "niveau": 0,
+    "école": "invocation",
+    "temps_d'incantation": "1 action",
+    "portée": "18 mètres",
+    "composantes": ["V", "S"],
+    "durée": "instantanée",
+    "concentration": false,
+    "rituel": false,
+    "description": "Vous propulsez une bulle d'acide. Choisissez une ou deux créatures que vous pouvez voir, à 1,50 mètre ou moins l'une de l'autre, dans la portée du sort. La cible doit réussir un jet de sauvegarde de Dextérité ou subir 1d6 dégâts d'acide.\nLes dégâts de ce sort augmentent de 1d6 lorsque vous atteignez le niveau 5 (2d6), le niveau 11 (3d6) et le niveau 17 (4d6)."
+}
