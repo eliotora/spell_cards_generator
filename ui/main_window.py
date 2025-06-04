@@ -309,7 +309,7 @@ class MainWindow(QMainWindow):
                  and
                 (name_filter in spell.get("nom", "").lower() or name_filter in spell.get("nom_vf", "").lower())
                  and
-                (self.description_filter.text().strip().lower() in spell.get("short_description", "").lower() if self.description_checkbox.isChecked() else True)
+                (self.description_filter.text().strip().lower() in spell.get("description_short", "").lower() if self.description_checkbox.isChecked() else True)
             )
         ]
 
@@ -346,7 +346,7 @@ class MainWindow(QMainWindow):
             "composantes" if self.info_checkbox.isChecked() else None,
             "concentration" if self.concentration_checkbox.isChecked() else None,
             "rituel" if self.ritual_checkbox.isChecked() else None,
-            "short_description" if self.description_checkbox.isChecked() else None,
+            "description_short" if self.description_checkbox.isChecked() else None,
             "source" if self.source_checkbox.isChecked() else None,
         ]
         cols = [col for col in cols if col is not None]
@@ -380,7 +380,7 @@ class MainWindow(QMainWindow):
         for row in range(self.table.rowCount()):
             spell = self.filtered_spells[row]
             matches_name = name_filter in spell.get("nom", "").lower() or name_filter in spell.get("nom_vf", "").lower()
-            matches_description = description_filter in spell.get("short_description", "").lower()
+            matches_description = description_filter in spell.get("description_short", "").lower()
 
             # Check if the spell matches the filters
             if matches_name and (not self.description_checkbox.isChecked() or matches_description):

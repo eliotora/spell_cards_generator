@@ -2,7 +2,7 @@ import os
 import json
 
 SPELL_FIELDS = [
-    "nom", "niveau", "école", "temps_d'incantation", "portée", "composantes", "durée", "concentration", "rituel", "description", "à_niveau_supérieur"
+    "nom", "niveau", "école", "temps_d'incantation", "portée", "composantes", "durée", "concentration", "rituel", "description", "à_niveau_supérieur", "description_short"
 ]
 
 def load_spells_from_folder(folder_path: str):
