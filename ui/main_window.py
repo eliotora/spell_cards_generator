@@ -178,13 +178,13 @@ class MainWindow(QMainWindow):
         filter_layout2 = QHBoxLayout()
         self.name_filter = QLineEdit()
         self.name_filter.setPlaceholderText("sort")
-        self.name_filter.textChanged.connect(self.apply_filters)
+        self.name_filter.textChanged.connect(self.live_filter)
         self.name_filter.setClearButtonEnabled(True)
         filter_layout2.addWidget(self.name_filter)
 
         self.description_filter = QLineEdit()
         self.description_filter.setPlaceholderText("description")
-        self.description_filter.textChanged.connect(self.apply_filters)
+        self.description_filter.textChanged.connect(self.live_filter)
         self.description_filter.setClearButtonEnabled(True)
         self.description_filter.setVisible(False)  # Initially hidden
         filter_layout2.addWidget(self.description_filter)
@@ -369,6 +369,22 @@ class MainWindow(QMainWindow):
                     value = spell.get("temps_d'incantation", "").split(",")[0].strip()
                 self.table.setItem(row, col, QTableWidgetItem(str(value)))
         self.table.resizeColumnsToContents()
+
+    def live_filter(self):
+        name_filter = self.name_filter.text().strip().lower()
+        description_filter = self.description_filter.text().strip().lower()
+
+        # Apply filters to the spells
+        for row in range(self.table.rowCount()):
+            spell = self.filtered_spells[row]
+            matches_name = name_filter in spell.get("nom", "").lower() or name_filter in spell.get("nom_vf", "").lower()
+            matches_description = description_filter in spell.get("short_description", "").lower()
+
+            # Check if the spell matches the filters
+            if matches_name and (not self.description_checkbox.isChecked() or matches_description):
+                self.table.showRow(row)
+            else:
+                self.table.hideRow(row)        
 
     def show_spell_details(self, row, column):
         spell = self.filtered_spells[row]
