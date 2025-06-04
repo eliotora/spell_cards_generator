@@ -27,6 +27,8 @@ class SpellDetailWindow(QWidget):
                 value = ", ".join(value)
             elif isinstance(value, bool):
                 value = "Oui" if value else "Non"
+            elif isinstance(value, str):
+                value = value.replace("\n", "<br>").replace("\r", "")
             elif value is None:
                 value = "N/A"
             label = QLabel(f"<b>{key.replace("_", " ").capitalize()}:</b> {value}")

@@ -6,6 +6,7 @@ __pycache__/
 # PyInstaller build
 dist/
 build/
+output/
 *.spec
 
 # VS Code settings
