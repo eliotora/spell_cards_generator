@@ -362,6 +362,8 @@ class MainWindow(QMainWindow):
                 value = spell.get(key, "")
                 if isinstance(value, list):
                     values = [v.split("(")[0].strip() for v in value if v]
+                    if len(values) == 4:
+                        print(value, values)
                     value = ", ".join(values)
                 elif isinstance(value, bool):
                     value = "Oui" if value else "Non"

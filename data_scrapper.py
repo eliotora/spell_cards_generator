@@ -8,13 +8,24 @@ from selenium.webdriver.support.ui import Select
 from time import sleep
 import json
 import os
+import warnings
 
 class AideddNavigator():
     def __init__(self, driver):
         self.driver = driver
 
+    def get(self, url: str):
+        """
+        Navigate to the specified URL.
+        :param url: The URL to navigate to.
+        """
+        self.driver.get(url)
+
     def accept_cookies(self):
-        self.driver.find_element(By.ID, "cmpwelcomebtnyes").click()
+        try:
+            self.driver.find_element(By.ID, "cmpwelcomebtnyes").click()
+        except:
+            print(f"Could not accept cookies")
 
     def multiple_select(self, checkbox_id: str, select_id: str, options: list[str]=None):
         checkbox = self.driver.find_element(By.ID, checkbox_id)
@@ -36,7 +47,6 @@ class AideddNavigator():
             action.key_up(Keys.CONTROL).perform()
 
     def select_level(self, select_name:str, level:int):
-        print(f"Selecting level {level} in {select_name}")
         select = self.driver.find_element(By.NAME, select_name)
         select = Select(select)
         # select.find_element(By.XPATH, f'//option[@selected="selected"]').click()  # Deselect any previously selected option
@@ -50,7 +60,6 @@ class AideddNavigator():
         # Select schools
         self.multiple_select("selectAllF2", "FormF2", schools)
         # Select level range
-        print(f"Selecting levels from {level_min} to {level_max}")
         self.select_level(select_name="nivMin", level=level_min)
         self.select_level(select_name="nivMax", level=level_max)
         # Select sources
@@ -104,7 +113,13 @@ class AideddNavigator():
         spell["rituel"] = True if "rituel" in level_school else False
         spell["temps_d'incantation"] = content.find_element(By.CLASS_NAME, "t").text.split(": ")[1]
         spell["portée"] = content.find_element(By.CLASS_NAME, "r").text.split(": ")[1]
-        spell["composantes"] = content.find_element(By.CLASS_NAME, "c").text.split(": ")[1].split(", ")
+        composantes_text = content.find_element(By.CLASS_NAME, "c").text.split(": ")[1]
+        if "(" in composantes_text:
+            composantes = composantes_text.split(" (")[0].split(", ")
+            composantes[-1] = " (".join([composantes[-1], composantes_text.split(" (")[1]])
+        else: 
+            composantes = composantes_text.split(", ")
+        spell["composantes"] = composantes
         spell["durée"] = content.find_element(By.CLASS_NAME, "d").text.split(": ")[1]
         spell["concentration"] = True if "concentration" in content.find_element(By.CLASS_NAME, "d").text else False
         description = content.find_element(By.CLASS_NAME, "description").get_attribute("innerHTML")
@@ -112,13 +127,13 @@ class AideddNavigator():
         spell["à_niveau_supérieur"] = description.split("<strong><em>Aux niveaux supérieurs</em></strong>. ")[1].strip() if "<strong><em>Aux niveaux supérieurs</em></strong>. " in description else ""
 
 
-def scrap_source(source:str, driver:webdriver):
+def scrap_source(source:str, navigator: AideddNavigator):
     """
     Scraps the spells from the given source.
     :param source: The source to scrap.
     :param driver: The webdriver to use.
     """
-    navigator = AideddNavigator(driver)
+    navigator.driver.get("https://www.aidedd.org/dnd-filters/sorts.php")
     navigator.accept_cookies()
 
     for classe in ["Artificier", "Barde", "Clerc", "Druide", "Ensorceleur", "Magicien", "Occultiste", "Paladin", "Rôdeur"]:
@@ -212,34 +227,29 @@ def write_spell_list_to_json(classe:str, spells:list, path:str):
         ]
     }
 
-    print(f"Writing {len(data['sorts'])} spells for {classe} to JSON in {path}")
-
     class_path = os.path.join(path, f"{classe}.json")
+
+    print(f"Writing {len(data['sorts'])} spells for {classe} to JSON in {class_path}")
     with open(class_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 if __name__ == "__main__":
-    driver = webdriver.Edge()
-    driver.get("https://www.aidedd.org/dnd-filters/sorts.php")
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    options = Options()
+    options.add_argument("--log-level=3")
 
-    scrap_source("Player´s Handbook", driver)
+    service = Service(log_path=os.devnull)
 
-    exit() 
+    driver = webdriver.Edge(service=service, options=options)
 
     navigator = AideddNavigator(driver)
-    navigator.accept_cookies()
-    navigator.filter_by(
-        classes=["Barde"],
-        schools=None,
-        level_min=0,
-        level_max=9,
-        sources=["Player´s Handbook"]
-    )
-    sleep(1)
-    spells = navigator.get_all_lines()
-    for spell in spells[:13]:
-        navigator.get_spell_details(spell, spell["lien"])
-        spell_to_write = {k: v for k, v in spell.items() if k not in ["lien"]}
-        with open(f"test/{spell_to_write["nom"].replace(" ", "_").replace("/", "_")}.json", "w", encoding='utf-8') as f:
-            json.dump(spell_to_write, f, ensure_ascii=False, indent=4)
-    sleep(30)
+
+    # scrap_source("Xanathar´s Guide to Everything", navigator)
+    scrap_source("Tasha´s Cauldron of Everything", navigator)
+    # scrap_source("Fizban´s Treasury of Dragons", navigator)
+    # scrap_source("Settings", navigator)
+    # scrap_source("Extra (divers)", navigator)
+    driver.quit()
+    exit() 
+
+    
