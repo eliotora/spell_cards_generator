@@ -190,7 +190,7 @@ class MainWindow(QMainWindow):
         filter_layout2.addWidget(self.description_filter)
 
         self.layout.addLayout(filter_layout2)
-        
+
         # Table des sorts
         self.table = QTableWidget()
         self.table.verticalHeader().setVisible(False)
@@ -307,7 +307,7 @@ class MainWindow(QMainWindow):
                  and
                 min_level <= spell.get("niveau", 0) <= max_level
                  and
-                (name_filter in spell.get("nom", "").lower() or name_filter in spell.get("nom_vf", "").lower())
+                (name_filter in spell.get("nom", "").lower() or name_filter in spell.get("nom_VF", "").lower())
                  and
                 (self.description_filter.text().strip().lower() in spell.get("description_short", "").lower() if self.description_checkbox.isChecked() else True)
             )
@@ -337,8 +337,8 @@ class MainWindow(QMainWindow):
         cols = [
             "checkbox",
             "nom",
-            "nom_vf" if self.vf_name_checkbox.isChecked() else None,
-            "nom_vo" if self.vo_name_checkbox.isChecked() else None,
+            "nom_VF" if self.vf_name_checkbox.isChecked() else None,
+            "nom_VO" if self.vo_name_checkbox.isChecked() else None,
             "niveau",
             "école" if self.school_checkbox.isChecked() else None,
             "temps_d'incantation" if self.info_checkbox.isChecked() else None,
@@ -379,14 +379,14 @@ class MainWindow(QMainWindow):
         # Apply filters to the spells
         for row in range(self.table.rowCount()):
             spell = self.filtered_spells[row]
-            matches_name = name_filter in spell.get("nom", "").lower() or name_filter in spell.get("nom_vf", "").lower()
+            matches_name = name_filter in spell.get("nom", "").lower() or name_filter in spell.get("nom_VF", "").lower()
             matches_description = description_filter in spell.get("description_short", "").lower()
 
             # Check if the spell matches the filters
             if matches_name and (not self.description_checkbox.isChecked() or matches_description):
                 self.table.showRow(row)
             else:
-                self.table.hideRow(row)        
+                self.table.hideRow(row)
 
     def show_spell_details(self, row, column):
         spell = self.filtered_spells[row]
@@ -452,9 +452,9 @@ class MainWindow(QMainWindow):
     def update_selected_spell_count(self, item):
         if item.column() != 0:
             return
-        
+
         # Update the count of selected spells
-        
+
         selected_count = 0
         for row in range(self.table.rowCount()):
             check_item = self.table.item(row, 0)
@@ -491,12 +491,12 @@ class MainWindow(QMainWindow):
                 self, "Aucun sort sélectionné", "Veuillez sélectionner au moins un sort à exporter."
             )
             return
-        
+
         print(f"Exporting {len(selected_spells)} spells to HTML...")
         path, _ = QFileDialog.getSaveFileName(self, "Enregistrer HTML", "", "Fichier HTML (*.html)")
         if not path:
             return  # L'utilisateur a annulé
-        
+
         if self.radio_rules.isChecked():
             mode= 'rules'
         elif self.radio_grimoire.isChecked():
