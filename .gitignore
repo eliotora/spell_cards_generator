@@ -13,4 +13,4 @@ output/
 .vscode/
 
 # Data
-data/
+*.json

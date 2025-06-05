@@ -313,7 +313,7 @@ class MainWindow(QMainWindow):
                  and
                 min_level <= spell.get("niveau", 0) <= max_level
                  and
-                (name_filter in spell.get("nom", "").lower() or name_filter in spell.get("nom_VF", "").lower())
+                (name_filter in spell.get("nom", "").lower() or (spell.get("nom_VF", "") is not None and name_filter in spell.get("nom_VF", "").lower()))
                  and
                 (self.description_filter.text().strip().lower() in spell.get("description_short", "").lower() if self.description_checkbox.isChecked() else True)
             )
@@ -387,7 +387,7 @@ class MainWindow(QMainWindow):
         # Apply filters to the spells
         for row in range(self.table.rowCount()):
             spell = self.filtered_spells[row]
-            matches_name = name_filter in spell.get("nom", "").lower() or name_filter in spell.get("nom_VF", "").lower()
+            matches_name = name_filter in spell.get("nom", "").lower() or (spell.get("nom_VF", "") is not None and name_filter in spell.get("nom_VF", "").lower())
             matches_description = description_filter in spell.get("description_short", "").lower()
 
             # Check if the spell matches the filters
@@ -482,15 +482,27 @@ class MainWindow(QMainWindow):
         return selected_spells
 
     def export_pdf(self):
-        selected_spells = []
-        for row in range(self.table.rowCount()):
-            if self.table.item(row, 0).checkState() == Qt.CheckState.Checked:
-                selected_spells.append(self.filtered_spells[row])
+        selected_spells = self.get_selected_spells()
+        if not selected_spells:
+            QMessageBox.warning(
+                self, "Aucun sort sélectionné", "Veuillez sélectionner au moins un sort à exporter."
+            )
+            return
+
         print(f"Exporting {len(selected_spells)} spells to PDF...")
-        print([spell["nom"] for spell in selected_spells])
-        return
-        if self.data:
-            exporter_pdf(self.data, "export.pdf")
+        path, _ = QFileDialog.getSaveFileName(self, "Enregistrer PDF", "", "Fichier PDF (*.pdf)")
+        if not path:
+            return  # L'utilisateur a annulé
+
+        if self.radio_rules.isChecked():
+            mode= 'rules'
+        elif self.radio_grimoire.isChecked():
+            mode = 'grimoire'
+        elif self.radio_cards.isChecked():
+            mode = 'cards'
+
+        if selected_spells and path:
+            exporter_pdf(selected_spells, path, mode)
 
     def export_html(self):
         selected_spells = self.get_selected_spells()
