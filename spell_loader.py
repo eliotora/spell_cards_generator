@@ -63,5 +63,4 @@ def load_spells_from_folder(folder_path: str):
                 except (json.JSONDecodeError, IOError) as e:
                     print(f"Erreur lors du chargement de {filename}: {e}")
 
-    print(spells[:5])
     return spells

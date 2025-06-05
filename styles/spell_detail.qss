@@ -1,0 +1,154 @@
+/* QWidget {
+    background-color: black;
+    font-family: 'Gorgia', 'Times New Roman', serif;
+    font-size: 19px;
+    line-height: 1.5;
+}
+
+QWidget#col {
+    width:900px; margin-left:auto; margin-right:auto; margin-bottom:95px;
+}
+
+QLabel#TitreSort {
+    font-variant: small-caps;
+    letter-spacing: 1px;
+    color: #6D0000;
+    font-size: 29px;
+    line-height: 1;
+}
+
+QLabel {
+    color: #555;
+    padding: 4px;
+}
+
+QLabel#DescriptionSort {
+    padding: 4px 0 6px 0; text-align: justify;
+    color: #B80000;
+} */
+
+/* --- Valeurs génériques --- */
+QWidget {
+    /* background: black; */
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 12pt; /* ≈ 1.2rem */
+    /* line-height n'est pas pris en charge directement */
+}
+
+/* --- Conteneur principal --- */
+#col {
+    background: white url("./images/fond-ph.jpg") repeat;
+    /* margin: 40px auto; */
+    padding-bottom: 30px;
+    /* min-width: 1000px; */
+}
+
+/* --- Colonnes --- */
+#col1, #col2 {
+    /* min-width: 500px; */
+    padding: 40px 20px;
+}
+
+#col1 {
+    padding-left: 40px;
+}
+
+#col2 {
+    padding-right: 40px;
+    /* qproperty-alignment centre le texte pour QLabel */
+    qproperty-alignment: AlignHCenter;
+}
+/* --- Liens (QLabel qui porte la classe "link") --- */
+.link {
+    color: #B80000;
+    text-decoration: none;
+}
+
+.link:hover {
+    color: #D80000;
+    /* Qt ne gère pas border-bottom de cette façon */
+}
+
+/* --- Titres --- */
+.h1 {
+    letter-spacing: 1px;
+    color: #6D0000;
+    font-size: 18pt;
+    /* font-variant: small-caps non pris en charge */
+}
+
+/* --- Divers blocs de texte --- */
+.trad        { padding: 2px 0 0px 0; font-size: 12pt; }
+.ecole       { padding: 2px 0 6px 0; font-style: italic; }
+.description { padding: 6px 0 6px 0; }
+.resume      { font-size: 11pt; padding: 5px 0 0 0; font-style: italic; color: #909090; qproperty-alignment: AlignHCenter; }
+.warning     { font-size: 12pt; padding: 5px 0 0 0; font-style: italic; qproperty-alignment: AlignHCenter; }
+
+/* --- Listes --- */
+QListWidget, QListView {
+    margin-left: 17px;
+}
+
+QListWidget::item, QListView::item {
+    margin-top: 3px;
+}
+
+/* --- Tableaux --- */
+QTableWidget, QTableView {
+    font-family: "Arial", sans-serif;
+    font-size: 11pt;
+    margin-top: 6px;
+    border: 0px;
+    alternate-background-color: #D6d0e0;
+}
+
+QHeaderView::section {
+    font-weight: bold;
+    padding: 2px 4px;
+}
+
+QTableView::item, QTableWidget::item {
+    padding: 2px 4px;
+    /* text-align:center géré par le delegate si besoin */
+}
+
+/* --- Badges --- */
+.classe {
+    background-color: #6D0000;
+    color: white;
+    font-family: "Arial", sans-serif;
+    font-size: 11pt;
+    padding: 0px 4px;
+    margin: 20px 4px 8px 0;
+}
+
+.tcoe {
+    background-color: #DA801A;
+    color: white;
+    font-family: "Arial", sans-serif;
+    font-size: 11pt;
+    padding: 0px 4px;
+    margin: 20px 4px 8px 0;
+}
+
+.source {
+    background-color: white;
+    font-family: "Arial", sans-serif;
+    font-size: 11pt;
+    padding: 0px 4px;
+    margin: 0px 4px 8px 0;
+    border: 1px solid grey;
+}
+
+/* --- Zone spécifique --- */
+#r89-desktop-hpa-atf {
+    min-height: 600px;
+}
+
+/* --- Images dans col2 --- */
+#col2 QLabel {
+    border: 5px solid black;
+}
+
+/* Les media queries (@media) ne sont pas prises en charge dans QSS.
+   Gérez la réactivité via les layouts et le code C++/Python (resizeEvent, etc.). */
