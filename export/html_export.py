@@ -18,17 +18,25 @@ spell_template_rules = """
         {% for row in data %}
             <div class="bloc">
                 <h1>{{ row['nom'] }}</h1>
+                {% if show_VO_name %}
+                <div class="trad">[ {{ row.get('nom_VO', '').capitalize() }} ]</div>
+                {% endif %}
                 <div class="ecole">niveau {{ row['niveau'] }} - {{ row['école'] }} {% if row['rituel'] %}(rituel){% endif %}</div>
                 <div><strong>Temps d'incantation</strong> : {{ row["temps_d'incantation"] }}</div>
                 <div><strong>Portée</strong> : {{ row['portée'] }}</div>
                 <div><strong>Composantes</strong> : {{ row['composantes'] }}</div>
                 <div><strong>Durée</strong> : {{ row['durée'] }}</div>
                 <div class="description"> {{ row['description'] }}
-                    <br>
                     {% if row['à_niveau_supérieur'] %}
                         <strong><em>Aux niveaux supérieurs. </em></strong> : {{ row['à_niveau_supérieur'] }}
                     {% endif %}
                 </div>
+                {% if show_source %}
+                {% for class_name in row.get('classes', []) %}
+                    <div class="classe">{{ class_name }}</div>
+                {% endfor %}
+                <div class="source">{{ row.get('source') }}</div>
+                {% endif %}
             </div>
         {% endfor %}
     </div>
@@ -55,17 +63,25 @@ spell_template_grimoire = """
         {% else %}
             <div class="bloc">
                 <h1>{{ row['nom'] }}</h1>
+                {% if show_VO_name %}
+                <div class="trad">[ {{ row.get('nom_VO', '').capitalize() }} ]</div>
+                {% endif %}
                 <div class="ecole">niveau {{ row['niveau'] }} - {{ row['école'] }} {% if row['rituel'] %}(rituel){% endif %}</div>
                 <div><strong>Temps d'incantation</strong> : {{ row["temps_d'incantation"] }}</div>
                 <div><strong>Portée</strong> : {{ row['portée'] }}</div>
                 <div><strong>Composantes</strong> : {{ row['composantes'] }}</div>
                 <div><strong>Durée</strong> : {{ row['durée'] }}</div>
                 <div class="description"> {{ row['description'] }}
-                    <br>
                     {% if row['à_niveau_supérieur'] %}
                         <strong><em>Aux niveaux supérieurs. </em></strong> : {{ row['à_niveau_supérieur'] }}
                     {% endif %}
                 </div>
+                {% if show_source %}
+                {% for class_name in row.get('classes', []) %}
+                    <div class="classe">{{ class_name }}</div>
+                {% endfor %}
+                <div class="source">{{ row.get('source') }}</div>
+                {% endif %}
             </div>
         {% endif %}
         {% endfor %}
@@ -87,7 +103,7 @@ spell_template_cards = """
 </head>                  
 <body style="background-image:none; max-width:none">
     {% for row in data %}
-        <div class="{{ row['card_size'] }}">
+        <div class="blocCarte {{ row['card_size'] }}">
             <h1>{{ row['nom'] }}</h1>
             <div class="ecole">niveau {{ row['niveau'] }} - {{ row['école'] }} {% if row['rituel'] %}(rituel){% endif %}</div>
             <div><strong>Temps d'incantation</strong> : {{ row["temps_d'incantation"] }}</div>
@@ -95,17 +111,19 @@ spell_template_cards = """
             <div><strong>Composantes</strong> : {{ row['composantes'] }}</div>
             <div><strong>Durée</strong> : {{ row['durée'] }}</div>
             <div class="description"> {{ row['description'] }}
-                <br>
                 {% if row['à_niveau_supérieur'] %}
                     <strong><em>Aux niveaux supérieurs. </em></strong> : {{ row['à_niveau_supérieur'] }}
                 {% endif %}
             </div>
+            {% if show_source %}
+            <div class="source">{{ row.get('source') }}</div>
+            {% endif %}
         </div>
     {% endfor %}
 </body></html>
 """
 
-def html_export(spells, path, mode='rules'):
+def html_export(spells, path, mode='rules', show_source=False, show_VO_name=False):
     if not spells:
         return
 
@@ -113,6 +131,8 @@ def html_export(spells, path, mode='rules'):
     for spell in spells:
         processed = spell.copy()
         processed['description'] = processed['description'].replace('\n', '<br>')
+        if processed['description'][-4:] != '<br>':
+            processed['description'] += '<br>'
         processed['à_niveau_supérieur'] = processed.get('à_niveau_supérieur', '').replace('\n', '<br>')
         processed['composantes'] = ', '.join(processed['composantes'])
         processed_spells.append(processed)
@@ -128,7 +148,7 @@ def html_export(spells, path, mode='rules'):
         template = Template(spell_template_cards)
 
     
-    html = template.render(data=spells)
+    html = template.render(data=spells, show_source=show_source, show_VO_name=show_VO_name)
     with open(path, 'w', encoding='utf-8') as f:
         f.write(html)
 

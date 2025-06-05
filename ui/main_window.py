@@ -501,8 +501,12 @@ class MainWindow(QMainWindow):
         elif self.radio_cards.isChecked():
             mode = 'cards'
 
+        show_VO_name = self.print_vo_name_checkbox.isChecked()
+        show_source = self.print_source_checkbox.isChecked()
+
         if selected_spells and path:
-            exporter_pdf(selected_spells, path, mode)
+            exporter_pdf(selected_spells, path, mode, show_source=show_source, show_VO_name=show_VO_name)
+            QMessageBox.information(self, "Exportation réussie", f"{len(selected_spells)} sorts ont été exportés avec succès en PDF.")
 
     def export_html(self):
         selected_spells = self.get_selected_spells()
@@ -524,5 +528,9 @@ class MainWindow(QMainWindow):
         elif self.radio_cards.isChecked():
             mode = 'cards'
 
+        show_VO_name = self.print_vo_name_checkbox.isChecked()
+        show_source = self.print_source_checkbox.isChecked()
+
         if selected_spells and path:
-            html_export(selected_spells, path, mode)
+            html_export(selected_spells, path, mode, show_VO_name=show_VO_name, show_source=show_source)
+            QMessageBox.information(self, "Exportation réussie", f"{len(selected_spells)} sorts ont été exportés avec succès en HTML.")
