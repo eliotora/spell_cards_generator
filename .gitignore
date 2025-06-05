@@ -11,3 +11,6 @@ output/
 
 # VS Code settings
 .vscode/
+
+# Data
+data/

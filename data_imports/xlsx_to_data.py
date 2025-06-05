@@ -25,7 +25,7 @@ def import_spells(file_path):
             if "(" in row["composantes"]:
                 composantes[-1] = " (".join([composantes[-1], row["composantes"].split(" (")[1]])
             row["composantes"] = composantes
-            row["à_niveau_supérieur"] = row["à_niveau_supérieur"] if row["à_niveau_supérieur"] == nan else ""
+            row["à_niveau_supérieur"] = row["à_niveau_supérieur"] if type(row["à_niveau_supérieur"]) is str else ""
             row["nom_VO"] = row["nom_VO"].lower().capitalize()
             row["école"]  = row["école"].lower()
             with open("./data/Crooked Moon/spells/" + row["nom"].replace(" ", "_") + ".json", "w", encoding="utf-8") as f:

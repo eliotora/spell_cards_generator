@@ -35,29 +35,21 @@ QWidget {
     /* line-height n'est pas pris en charge directement */
 }
 
+QLabel {
+    color: black;
+    padding : 0 20 0 20;
+}
+
 /* --- Conteneur principal --- */
 #col {
     background: white url("./images/fond-ph.jpg") repeat;
     /* margin: 40px auto; */
     padding-bottom: 30px;
     /* min-width: 1000px; */
-}
-
-/* --- Colonnes --- */
-#col1, #col2 {
-    /* min-width: 500px; */
     padding: 40px 20px;
 }
 
-#col1 {
-    padding-left: 40px;
-}
 
-#col2 {
-    padding-right: 40px;
-    /* qproperty-alignment centre le texte pour QLabel */
-    qproperty-alignment: AlignHCenter;
-}
 /* --- Liens (QLabel qui porte la classe "link") --- */
 .link {
     color: #B80000;
@@ -75,12 +67,13 @@ QWidget {
     color: #6D0000;
     font-size: 18pt;
     /* font-variant: small-caps non pris en charge */
+    margin: 0 0 0 0;
 }
 
 /* --- Divers blocs de texte --- */
-.trad        { padding: 2px 0 0px 0; font-size: 12pt; }
-.ecole       { padding: 2px 0 6px 0; font-style: italic; }
-.description { padding: 6px 0 6px 0; }
+.trad        { padding: 0px 20 0px 20; font-size: 12pt; margin: 0 0 0 0;}
+.ecole       { padding: 0px 20 0px 20; font-style: italic; }
+.description { padding: 0px 20 0px 20; }
 .resume      { font-size: 11pt; padding: 5px 0 0 0; font-style: italic; color: #909090; qproperty-alignment: AlignHCenter; }
 .warning     { font-size: 12pt; padding: 5px 0 0 0; font-style: italic; qproperty-alignment: AlignHCenter; }
 
@@ -117,9 +110,10 @@ QTableView::item, QTableWidget::item {
     background-color: #6D0000;
     color: white;
     font-family: "Arial", sans-serif;
+    font-weight: bold;
     font-size: 11pt;
     padding: 0px 4px;
-    margin: 20px 4px 8px 0;
+    margin: 10px 4px 8px 0;
 }
 
 .tcoe {
@@ -133,22 +127,11 @@ QTableView::item, QTableWidget::item {
 
 .source {
     background-color: white;
+    color: black;
     font-family: "Arial", sans-serif;
+    font-weight: bold;
     font-size: 11pt;
     padding: 0px 4px;
-    margin: 0px 4px 8px 0;
+    margin: 10px 4px 8px 0;
     border: 1px solid grey;
 }
-
-/* --- Zone spécifique --- */
-#r89-desktop-hpa-atf {
-    min-height: 600px;
-}
-
-/* --- Images dans col2 --- */
-#col2 QLabel {
-    border: 5px solid black;
-}
-
-/* Les media queries (@media) ne sont pas prises en charge dans QSS.
-   Gérez la réactivité via les layouts et le code C++/Python (resizeEvent, etc.). */

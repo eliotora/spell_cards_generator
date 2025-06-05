@@ -42,6 +42,7 @@ class MainWindow(QMainWindow):
 
         # ==== Filter row ====
         filter_layout = QHBoxLayout()
+        filter_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         # ---- Class Filter ----
         self.class_box = QVBoxLayout()
@@ -76,14 +77,7 @@ class MainWindow(QMainWindow):
         )
         self.source_box.addWidget(self.toggle_source_selection_box)
 
-        ## List of sources
-        self.source_list = QListWidget()
-        self.source_list.setSelectionMode(
-            QAbstractItemView.SelectionMode.ExtendedSelection
-        )
-        self.source_list.clicked.connect(self.update_source_checkbox_state)
-        self.source_box.addWidget(self.source_list)
-        filter_layout.addLayout(self.source_box)
+        
 
         # ---- School Filter ----
         self.school_box = QVBoxLayout()
@@ -173,6 +167,15 @@ class MainWindow(QMainWindow):
         filter_layout.addLayout(self.display_column)
 
         self.layout.addLayout(filter_layout)
+
+        ## List of sources
+        self.source_list = QListWidget()
+        self.source_list.setSelectionMode(
+            QAbstractItemView.SelectionMode.ExtendedSelection
+        )
+        self.source_list.clicked.connect(self.update_source_checkbox_state)
+        self.source_box.addWidget(self.source_list)
+        filter_layout.addLayout(self.source_box)
         # ---- End of filters section ----
         # ---- Live filtering ----
         filter_layout2 = QHBoxLayout()
@@ -266,6 +269,7 @@ class MainWindow(QMainWindow):
             item = QListWidgetItem(school)
             self.school_list.addItem(item)
             item.setSelected(True)
+        self.school_list.adjustSize()
 
         # Filling the list of sources
         self.source_list.clear()
@@ -274,6 +278,7 @@ class MainWindow(QMainWindow):
             item = QListWidgetItem(source)
             self.source_list.addItem(item)
             item.setSelected(True)
+        self.source_list.adjustSize()
 
         # Filling the list of classes
         self.class_list.clear()
@@ -282,6 +287,7 @@ class MainWindow(QMainWindow):
             item = QListWidgetItem(class_name)
             self.class_list.addItem(item)
             item.setSelected(True)
+        self.class_list.adjustSize()
 
         self.apply_filters()
 
@@ -369,6 +375,8 @@ class MainWindow(QMainWindow):
                     value = "Oui" if value else "Non"
                 elif key == "temps_d'incantation":
                     value = spell.get("temps_d'incantation", "").split(",")[0].strip()
+                if value is None:
+                    value = ""
                 self.table.setItem(row, col, QTableWidgetItem(str(value)))
         self.table.resizeColumnsToContents()
 
