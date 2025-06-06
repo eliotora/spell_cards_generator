@@ -18,6 +18,8 @@ from PyQt6.QtWidgets import (
     QButtonGroup,
     QMessageBox,
     QFileDialog,
+    QSpacerItem,
+    QSizePolicy
 )
 from PyQt6.QtCore import Qt
 from export.pdf_export import exporter_pdf
@@ -77,8 +79,6 @@ class MainWindow(QMainWindow):
         )
         self.source_box.addWidget(self.toggle_source_selection_box)
 
-        
-
         # ---- School Filter ----
         self.school_box = QVBoxLayout()
 
@@ -119,6 +119,14 @@ class MainWindow(QMainWindow):
 
         filter_layout.addLayout(self.spell_level_box)
 
+        ## List of sources
+        self.source_list = QListWidget()
+        self.source_list.setSelectionMode(
+            QAbstractItemView.SelectionMode.ExtendedSelection
+        )
+        self.source_list.clicked.connect(self.update_source_checkbox_state)
+        self.source_box.addWidget(self.source_list)
+        filter_layout.addLayout(self.source_box)
 
         # ---- Display and filter button column ----
         # Display column
@@ -166,16 +174,24 @@ class MainWindow(QMainWindow):
         self.display_column.addWidget(self.filter_button)
         filter_layout.addLayout(self.display_column)
 
+        self.display_column.setSpacing(0)
+        self.display_column.setContentsMargins(0,0,0,0)
+
+        checkboxes_count = 8
+        checkbox_height = self.vf_name_checkbox.sizeHint().height()
+        self.class_list.setMaximumHeight(checkboxes_count * checkbox_height + self.filter_button.sizeHint().height())
+        self.school_list.setMaximumHeight(checkboxes_count * checkbox_height + self.filter_button.sizeHint().height())
+        self.source_list.setMaximumHeight(checkboxes_count * checkbox_height + self.filter_button.sizeHint().height())
+
+        self.class_list.setMaximumWidth(200)
+        self.school_list.setMaximumWidth(200)
+        self.source_list.setMaximumWidth(200)
+
+        # Ajoute ce spacer à la fin du layout pour éviter que les éléments s'étendent :
+        filter_layout.addSpacerItem(QSpacerItem(0, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
+
         self.layout.addLayout(filter_layout)
 
-        ## List of sources
-        self.source_list = QListWidget()
-        self.source_list.setSelectionMode(
-            QAbstractItemView.SelectionMode.ExtendedSelection
-        )
-        self.source_list.clicked.connect(self.update_source_checkbox_state)
-        self.source_box.addWidget(self.source_list)
-        filter_layout.addLayout(self.source_box)
         # ---- End of filters section ----
         # ---- Live filtering ----
         filter_layout2 = QHBoxLayout()
@@ -197,6 +213,7 @@ class MainWindow(QMainWindow):
         # Table des sorts
         self.table = QTableWidget()
         self.table.verticalHeader().setVisible(False)
+        self.table.setSortingEnabled(True)
         self.layout.addWidget(self.table)
 
         self.load_spells()
@@ -289,6 +306,8 @@ class MainWindow(QMainWindow):
             item.setSelected(True)
         self.class_list.adjustSize()
 
+        self.spells.sort(key=lambda i: i["nom"])
+
         self.apply_filters()
 
     def apply_filters(self):
@@ -379,6 +398,7 @@ class MainWindow(QMainWindow):
                     value = ""
                 self.table.setItem(row, col, QTableWidgetItem(str(value)))
         self.table.resizeColumnsToContents()
+        # self.table.sortByColumn(1, Qt.SortOrder.AscendingOrder)
 
     def live_filter(self):
         name_filter = self.name_filter.text().strip().lower()
@@ -398,6 +418,7 @@ class MainWindow(QMainWindow):
 
     def show_spell_details(self, row, column):
         spell = self.filtered_spells[row]
+        print(spell)
         self.details_window = SpellDetailWindow(spell)
         self.details_window.show()
 
