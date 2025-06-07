@@ -1,9 +1,13 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
+from ui.profile_detail_window import Profile_detail_window
 import re
 
 
 class SpellDetailWindow(QWidget):
+    main_controler = None
+    profile_windows = {}
+
     def __init__(self, spell):
         super().__init__()
         self.setWindowTitle(spell.get("nom", "Détails du sort"))
@@ -73,6 +77,8 @@ class SpellDetailWindow(QWidget):
         self.description = QLabel(description_text)
         self.description.setProperty("class", "description")
         self.description.setWordWrap(True)
+        self.description.setOpenExternalLinks(False)
+        self.description.linkActivated.connect(self.handle_link_click)
         self.content_layout.addWidget(self.description)
 
 
@@ -91,7 +97,7 @@ class SpellDetailWindow(QWidget):
             class_label = QLabel(f"{class_name}")
             class_label.setProperty("class", "classe")
             self.footer_layout.addWidget(class_label)
-        
+
         source_label = QLabel(f"{spell.get('source', 'N/A')}")
         source_label.setProperty("class", "source")
         self.footer_layout.addWidget(source_label)
@@ -128,7 +134,7 @@ class SpellDetailWindow(QWidget):
             description = description.replace('<th>', "<th style='min-width: 45px; padding: 2 4 2 4; text-align: left; font-weight: bold; vertical-align: bottom; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial; sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'>")
             description = description.replace('<td class="center"', "<td style='min-width: 45px; padding: 2 4 2 4; text-align: center; vertical-align: top; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'")
             description = description.replace('<td>', "<td style='min-width: 45px; padding: 2 4 2 4; text-align: left; vertical-align: top; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'>")
-            
+
             # Trouver tous les <tr ...> et ajouter un style selon l'index
             def tr_replacer(match):
                 idx = tr_replacer.counter
@@ -144,3 +150,18 @@ class SpellDetailWindow(QWidget):
             description = re.sub("<tr", tr_replacer, description)
             description = description.replace("</table>", "</table><br>")
         return description
+
+    def handle_link_click(self, link):
+        path = link.split("/")
+        if path[0] == "profile":
+            profile_name = path[1]
+            if self.main_controler is not None:
+                p = self.main_controler.get_profile(profile_name)
+                print(p)
+                window = Profile_detail_window(p)
+                self.profile_windows[p["nom"]] = window
+                window.show()
+
+    def closeEvent(self, event):
+        for k,w in self.profile_windows.items():
+            w.close()

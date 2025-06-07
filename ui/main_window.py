@@ -25,10 +25,13 @@ from PyQt6.QtCore import Qt
 from export.pdf_export import exporter_pdf
 from export.html_export import html_export
 from spell_loader import load_spells_from_folder
+from profile_loader import load_profiles_from_folder
 from ui.spell_detail_window import SpellDetailWindow
 
 
 class MainWindow(QMainWindow):
+    details_windows = {}
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Liste des Sorts")
@@ -217,6 +220,7 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.table)
 
         self.load_spells()
+        self.load_profiles()
 
         # ==== Export section ====
         export_options_layout = QHBoxLayout()
@@ -274,6 +278,15 @@ class MainWindow(QMainWindow):
         export_buttons_layout.addWidget(export_pdf_btn)
         export_buttons_layout.addWidget(export_html_btn)
         self.layout.addLayout(export_buttons_layout)
+
+    def load_profiles(self):
+        self.profiles = load_profiles_from_folder("data")
+
+    def get_profile(self, profile_name):
+        for p in self.profiles:
+            if p["nom"] == profile_name:
+                return p
+        return None
 
     def load_spells(self):
         self.spells = load_spells_from_folder("data")
@@ -418,9 +431,10 @@ class MainWindow(QMainWindow):
 
     def show_spell_details(self, row, column):
         spell = self.filtered_spells[row]
-        print(spell)
-        self.details_window = SpellDetailWindow(spell)
-        self.details_window.show()
+        window = SpellDetailWindow(spell)
+        self.details_windows[spell["nom"]] = window
+        window.main_controler = self
+        window.show()
 
     def toggle_school_selection(self, state):
         checked = state == Qt.CheckState.Checked
@@ -555,3 +569,7 @@ class MainWindow(QMainWindow):
         if selected_spells and path:
             html_export(selected_spells, path, mode, show_VO_name=show_VO_name, show_source=show_source)
             QMessageBox.information(self, "Exportation réussie", f"{len(selected_spells)} sorts ont été exportés avec succès en HTML.")
+
+    def closeEvent(self, event):
+        for k,w in self.details_windows.items():
+            w.close()
