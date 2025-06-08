@@ -49,6 +49,24 @@ QLabel {
     padding: 40px 20px;
 }
 
+#bloc {
+    background-color: #fdf1dc;
+
+    min-width:100%;
+    /* padding:10px 20px 0 20px; */
+    padding:10px 8px 5px 8px;
+    margin:0 2px 0 2px;
+
+    font-family: Georgia, "Times New Roman", serif;
+    font-size:19px;
+    line-height:1.5;
+    text-align:left;
+    /* background-image: url("./images/fond-mm-effet.png"), url("./images/fond-ph.jpg"); */
+    background-image: url("./images/fond-ph.jpg");
+	background-repeat: no-repeat, repeat
+}
+
+#sansSerif		{font-family: arial, sans-serif}
 
 /* --- Liens (QLabel qui porte la classe "link") --- */
 .link {
@@ -69,6 +87,20 @@ QLabel {
     /* font-variant: small-caps non pris en charge */
     margin: 0 0 0 0;
 }
+
+#type			{padding:2pt 0 0pt 0; text-align:left; font-style:italic}
+#red			{color:#6D0000}
+#carac {
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+    /* width: 150px; */
+    /* width:16.6%; */
+    /* max-width:550pt; */
+    text-align:center
+}
+#rub			{color:#6D0000; margin:6px 0 4px 0; border-bottom:1px solid #B30303; font-size:24px}
+
+
 
 /* --- Divers blocs de texte --- */
 .trad        { padding: 0px 20 0px 20; font-size: 12pt; margin: 0 0 0 0;}

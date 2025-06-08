@@ -157,7 +157,6 @@ class SpellDetailWindow(QWidget):
             profile_name = path[1]
             if self.main_controler is not None:
                 p = self.main_controler.get_profile(profile_name)
-                print(p)
                 window = Profile_detail_window(p)
                 self.profile_windows[p["nom"]] = window
                 window.show()

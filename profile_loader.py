@@ -17,11 +17,12 @@ PROFILE_FIELD = [
     "intelligence",
     "sagesse",
     "charisme",
-    "immunités (dégâts)",
-    "immunités (états)",
-    "sens",
-    "langues",
-    "actions"
+    "détails",
+    "traits",
+    "actions",
+    "réactions",
+    "actions_leg",
+    "actions_leg_texte"
 ]
 
 def load_profiles_from_folder(folder_path: str):
