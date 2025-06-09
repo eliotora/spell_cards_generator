@@ -1,17 +1,18 @@
 from jinja2 import Template
+from os import getcwd
 
 spell_template_rules = """
 <html>
 <head>
     <meta charset="utf-8">
     <title>List » Spells - DnD 5e</title>
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href={{ style_path }}>
     <style>
         body	{background:white url("../images/fond-ph.jpg") repeat}
         .blocCarte h1	{background-color:#6D0000; color:white}
         .bloc table tr:nth-child(even) {background-color:#e0e0ff}
     </style>
-</head>                  
+</head>
 <body>
     <div class="titre1">Sorts D&D 5</div>
     <div class="cols2">
@@ -48,13 +49,13 @@ spell_template_grimoire = """
 <head>
     <meta charset="utf-8">
     <title>List » Spells - DnD 5e</title>
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href={{ style_path }}>
     <style>
         body	{background:white url("../images/fond-ph.jpg") repeat}
         .blocCarte h1	{background-color:#6D0000; color:white}
         .bloc table tr:nth-child(even) {background-color:#e0e0ff}
     </style>
-</head>                  
+</head>
 <body>
     <div class="titre1">Grimoire</div>
     <div class="cols2">
@@ -94,14 +95,15 @@ spell_template_cards = """
 <head>
     <meta charset="utf-8">
     <title>List » Spells - DnD 5e</title>
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href={{ style_path }}>
     <style>
         body	{background:white url("../images/fond-ph.jpg") repeat}
         .blocCarte h1	{background-color:#6D0000; color:white}
         .bloc table tr:nth-child(even) {background-color:#e0e0ff}
     </style>
-</head>                  
+</head>
 <body style="background-image:none; max-width:none">
+    <div class="blocCarteContainer">
     {% for row in data %}
         <div class="blocCarte {{ row['card_size'] }}">
             <h1>{{ row['nom'] }}</h1>
@@ -120,6 +122,7 @@ spell_template_cards = """
             {% endif %}
         </div>
     {% endfor %}
+    </div>
 </body></html>
 """
 
@@ -147,8 +150,10 @@ def html_export(spells, path, mode='rules', show_source=False, show_VO_name=Fals
         spells = determine_card_size(spells)
         template = Template(spell_template_cards)
 
-    
-    html = template.render(data=spells, show_source=show_source, show_VO_name=show_VO_name)
+    style_path = f"file:///{getcwd()}/styles/style.css"
+
+
+    html = template.render(data=spells, show_source=show_source, show_VO_name=show_VO_name, style_path=style_path)
     with open(path, 'w', encoding='utf-8') as f:
         f.write(html)
 
@@ -179,15 +184,14 @@ def determine_card_size(spells):
         total_length = len(sized_spell['description'])
         if "à_niveau_supérieur" in sized_spell:
             total_length += len(sized_spell['à_niveau_supérieur'])
-        
-        if total_length > 1550:
+
+        if total_length > 1250:
             sized_spell["card_size"] = "blocCarte blocCarteTTP"
         elif total_length > 800:
             sized_spell["card_size"] = "blocCarte blocCarteTP"
-        elif total_length > 500:
+        elif total_length > 400:
             sized_spell["card_size"] = "blocCarte blocCarteP"
         else:
             sized_spell["card_size"] = "blocCarte"
         sized_spells.append(sized_spell)
     return sized_spells
-        
