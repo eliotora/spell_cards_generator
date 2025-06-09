@@ -27,10 +27,11 @@ from export.html_export import html_export
 from spell_loader import load_spells_from_folder
 from profile_loader import load_profiles_from_folder
 from ui.spell_detail_window import SpellDetailWindow
-
+import os
 
 class MainWindow(QMainWindow):
     details_windows = {}
+    default_export_dir = os.path.join(os.getcwd(), "output")
 
     def __init__(self):
         super().__init__()
@@ -324,6 +325,9 @@ class MainWindow(QMainWindow):
         self.apply_filters()
 
     def apply_filters(self):
+        # Reset sorts
+        self.table.setSortingEnabled(False)
+
         # Filters
         selected_classes = [item.text() for item in self.class_list.selectedItems()]
         selected_sources = [item.text() for item in self.source_list.selectedItems()]
@@ -411,7 +415,7 @@ class MainWindow(QMainWindow):
                     value = ""
                 self.table.setItem(row, col, QTableWidgetItem(str(value)))
         self.table.resizeColumnsToContents()
-        # self.table.sortByColumn(1, Qt.SortOrder.AscendingOrder)
+        self.table.setSortingEnabled(True)
 
     def live_filter(self):
         name_filter = self.name_filter.text().strip().lower()
@@ -525,7 +529,7 @@ class MainWindow(QMainWindow):
             return
 
         print(f"Exporting {len(selected_spells)} spells to PDF...")
-        path, _ = QFileDialog.getSaveFileName(self, "Enregistrer PDF", "", "Fichier PDF (*.pdf)")
+        path, _ = QFileDialog.getSaveFileName(self, "Enregistrer PDF", self.default_export_dir, "Fichier PDF (*.pdf)")
         if not path:
             return  # L'utilisateur a annulé
 
@@ -552,7 +556,7 @@ class MainWindow(QMainWindow):
             return
 
         print(f"Exporting {len(selected_spells)} spells to HTML...")
-        path, _ = QFileDialog.getSaveFileName(self, "Enregistrer HTML", "", "Fichier HTML (*.html)")
+        path, _ = QFileDialog.getSaveFileName(self, "Enregistrer HTML", self.default_export_dir, "Fichier HTML (*.html)")
         if not path:
             return  # L'utilisateur a annulé
 

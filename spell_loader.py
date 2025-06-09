@@ -30,7 +30,7 @@ def load_spells_from_folder(folder_path: str):
 
         # --- Load class spell lists ---
         class_folder = os.path.join(full_source_path, "spell_lists")
-        if os.path.isdir(class_folder):
+        if os.path.exists(class_folder) and os.path.isdir(class_folder):
             for class_file in os.listdir(class_folder):
                 if class_file.endswith(".json"):
                     file_path = os.path.join(class_folder, class_file)
@@ -46,21 +46,22 @@ def load_spells_from_folder(folder_path: str):
 
         # --- Load spells ---
         spell_folder = os.path.join(full_source_path, "spells")
-        for filename in os.listdir(spell_folder):
-            if filename.endswith(".json"):
-                file_path = os.path.join(spell_folder, filename)
-                try:
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        spell_data = json.load(file)
-                        spell = {
-                            field: spell_data.get(field, "") for field in SPELL_FIELDS
-                        }
-                        spell["source"] = source_folder
-                        spell["classes"] = sorted(
-                            class_lookup.get(spell_data.get("nom", ""), [])
-                        )
-                        spells.append(spell)
-                except (json.JSONDecodeError, IOError) as e:
-                    print(f"Erreur lors du chargement de {filename}: {e}")
+        if os.path.exists(spell_folder) and os.path.isdir(spell_folder):
+            for filename in os.listdir(spell_folder):
+                if filename.endswith(".json"):
+                    file_path = os.path.join(spell_folder, filename)
+                    try:
+                        with open(file_path, "r", encoding="utf-8") as file:
+                            spell_data = json.load(file)
+                            spell = {
+                                field: spell_data.get(field, "") for field in SPELL_FIELDS
+                            }
+                            spell["source"] = source_folder
+                            spell["classes"] = sorted(
+                                class_lookup.get(spell_data.get("nom", ""), [])
+                            )
+                            spells.append(spell)
+                    except (json.JSONDecodeError, IOError) as e:
+                        print(f"Erreur lors du chargement de {filename}: {e}")
 
     return spells

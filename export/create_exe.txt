@@ -1,0 +1,5 @@
+pyinstaller --noconfirm --windowed --onefile --icon=app.ico `
+    --add-data "output;output" `
+    --add-data "images;images" `
+    --add-data "styles;styles" `
+    main.py
