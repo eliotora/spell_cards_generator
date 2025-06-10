@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
     QSizePolicy
 )
 from PyQt6.QtCore import Qt
-from export.pdf_export import exporter_pdf
+# from export.pdf_export import exporter_pdf
 from export.html_export import html_export
 from spell_loader import load_spells_from_folder
 from profile_loader import load_profiles_from_folder
@@ -270,7 +270,8 @@ class MainWindow(QMainWindow):
 
         # Boutons d'export
         export_pdf_btn = QPushButton("Exporter en PDF")
-        export_pdf_btn.clicked.connect(self.export_pdf)
+        # export_pdf_btn.clicked.connect(self.export_pdf)
+        export_pdf_btn.setDisabled(True)
 
         export_html_btn = QPushButton("Exporter en HTML")
         export_html_btn.clicked.connect(self.export_html)
@@ -520,32 +521,32 @@ class MainWindow(QMainWindow):
                 selected_spells.append(self.filtered_spells[row])
         return selected_spells
 
-    def export_pdf(self):
-        selected_spells = self.get_selected_spells()
-        if not selected_spells:
-            QMessageBox.warning(
-                self, "Aucun sort sélectionné", "Veuillez sélectionner au moins un sort à exporter."
-            )
-            return
+    # def export_pdf(self):
+    #     selected_spells = self.get_selected_spells()
+    #     if not selected_spells:
+    #         QMessageBox.warning(
+    #             self, "Aucun sort sélectionné", "Veuillez sélectionner au moins un sort à exporter."
+    #         )
+    #         return
 
-        print(f"Exporting {len(selected_spells)} spells to PDF...")
-        path, _ = QFileDialog.getSaveFileName(self, "Enregistrer PDF", self.default_export_dir, "Fichier PDF (*.pdf)")
-        if not path:
-            return  # L'utilisateur a annulé
+    #     print(f"Exporting {len(selected_spells)} spells to PDF...")
+    #     path, _ = QFileDialog.getSaveFileName(self, "Enregistrer PDF", self.default_export_dir, "Fichier PDF (*.pdf)")
+    #     if not path:
+    #         return  # L'utilisateur a annulé
 
-        if self.radio_rules.isChecked():
-            mode= 'rules'
-        elif self.radio_grimoire.isChecked():
-            mode = 'grimoire'
-        elif self.radio_cards.isChecked():
-            mode = 'cards'
+    #     if self.radio_rules.isChecked():
+    #         mode= 'rules'
+    #     elif self.radio_grimoire.isChecked():
+    #         mode = 'grimoire'
+    #     elif self.radio_cards.isChecked():
+    #         mode = 'cards'
 
-        show_VO_name = self.print_vo_name_checkbox.isChecked()
-        show_source = self.print_source_checkbox.isChecked()
+    #     show_VO_name = self.print_vo_name_checkbox.isChecked()
+    #     show_source = self.print_source_checkbox.isChecked()
 
-        if selected_spells and path:
-            exporter_pdf(selected_spells, path, mode, show_source=show_source, show_VO_name=show_VO_name)
-            QMessageBox.information(self, "Exportation réussie", f"{len(selected_spells)} sorts ont été exportés avec succès en PDF.")
+    #     if selected_spells and path:
+    #         exporter_pdf(selected_spells, path, mode, show_source=show_source, show_VO_name=show_VO_name)
+    #         QMessageBox.information(self, "Exportation réussie", f"{len(selected_spells)} sorts ont été exportés avec succès en PDF.")
 
     def export_html(self):
         selected_spells = self.get_selected_spells()
