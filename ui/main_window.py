@@ -28,6 +28,7 @@ from spell_loader import load_spells_from_folder
 from profile_loader import load_profiles_from_folder
 from ui.spell_detail_window import SpellDetailWindow
 import os
+from pathlib import Path
 
 class MainWindow(QMainWindow):
     details_windows = {}
@@ -547,6 +548,10 @@ class MainWindow(QMainWindow):
     #     if selected_spells and path:
     #         exporter_pdf(selected_spells, path, mode, show_source=show_source, show_VO_name=show_VO_name)
     #         QMessageBox.information(self, "Exportation réussie", f"{len(selected_spells)} sorts ont été exportés avec succès en PDF.")
+    def get_export_dir(self):
+        export_dir = Path(os.path.expandvars(r'%USERPROFILE%\Documents\DnD Spell Viewer Exports'))
+        export_dir.mkdir(parents=True, exist_ok=True)
+        return export_dir
 
     def export_html(self):
         selected_spells = self.get_selected_spells()
@@ -556,8 +561,8 @@ class MainWindow(QMainWindow):
             )
             return
 
-        print(f"Exporting {len(selected_spells)} spells to HTML...")
-        path, _ = QFileDialog.getSaveFileName(self, "Enregistrer HTML", self.default_export_dir, "Fichier HTML (*.html)")
+        # print(f"Exporting {len(selected_spells)} spells to HTML...")
+        path, _ = QFileDialog.getSaveFileName(self, "Enregistrer HTML", str(self.get_export_dir()), "Fichier HTML (*.html)")
         if not path:
             return  # L'utilisateur a annulé
 
