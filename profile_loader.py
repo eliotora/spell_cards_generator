@@ -20,6 +20,7 @@ PROFILE_FIELD = [
     "détails",
     "traits",
     "actions",
+    "actions bonus",
     "réactions",
     "actions_leg",
     "actions_leg_texte"
@@ -51,4 +52,4 @@ def load_profiles_from_folder(folder_path: str):
                 except (json.JSONDecodeError, IOError) as e:
                     print(f"Erreur lors du chargement de {filename}: {e}")
 
-        return profiles
+    return profiles

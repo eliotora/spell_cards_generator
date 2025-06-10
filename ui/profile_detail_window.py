@@ -61,6 +61,7 @@ class Profile_detail_window(QWidget):
 
         type = profile["type"].capitalize() + " de taille " + profile["taille"] + ", " + profile["alignement"]
         self.type = QLabel(f"{type}")
+        self.type.setWordWrap(True)
         self.type.setObjectName("type")
         self.sans_serif_layout.addWidget(self.type)
 
@@ -73,9 +74,17 @@ class Profile_detail_window(QWidget):
         svg_sep = QSvgWidget("./images/profile_sep.svg")
         self.red_layout.addWidget(svg_sep)
 
-        self.red_layout.addWidget(QLabel(f"<strong>Classe d'armure </strong>{profile["classe d'armure"]}"))
-        self.red_layout.addWidget(QLabel(f"<strong>Points de vie </strong>{profile["points de vie"]}"))
-        self.red_layout.addWidget(QLabel(f"<strong>Vitesse </strong>{profile["vitesse"]}"))
+        ca = QLabel(f"<strong>Classe d'armure </strong>{profile["classe d'armure"]}")
+        ca.setWordWrap(True)
+        self.red_layout.addWidget(ca)
+
+        pv = QLabel(f"<strong>Points de vie </strong>{profile["points de vie"]}")
+        pv.setWordWrap(True)
+        self.red_layout.addWidget(pv)
+
+        speed = QLabel(f"<strong>Vitesse </strong>{profile["vitesse"]}")
+        speed.setWordWrap(True)
+        self.red_layout.addWidget(speed)
 
         svg_sep = QSvgWidget("./images/profile_sep.svg")
         self.red_layout.addWidget(svg_sep)
@@ -130,6 +139,19 @@ class Profile_detail_window(QWidget):
             for action in profile["actions"]:
                 act = profile["actions"][action]
                 text = f"<strong><em>{action}. </em></strong><em>{act["type"]}</em>{act["bonus"]}, {act["portée"]} <em>Touché: </em>{act["dégâts"]}"
+                label = QLabel(text)
+                label.setObjectName("p")
+                label.setWordWrap(True)
+                self.sans_serif_layout.addWidget(label)
+
+        if "actions bonus" in profile and profile["actions bonus"]:
+            self.bonusaction_section = QLabel("ACTIONS BONUS")
+            self.bonusaction_section.setObjectName("rub")
+            self.sans_serif_layout.addWidget(self.bonusaction_section)
+
+            for bonusaction in profile["actions bonus"]:
+                act = profile["actions bonus"][bonusaction]
+                text = f"<strong><em>{bonusaction}. </em></strong>{act}"
                 label = QLabel(text)
                 label.setObjectName("p")
                 label.setWordWrap(True)

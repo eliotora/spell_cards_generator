@@ -1,3 +1,7 @@
+QLabel {
+    color: black;
+}
+
 QWidget#content {
     width: 100%;
     background-color: #fdf1dc;
