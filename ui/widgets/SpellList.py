@@ -1,7 +1,22 @@
 from PyQt6.QtWidgets import QListWidget, QTableWidget
-from PyQt6.QtCore import QMimeData, Qt
+from PyQt6.QtCore import QMimeData, Qt, QSortFilterProxyModel
 from PyQt6.QtGui import QDrag, QDragEnterEvent, QDragMoveEvent
 from model.spell_model import SpellModels
+import unicodedata
+
+class AccentInsensitiveSortModel(QSortFilterProxyModel):
+    def normalize(self, text):
+        if isinstance(text, str):
+            text = unicodedata.normalize('NFKD', text)
+            text = ''.join(c for c in text if not unicodedata.combining(c))
+            return text.casefold()  # insensible à la casse aussi
+        return text
+
+    def lessThan(self, left, right):
+        left_data = self.normalize(left.data())
+        right_data = self.normalize(right.data())
+        return left_data < right_data
+
 
 class SpellList(QListWidget):
     def __init__(self, level:int):

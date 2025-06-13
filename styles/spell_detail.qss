@@ -29,7 +29,7 @@ QLabel#DescriptionSort {
 
 /* --- Valeurs génériques --- */
 QWidget {
-    /* background: black; */
+    background: none;
     font-family: "Georgia", "Times New Roman", serif;
     font-size: 12pt; /* ≈ 1.2rem */
     /* line-height n'est pas pris en charge directement */

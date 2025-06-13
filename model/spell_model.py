@@ -1,12 +1,15 @@
 from PyQt6.QtCore import QAbstractTableModel, Qt
 from spell_loader import load_spells_from_folder
 from copy import deepcopy
+import locale
+
+locale.setlocale(locale.LC_COLLATE, 'French_France.1252')
 
 class SpellModels:
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.spells = load_spells_from_folder("data")
-            cls.spells.sort(key=lambda i: i["nom"])
+            cls.spells.sort(key=lambda i: locale.strxfrm(i["nom"]))
             cls.instance = super(SpellModels, cls).__new__(cls)
         return cls.instance
 

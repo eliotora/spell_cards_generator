@@ -2,6 +2,10 @@ QLabel {
     color: black;
 }
 
+QWidget {
+    background-color:none;
+}
+
 QWidget#content {
     width: 100%;
     background-color: #fdf1dc;

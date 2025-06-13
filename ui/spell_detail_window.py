@@ -10,6 +10,10 @@ class SpellDetailWindow(QWidget):
 
     def __init__(self, spell):
         super().__init__()
+        self.setStyleSheet("")
+        with open("styles/spell_detail.qss", "r") as f:
+            style = f.read()
+            self.setStyleSheet(style)
         self.setWindowTitle(spell.get("nom", "Détails du sort"))
         self.resize(400, 600)
 
