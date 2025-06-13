@@ -22,13 +22,17 @@ from PyQt6.QtWidgets import (
     QSizePolicy
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 # from export.pdf_export import exporter_pdf
 from export.html_export import html_export
-from spell_loader import load_spells_from_folder
+from model.spell_model import SpellModels
 from profile_loader import load_profiles_from_folder
 from ui.spell_detail_window import SpellDetailWindow
 import os
 from pathlib import Path
+from ui.widgets.SpellList import SpellList, SpellTable
+import json
+
 
 class MainWindow(QMainWindow):
     details_windows = {}
@@ -36,16 +40,22 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.spell_models = SpellModels()
         self.setWindowTitle("Liste des Sorts")
-        self.resize(1000, 600)
 
         # Main widget
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
         # Main layout
-        self.layout = QVBoxLayout()
+        self.layout = QHBoxLayout()
         self.central_widget.setLayout(self.layout)
+
+        ##### Left part #####
+        self.left_col = QWidget()
+        self.left_layout = QVBoxLayout()
+        self.left_col.setLayout(self.left_layout)
+        self.layout.addWidget(self.left_col)
 
         # ==== Filter row ====
         filter_layout = QHBoxLayout()
@@ -195,7 +205,7 @@ class MainWindow(QMainWindow):
         # Ajoute ce spacer à la fin du layout pour éviter que les éléments s'étendent :
         filter_layout.addSpacerItem(QSpacerItem(0, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
 
-        self.layout.addLayout(filter_layout)
+        self.left_layout.addLayout(filter_layout)
 
         # ---- End of filters section ----
         # ---- Live filtering ----
@@ -204,22 +214,27 @@ class MainWindow(QMainWindow):
         self.name_filter.setPlaceholderText("sort")
         self.name_filter.textChanged.connect(self.live_filter)
         self.name_filter.setClearButtonEnabled(True)
+        self.name_filter.setAcceptDrops(False)
         filter_layout2.addWidget(self.name_filter)
 
         self.description_filter = QLineEdit()
         self.description_filter.setPlaceholderText("description")
         self.description_filter.textChanged.connect(self.live_filter)
         self.description_filter.setClearButtonEnabled(True)
+        self.description_filter.setAcceptDrops(False)
         self.description_filter.setVisible(False)  # Initially hidden
         filter_layout2.addWidget(self.description_filter)
 
-        self.layout.addLayout(filter_layout2)
+        self.left_layout.addLayout(filter_layout2)
 
         # Table des sorts
-        self.table = QTableWidget()
+        self.table = SpellTable()
         self.table.verticalHeader().setVisible(False)
+        self.table.setDragEnabled(True)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
         self.table.setSortingEnabled(True)
-        self.layout.addWidget(self.table)
+        self.left_layout.addWidget(self.table)
 
         self.load_spells()
         self.load_profiles()
@@ -263,7 +278,7 @@ class MainWindow(QMainWindow):
         export_options_layout.addLayout(export_mode_layout)
         self.table.itemChanged.connect(self.update_selected_spell_count)
 
-        self.layout.addLayout(export_options_layout)
+        self.left_layout.addLayout(export_options_layout)
 
         # Adding export buttons
         export_buttons_layout = QHBoxLayout()
@@ -280,7 +295,123 @@ class MainWindow(QMainWindow):
         export_buttons_layout.addWidget(self.selected_spell_count_label)
         export_buttons_layout.addWidget(export_pdf_btn)
         export_buttons_layout.addWidget(export_html_btn)
-        self.layout.addLayout(export_buttons_layout)
+        self.left_layout.addLayout(export_buttons_layout)
+
+        ##### Right part #####
+        self.right_col_widget = QWidget()
+        self.right_col_layout = QVBoxLayout()
+        self.right_col_layout.setSpacing(4)
+        self.right_col_layout.setContentsMargins(0,0,0,0)
+        self.right_col_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.right_col_widget.setLayout(self.right_col_layout)
+        self.layout.addWidget(self.right_col_widget)
+
+        self.right_col_label = QLabel("Liste de sort")
+        self.right_col_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.right_col_layout.addWidget(self.right_col_label)
+
+        self.spell_lst_name_box = QWidget()
+        self.spell_lst_name_layout = QHBoxLayout()
+        self.spell_lst_name_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.spell_lst_name_box.setLayout(self.spell_lst_name_layout)
+        self.spell_lst_name_layout.setSpacing(4)
+        self.spell_lst_name_layout.setContentsMargins(0,0,0,0)
+        self.spell_list_name_label = QLabel("Nom:")
+        self.spell_list_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.spell_list_name_field = QLineEdit()
+        self.spell_list_name_field.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.spell_list_name_field.setAcceptDrops(False)
+        self.spell_list_name_field.setPlaceholderText("nouveau")
+        self.spell_lst_name_layout.addWidget(self.spell_list_name_label)
+        self.spell_lst_name_layout.addWidget(self.spell_list_name_field)
+        self.right_col_layout.addWidget(self.spell_lst_name_box)
+
+        self.spell_lists_widget = QWidget()
+        self.right_col_layout.addWidget(self.spell_lists_widget)
+        self.spell_lists_widget_layout = QHBoxLayout()
+        self.spell_lists_widget_layout.setSpacing(4)
+        self.spell_lists_widget_layout.setContentsMargins(0,0,0,0)
+        self.spell_lists_widget_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.spell_lists_widget.setLayout(self.spell_lists_widget_layout)
+
+
+        self.level_0_to_4_widget = QWidget()
+        self.spell_lists_widget_layout.addWidget(self.level_0_to_4_widget)
+        self.level_0_to_4_widget_layout = QVBoxLayout()
+        self.level_0_to_4_widget_layout.setSpacing(4)
+        self.level_0_to_4_widget_layout.setContentsMargins(0,0,0,0)
+        self.level_0_to_4_widget_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.level_0_to_4_widget.setLayout(self.level_0_to_4_widget_layout)
+        self.level_5_to_9_widget = QWidget()
+        self.spell_lists_widget_layout.addWidget(self.level_5_to_9_widget)
+        self.level_5_to_9_widget_layout = QVBoxLayout()
+        self.level_5_to_9_widget_layout.setSpacing(4)
+        self.level_5_to_9_widget_layout.setContentsMargins(0,0,0,0)
+        self.level_5_to_9_widget_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.level_5_to_9_widget.setLayout(self.level_5_to_9_widget_layout)
+
+        self.spell_lists: dict[int, tuple[SpellList, QPushButton]] = {}
+        for level in range(10):
+            spell_list_level_label = QLabel(f"Niveau {level}" if level > 0 else "Tours de magie")
+            spell_list = SpellList(level)
+            spell_list.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+            spell_list.itemDoubleClicked.connect(self.spell_list_double_click)
+
+            lock_button = QPushButton()
+            lock_button.setIcon(QIcon("images/unlock-48.png"))
+            lock_button.setCheckable(True)
+            lock_button.setToolTip("Verrouiller / Déverrouiller le drag & drop")
+            lock_button.clicked.connect(self.toggle_lock_factory(lock_button, spell_list))
+            self.spell_lists[level] = (spell_list, lock_button)
+
+            label_widget = QWidget()
+            label_widget_layout = QHBoxLayout()
+            label_widget_layout.setSpacing(4)
+            label_widget_layout.setContentsMargins(0,0,0,0)
+            label_widget_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
+            label_widget.setLayout(label_widget_layout)
+            label_widget_layout.addWidget(spell_list_level_label)
+            label_widget_layout.addWidget(lock_button)
+            if level < 5:
+                self.level_0_to_4_widget_layout.addWidget(label_widget)
+                self.level_0_to_4_widget_layout.addWidget(spell_list)
+            else:
+                self.level_5_to_9_widget_layout.addWidget(label_widget)
+                self.level_5_to_9_widget_layout.addWidget(spell_list)
+            spell_list.adjustSizeToContents()
+        self.right_col_layout.addSpacerItem(QSpacerItem(0,0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+
+        self.spl_lst_html_btn = QPushButton()
+        self.spl_lst_html_btn.setText("Exporter la liste en HTML")
+        self.spl_lst_html_btn.clicked.connect(self.export_spell_list_html)
+        self.right_col_layout.addWidget(self.spl_lst_html_btn)
+        self.save_btn = QPushButton()
+        self.save_btn.setText("Sauver")
+        self.save_btn.clicked.connect(self.save_spell_list)
+        self.load_btn = QPushButton()
+        self.load_btn.setText("Charger")
+        self.load_btn.clicked.connect(self.load_spell_list)
+        self.right_col_layout.addWidget(self.save_btn)
+        self.right_col_layout.addWidget(self.load_btn)
+
+        self.right_col_widget.hide()
+
+        spell_list_hide_btn = QPushButton()
+        spell_list_hide_btn.clicked.connect(
+            lambda : self.right_col_widget.setHidden(
+                bool(spell_list_hide_btn.setText("<" if self.right_col_widget.isHidden() else ">") or
+                not (self.right_col_widget.isHidden())
+                )
+                )
+            )
+        spell_list_hide_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding)
+        spell_list_hide_btn.setFixedWidth(20)
+        spell_list_hide_btn.setText(">")
+
+        self.layout.addWidget(spell_list_hide_btn)
+
+        self.showMaximized()
+
 
     def load_profiles(self):
         self.profiles = load_profiles_from_folder("data")
@@ -292,12 +423,12 @@ class MainWindow(QMainWindow):
         return None
 
     def load_spells(self):
-        self.spells = load_spells_from_folder("data")
-        self.table.cellDoubleClicked.connect(self.show_spell_details)
+        spells = self.spell_models.get_spells()
+        self.table.cellDoubleClicked.connect(self.table_spell_double_click)
 
         # Filling the list of schools
         self.school_list.clear()
-        self.schools = sorted(set(spell.get("école", "") for spell in self.spells))
+        self.schools = sorted(set(spell.get("école", "") for spell in spells))
         for school in self.schools:
             item = QListWidgetItem(school)
             self.school_list.addItem(item)
@@ -306,7 +437,7 @@ class MainWindow(QMainWindow):
 
         # Filling the list of sources
         self.source_list.clear()
-        self.sources = sorted(set(spell.get("source", "") for spell in self.spells))
+        self.sources = sorted(set(spell.get("source", "") for spell in spells))
         for source in self.sources:
             item = QListWidgetItem(source)
             self.source_list.addItem(item)
@@ -315,18 +446,18 @@ class MainWindow(QMainWindow):
 
         # Filling the list of classes
         self.class_list.clear()
-        self.classes = sorted({cls for spell in self.spells for cls in spell.get("classes", [])})
+        self.classes = sorted({cls for spell in spells for cls in spell.get("classes", [])})
         for class_name in self.classes:
             item = QListWidgetItem(class_name)
             self.class_list.addItem(item)
             item.setSelected(True)
         self.class_list.adjustSize()
 
-        self.spells.sort(key=lambda i: i["nom"])
-
         self.apply_filters()
 
     def apply_filters(self):
+        spells = self.spell_models.get_spells()
+
         # Reset sorts
         self.table.setSortingEnabled(False)
 
@@ -341,7 +472,7 @@ class MainWindow(QMainWindow):
         # Filtering
         self.filtered_spells = [
             spell
-            for spell in self.spells
+            for spell in spells
             if (
                 any(cls in selected_classes for cls in spell.get("classes", []))
                  and
@@ -435,12 +566,19 @@ class MainWindow(QMainWindow):
             else:
                 self.table.hideRow(row)
 
-    def show_spell_details(self, row, column):
-        spell = self.filtered_spells[row]
+    def show_spell_details(self, spell):
         window = SpellDetailWindow(spell)
         self.details_windows[spell["nom"]] = window
         window.main_controler = self
         window.show()
+
+    def table_spell_double_click(self, row, column):
+        spell = self.filtered_spells[row]
+        self.show_spell_details(spell)
+
+    def spell_list_double_click(self, item):
+        spell_name = item.text()
+        self.show_spell_details(self.spell_models.get_spell(spell_name))
 
     def toggle_school_selection(self, state):
         checked = state == Qt.CheckState.Checked
@@ -522,6 +660,53 @@ class MainWindow(QMainWindow):
                 selected_spells.append(self.filtered_spells[row])
         return selected_spells
 
+    def toggle_lock_factory(self, btn:QPushButton, list: SpellList):
+        def toggle_lock(locked):
+            btn.setIcon(QIcon("images/lock-48.png" if locked else "images/unlock-48.png"))
+            list.setAcceptDrops(not locked)
+            list.setDragEnabled(not locked)
+            list.adjustSizeToContents()
+
+        return toggle_lock
+
+    def load_spell_list(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Ouvrir une liste de sorts", str(self.get_export_dir()), "Fichier JSON (*.json)")
+        if not path:
+            return
+        with open(path, 'r', encoding='utf-8') as f:
+            spell_list = json.load(f)
+        self.spell_list_name_field.setText(spell_list["nom"])
+
+        for key, item in self.spell_lists.items():
+            liste = item[0]
+            liste.clear()
+            btn:QPushButton = item[1]
+            if not btn.isChecked():
+                btn.click()
+
+        for spell_name in spell_list["spells"]:
+            spell = SpellModels().get_spell(spell_name)
+            lvl = spell["niveau"]
+            self.spell_lists[lvl][0].addItem(spell["nom"])
+
+    def save_spell_list(self):
+        path, _ = QFileDialog.getSaveFileName(self, "Enregistrer la liste de sorts" , str(self.get_export_dir()), "Fichier JSON (*.json)")
+        if not path:
+            return
+        spells = []
+        for key, item in self.spell_lists.items():
+            for i in range(item[0].count()):
+                spell = item[0].item(i)
+                spells.append(spell.text())
+
+        if spells:
+            spell_list = {
+                "nom": self.spell_list_name_field.text(),
+                "spells": spells
+            }
+            with open(path, "w", encoding='utf-8') as f:
+                json.dump(spell_list, f)
+
     # def export_pdf(self):
     #     selected_spells = self.get_selected_spells()
     #     if not selected_spells:
@@ -553,15 +738,7 @@ class MainWindow(QMainWindow):
         export_dir.mkdir(parents=True, exist_ok=True)
         return export_dir
 
-    def export_html(self):
-        selected_spells = self.get_selected_spells()
-        if not selected_spells:
-            QMessageBox.warning(
-                self, "Aucun sort sélectionné", "Veuillez sélectionner au moins un sort à exporter."
-            )
-            return
-
-        # print(f"Exporting {len(selected_spells)} spells to HTML...")
+    def export_html(self, spells):
         path, _ = QFileDialog.getSaveFileName(self, "Enregistrer HTML", str(self.get_export_dir()), "Fichier HTML (*.html)")
         if not path:
             return  # L'utilisateur a annulé
@@ -576,9 +753,33 @@ class MainWindow(QMainWindow):
         show_VO_name = self.print_vo_name_checkbox.isChecked()
         show_source = self.print_source_checkbox.isChecked()
 
-        if selected_spells and path:
-            html_export(selected_spells, path, mode, show_VO_name=show_VO_name, show_source=show_source)
-            QMessageBox.information(self, "Exportation réussie", f"{len(selected_spells)} sorts ont été exportés avec succès en HTML.")
+        if spells and path:
+            html_export(spells, path, mode, show_VO_name=show_VO_name, show_source=show_source)
+            QMessageBox.information(self, "Exportation réussie", f"{len(spells)} sorts ont été exportés avec succès en HTML.")
+
+    def export_selected_html(self):
+        selected_spells = self.get_selected_spells()
+        if not selected_spells:
+            QMessageBox.warning(
+                self, "Aucun sort sélectionné", "Veuillez sélectionner au moins un sort à exporter."
+            )
+            return
+
+        self.export_html(selected_spells)
+
+    def export_spell_list_html(self):
+        spell_list = []
+        for key, item in self.spell_lists.items():
+            for i in range(item[0].count()):
+                spell_list.append(SpellModels().get_spell(item[0].item(i).text()))
+
+        if not spell_list:
+            QMessageBox.warning(
+                self, "Aucun sort dans la liste", "Veuillez ajouter au moins un sort dans la liste pour exporter."
+            )
+            return
+
+        self.export_html(spell_list)
 
     def closeEvent(self, event):
         for k,w in self.details_windows.items():

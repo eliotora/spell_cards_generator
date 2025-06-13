@@ -1,4 +1,24 @@
 from PyQt6.QtCore import QAbstractTableModel, Qt
+from spell_loader import load_spells_from_folder
+from copy import deepcopy
+
+class SpellModels:
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.spells = load_spells_from_folder("data")
+            cls.spells.sort(key=lambda i: i["nom"])
+            cls.instance = super(SpellModels, cls).__new__(cls)
+        return cls.instance
+
+    def get_spell(cls, name:str):
+        for spell in cls.spells:
+            if spell["nom"].lower() == name.lower():
+                return deepcopy(spell)
+        return None
+
+    def get_spells(cls):
+        return deepcopy(cls.spells)
+
 
 class JSONTableModel(QAbstractTableModel):
     def __init__(self, data):
