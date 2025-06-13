@@ -7,7 +7,7 @@ class Profile_detail_window(QWidget):
     def __init__(self, profile, show_VO_name=True):
         super().__init__()
         self.setWindowTitle(profile.get("nom", "Détails du profile"))
-        self.resize(330, 600)
+        self.resize(400, 600)
 
         # Main Layout
         self.layout = QVBoxLayout()
@@ -59,7 +59,8 @@ class Profile_detail_window(QWidget):
         self.content_layout.addWidget(self.sans_serif_widget)
         self.sans_serif_widget.setObjectName("sans_serif")
 
-        type = profile["type"].capitalize() + " de taille " + profile["taille"] + ", " + profile["alignement"]
+        type = profile["type"].capitalize() + " de taille " + profile["taille"]
+        type += f", {profile["alignement"]}" if profile["alignement"] else ""
         self.type = QLabel(f"{type}")
         self.type.setWordWrap(True)
         self.type.setObjectName("type")
@@ -138,7 +139,10 @@ class Profile_detail_window(QWidget):
 
             for action in profile["actions"]:
                 act = profile["actions"][action]
-                text = f"<strong><em>{action}. </em></strong><em>{act["type"]}</em>{act["bonus"]}, {act["portée"]} <em>Touché: </em>{act["dégâts"]}"
+                if act["type"] == "Capacité":
+                    text = f"<strong><em>{action}. </em></strong>{act["bonus"]}"
+                else:
+                    text = f"<strong><em>{action}. </em></strong><em>{act["type"]}</em>{act["bonus"]}, {act["portée"]} <em>Touché: </em>{act["dégâts"]}"
                 label = QLabel(text)
                 label.setObjectName("p")
                 label.setWordWrap(True)
@@ -191,7 +195,7 @@ class Profile_detail_window(QWidget):
         self.orange_bot.setObjectName("orange")
         self.content_layout.addWidget(self.orange_bot)
         self.orange_bot.setMinimumHeight(6)
-        self.setMinimumWidth(400)
+        self.setMinimumWidth(450)
         self.adjustSize()
 
         with open("styles/profile_detail.qss", "r", encoding="utf-8") as f:
