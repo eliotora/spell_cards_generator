@@ -290,7 +290,7 @@ class MainWindow(QMainWindow):
         export_pdf_btn.setDisabled(True)
 
         export_html_btn = QPushButton("Exporter en HTML")
-        export_html_btn.clicked.connect(self.export_html)
+        export_html_btn.clicked.connect(self.export_selected_html)
 
         export_buttons_layout.addWidget(self.selected_spell_count_label)
         export_buttons_layout.addWidget(export_pdf_btn)

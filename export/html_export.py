@@ -8,7 +8,7 @@ spell_template_rules = """
     <title>List » Spells - DnD 5e</title>
     <link rel="stylesheet" href={{ style_path }}>
     <style>
-        body	{background:white url("../images/fond-ph.jpg") repeat}
+        body	{background:white url("{{background_image_path}}") repeat}
         .blocCarte h1	{background-color:#6D0000; color:white}
         .bloc table tr:nth-child(even) {background-color:#e0e0ff}
     </style>
@@ -51,7 +51,7 @@ spell_template_grimoire = """
     <title>List » Spells - DnD 5e</title>
     <link rel="stylesheet" href={{ style_path }}>
     <style>
-        body	{background:white url("../images/fond-ph.jpg") repeat}
+        body	{background:white url({{background_image_path}}) repeat}
         .blocCarte h1	{background-color:#6D0000; color:white}
         .bloc table tr:nth-child(even) {background-color:#e0e0ff}
     </style>
@@ -97,7 +97,7 @@ spell_template_cards = """
     <title>List » Spells - DnD 5e</title>
     <link rel="stylesheet" href={{ style_path }}>
     <style>
-        body	{background:white url("../images/fond-ph.jpg") repeat}
+        body	{background:white url( {{ background_image_path }} ) repeat}
         .blocCarte h1	{background-color:#6D0000; color:white}
         .bloc table tr:nth-child(even) {background-color:#e0e0ff}
     </style>
@@ -151,9 +151,11 @@ def html_export(spells, path, mode='rules', show_source=False, show_VO_name=Fals
         template = Template(spell_template_cards)
 
     style_path = f"file:///{getcwd()}/styles/style.css"
+    background_image_path = f"file:///{getcwd().replace("\\", "/")}/images/fond-ph.jpg"
+    # background_image_path = "C:/Users/eliot_cosyn/Documents/TempProjects/spell_cards_generator/spell_cards_generator/images/fond-ph.jpg"
 
 
-    html = template.render(data=spells, show_source=show_source, show_VO_name=show_VO_name, style_path=style_path)
+    html = template.render(data=spells, show_source=show_source, show_VO_name=show_VO_name, style_path=style_path, background_image_path=background_image_path)
     with open(path, 'w', encoding='utf-8') as f:
         f.write(html)
 
