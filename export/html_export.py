@@ -152,7 +152,6 @@ def html_export(spells, path, mode='rules', show_source=False, show_VO_name=Fals
 
     style_path = f"file:///{getcwd()}/styles/style.css"
     background_image_path = f"file:///{getcwd().replace("\\", "/")}/images/fond-ph.jpg"
-    # background_image_path = "C:/Users/eliot_cosyn/Documents/TempProjects/spell_cards_generator/spell_cards_generator/images/fond-ph.jpg"
 
 
     html = template.render(data=spells, show_source=show_source, show_VO_name=show_VO_name, style_path=style_path, background_image_path=background_image_path)

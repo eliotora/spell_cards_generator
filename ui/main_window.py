@@ -573,7 +573,8 @@ class MainWindow(QMainWindow):
         window.show()
 
     def table_spell_double_click(self, row, column):
-        spell = self.filtered_spells[row]
+        spell_name = self.table.item(row, 1).text()
+        spell = self.spell_models.get_spell(spell_name)
         self.show_spell_details(spell)
 
     def spell_list_double_click(self, item):
