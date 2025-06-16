@@ -1,11 +1,4 @@
 /* https://colorhunt.co/palette/17153b2e236c433d8bc8acd6 */
-/*
-17153b
-2E236C
-433D8B
-C8ACD6
-*/
-
 
 QWidget {
     background-color: #312726;
@@ -17,29 +10,24 @@ QLabel {
 
 QCheckBox {
     color: white;
-    /* background-color: red; */
-}
-
-QCheckBox::indicator{
-    /* background-color: #433D8B; */
-}
-
-QCheckBox::indicator:checked {
-    /* color: #C8ACD6; */
 }
 
 QPushButton {
     color: white;
-    background-color: #805e45
+    background-color: #805e45;
+}
+
+QPushButton:disabled {
+    background-color: #5e4432;
+    color: gray;
 }
 
 QLineEdit {
-    color: white
+    color: white;
 }
 
 QTableWidget {
     color: white;
-    /* alternate-background-color:#8f4543; */
 }
 
 QTableWidget::item {
@@ -50,12 +38,11 @@ QTableWidget::item:selected {
     color:white;
 }
 
-
 QListWidget::item {
     color: black;
     background-color: #E4C59E;
     selection-color: black;
-    show-decoration-selected: 1
+    show-decoration-selected: 1;
 }
 
 QListWidget::item:selected {
@@ -64,7 +51,7 @@ QListWidget::item:selected {
 }
 
 QListWidget::item:hover {
-    background-color: #805e45
+    background-color: #805e45;
 }
 
 QSpinBox {
@@ -77,7 +64,7 @@ QSpinBox::down-button {}
 
 QListWidget {
     background-color: #E4C59E;
-    border: 2px
+    border: 2px;
 }
 
 QRadioButton {
