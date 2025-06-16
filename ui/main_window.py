@@ -202,6 +202,10 @@ class MainWindow(QMainWindow):
         self.school_list.setMaximumWidth(200)
         self.source_list.setMaximumWidth(200)
 
+        save_filters_btn = QPushButton("Sauver le filtre")
+        filter_layout.addWidget(save_filters_btn)
+        save_filters_btn.clicked.connect(self.save_filters)
+
         # Ajoute ce spacer à la fin du layout pour éviter que les éléments s'étendent :
         filter_layout.addSpacerItem(QSpacerItem(0, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
 
@@ -409,6 +413,8 @@ class MainWindow(QMainWindow):
         spell_list_hide_btn.setText(">")
 
         self.layout.addWidget(spell_list_hide_btn)
+
+        self.load_filters()
 
         self.showMaximized()
 
@@ -707,6 +713,51 @@ class MainWindow(QMainWindow):
             }
             with open(path, "w", encoding='utf-8') as f:
                 json.dump(spell_list, f)
+
+    def save_filters(self):
+        filters = {}
+        filters["selected_classes"] = [item.text() for item in self.class_list.selectedItems()]
+        filters["selected_sources"] = [item.text() for item in self.source_list.selectedItems()]
+        filters["selected_schools"] = [item.text() for item in self.school_list.selectedItems()]
+        filters["min_level"] = self.minlevel.value()
+        filters["max_level"] = self.maxlevel.value()
+
+        filters["vf_name"] = self.vf_name_checkbox.isChecked()
+        filters["vo_name"] = self.vo_name_checkbox.isChecked()
+        filters["school"] = self.school_checkbox.isChecked()
+        filters["info"] = self.info_checkbox.isChecked()
+        filters["concentration"] = self.concentration_checkbox.isChecked()
+        filters["rituel"] = self.ritual_checkbox.isChecked()
+        filters["description"] = self.description_checkbox.isChecked()
+        filters["source"] = self.source_checkbox.isChecked()
+
+        with open(f"{os.getcwd().replace("\\", "/")}/data/filter_settings.json", "w", encoding="utf-8") as f:
+            f.write(json.dumps(filters))
+
+    def load_filters(self):
+        filter_data_path = f"{os.getcwd().replace("\\","/")}/data/filter_settings.json"
+        if os.path.exists(filter_data_path):
+            with open(filter_data_path, "r", encoding="utf-8") as f:
+                filters = json.load(f)
+                for c in range(self.class_list.count()):
+                    checked = self.class_list.item(c).text() in filters["selected_classes"]
+                    self.class_list.item(c).setSelected(checked)
+
+                for s in range(self.source_list.count()):
+                    checked = self.source_list.item(s).text() in filters["selected_sources"]
+                    self.source_list.item(s).setSelected(checked)
+
+                for sc in range(self.school_list.count()):
+                    checked = self.school_list.item(sc).text() in filters["selected_schools"]
+                    self.school_list.item(sc).setSelected(checked)
+
+                self.minlevel.setValue(filters["min_level"])
+                self.maxlevel.setValue(filters["max_level"])
+
+                for checkbox_name, checkbox in {"vf_name": self.vf_name_checkbox, "vo_name": self.vo_name_checkbox, "school": self.school_checkbox, "info": self.info_checkbox, "concentration": self.concentration_checkbox, "rituel": self.ritual_checkbox, "description": self.description_checkbox, "source": self.source_checkbox}.items():
+                    checkbox.setChecked(filters[checkbox_name])
+
+
 
     # def export_pdf(self):
     #     selected_spells = self.get_selected_spells()
