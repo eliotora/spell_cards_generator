@@ -4,11 +4,12 @@ from PyQt6.QtGui import QDrag, QDragEnterEvent, QDragMoveEvent
 from model.spell_model import SpellModels
 import unicodedata
 
+
 class AccentInsensitiveSortModel(QSortFilterProxyModel):
     def normalize(self, text):
         if isinstance(text, str):
-            text = unicodedata.normalize('NFKD', text)
-            text = ''.join(c for c in text if not unicodedata.combining(c))
+            text = unicodedata.normalize("NFKD", text)
+            text = "".join(c for c in text if not unicodedata.combining(c))
             return text.casefold()  # insensible à la casse aussi
         return text
 
@@ -18,23 +19,31 @@ class AccentInsensitiveSortModel(QSortFilterProxyModel):
         return left_data < right_data
 
 
-class SpellList(QListWidget):
-    def __init__(self, level:int):
+class LeveledSpellList(QListWidget):
+    def __init__(self, level: int):
         super().__init__()
         self.level = level
         self.setAcceptDrops(True)
         self.setDragDropMode(QListWidget.DragDropMode.DragDrop)
         self.setDefaultDropAction(Qt.DropAction.MoveAction)
 
-    def dragEnterEvent(self, event:QDragEnterEvent):
+    def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasText():
             spell = SpellModels().get_spell(event.mimeData().text())
-            if spell and spell["niveau"] == self.level and not self.findItems(spell["nom"], Qt.MatchFlag.MatchExactly):
+            if (
+                spell
+                and spell["niveau"] == self.level
+                and not self.findItems(spell["nom"], Qt.MatchFlag.MatchExactly)
+            ):
                 event.acceptProposedAction()
 
-    def dragMoveEvent(self, event:QDragMoveEvent):
+    def dragMoveEvent(self, event: QDragMoveEvent):
         spell = SpellModels().get_spell(event.mimeData().text())
-        if event.mimeData().hasText() and spell["niveau"] == self.level and not self.findItems(spell["nom"], Qt.MatchFlag.MatchExactly):
+        if (
+            event.mimeData().hasText()
+            and spell["niveau"] == self.level
+            and not self.findItems(spell["nom"], Qt.MatchFlag.MatchExactly)
+        ):
             event.acceptProposedAction()
 
     def dropEvent(self, event):
@@ -59,9 +68,7 @@ class SpellList(QListWidget):
 
         # Prendre en compte les marges internes
         frame_width = self.frameWidth() * 2
-        self.setFixedHeight(
-            total_height + frame_width
-        )
+        self.setFixedHeight(total_height + frame_width)
 
     def startDrag(self, supportedActions):
         item = self.currentItem()
@@ -74,7 +81,7 @@ class SpellList(QListWidget):
         drag = QDrag(self)
         drag.setMimeData(mime_data)
 
-        result = drag.exec(Qt.DropAction.MoveAction| Qt.DropAction.CopyAction)
+        result = drag.exec(Qt.DropAction.MoveAction | Qt.DropAction.CopyAction)
 
         if result == Qt.DropAction.IgnoreAction:
             row = self.row(item)
@@ -98,4 +105,3 @@ class SpellTable(QTableWidget):
         drag = QDrag(self)
         drag.setMimeData(mime_data)
         drag.exec(Qt.DropAction.CopyAction)
-
