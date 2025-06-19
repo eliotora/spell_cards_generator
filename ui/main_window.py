@@ -25,7 +25,8 @@ from export.html_export import html_export
 from model.spell_model import SpellModels
 from profile_loader import load_profiles_from_folder
 from ui.spell_detail_window import SpellDetailWindow
-from ui.spell_grimoire_widget import SpellGrimoireWidget
+from ui.widgets.spell_grimoire_widget import SpellGrimoireWidget
+from ui.widgets.multi_selection_list import MultiSelectionListWidget
 from ui.widgets.SpellList import SpellTable
 from utils.paths import get_export_dir
 import os
@@ -60,61 +61,14 @@ class MainWindow(QMainWindow):
         filter_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         # ---- Class Filter ----
-        self.class_box = QVBoxLayout()
-
-        ## Checkbox to toggle class selection
-        self.toggle_class_selection_box = QCheckBox()
-        self.toggle_class_selection_box.setText("Classes:")
-        self.toggle_class_selection_box.setChecked(True)
-        self.toggle_class_selection_box.checkStateChanged.connect(
-            self.toggle_class_selection
-        )
-        self.class_box.addWidget(self.toggle_class_selection_box)
-
-        ## List of class
-        self.class_list = QListWidget()
-        self.class_list.setSelectionMode(
-            QAbstractItemView.SelectionMode.ExtendedSelection
-        )
-        self.class_list.clicked.connect(self.update_class_checkbox_state)
-        self.class_box.addWidget(self.class_list)
-        filter_layout.addLayout(self.class_box)
-
-        # ---- Source Filter ----
-        self.source_box = QVBoxLayout()
-
-        ## Checkbox to toggle source selection
-        self.toggle_source_selection_box = QCheckBox()
-        self.toggle_source_selection_box.setText("Sources:")
-        self.toggle_source_selection_box.setChecked(True)
-        self.toggle_source_selection_box.checkStateChanged.connect(
-            self.toggle_source_selection
-        )
-        self.source_box.addWidget(self.toggle_source_selection_box)
+        self.class_filter = MultiSelectionListWidget("Classes")
+        filter_layout.addWidget(self.class_filter)
 
         # ---- School Filter ----
-        self.school_box = QVBoxLayout()
+        self.school_filter = MultiSelectionListWidget("School")
+        filter_layout.addWidget(self.school_filter)
 
-        ## Checkbox to toggle school selection
-        self.toggle_school_selection_box = QCheckBox()
-        self.toggle_school_selection_box.setText("Écoles:")
-        self.toggle_school_selection_box.setChecked(True)
-        self.toggle_school_selection_box.checkStateChanged.connect(
-            self.toggle_school_selection
-        )
-        self.school_box.addWidget(self.toggle_school_selection_box)
-
-        ## List of schools
-        self.school_list = QListWidget()
-        self.school_list.setSelectionMode(
-            QAbstractItemView.SelectionMode.ExtendedSelection
-        )
-        self.school_list.clicked.connect(self.update_school_checkbox_state)
-        self.school_box.addWidget(self.school_list)
-
-        filter_layout.addLayout(self.school_box)
-
-        ## Level Filter
+        # ---- Level Filter ----
         self.spell_level_box = QVBoxLayout()
         self.spell_level_box.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.minlevel = QSpinBox()
@@ -131,14 +85,9 @@ class MainWindow(QMainWindow):
 
         filter_layout.addLayout(self.spell_level_box)
 
-        ## List of sources
-        self.source_list = QListWidget()
-        self.source_list.setSelectionMode(
-            QAbstractItemView.SelectionMode.ExtendedSelection
-        )
-        self.source_list.clicked.connect(self.update_source_checkbox_state)
-        self.source_box.addWidget(self.source_list)
-        filter_layout.addLayout(self.source_box)
+        # ---- Source Filter ----
+        self.source_filter = MultiSelectionListWidget("Sources")
+        filter_layout.addWidget(self.source_filter)
 
         # ---- Display and filter button column ----
         # Display column
@@ -193,19 +142,13 @@ class MainWindow(QMainWindow):
 
         checkboxes_count = 8
         checkbox_height = self.vf_name_checkbox.sizeHint().height()
-        self.class_list.setMaximumHeight(
-            checkboxes_count * checkbox_height + self.filter_button.sizeHint().height()
-        )
-        self.school_list.setMaximumHeight(
-            checkboxes_count * checkbox_height + self.filter_button.sizeHint().height()
-        )
-        self.source_list.setMaximumHeight(
-            checkboxes_count * checkbox_height + self.filter_button.sizeHint().height()
-        )
+        self.class_filter.list.setMaximumHeight(checkboxes_count * checkbox_height + self.filter_button.sizeHint().height())
+        self.school_filter.list.setMaximumHeight(checkboxes_count * checkbox_height + self.filter_button.sizeHint().height())
+        self.source_filter.list.setMaximumHeight(checkboxes_count * checkbox_height + self.filter_button.sizeHint().height())
 
-        self.class_list.setMaximumWidth(200)
-        self.school_list.setMaximumWidth(200)
-        self.source_list.setMaximumWidth(200)
+        self.class_filter.list.setMaximumWidth(200)
+        self.school_filter.list.setMaximumWidth(200)
+        self.source_filter.list.setMaximumWidth(200)
 
         save_filters_btn = QPushButton("Sauver le filtre")
         filter_layout.addWidget(save_filters_btn)
@@ -355,33 +298,33 @@ class MainWindow(QMainWindow):
         self.table.cellDoubleClicked.connect(self.table_spell_double_click)
 
         # Filling the list of schools
-        self.school_list.clear()
+        self.school_filter.clear()
         self.schools = sorted(set(spell.get("école", "") for spell in spells))
         for school in self.schools:
             item = QListWidgetItem(school)
-            self.school_list.addItem(item)
+            self.school_filter.addItem(item)
             item.setSelected(True)
-        self.school_list.adjustSize()
+        self.school_filter.adjustSize()
 
         # Filling the list of sources
-        self.source_list.clear()
+        self.source_filter.clear()
         self.sources = sorted(set(spell.get("source", "") for spell in spells))
         for source in self.sources:
             item = QListWidgetItem(source)
-            self.source_list.addItem(item)
+            self.source_filter.addItem(item)
             item.setSelected(True)
-        self.source_list.adjustSize()
+        self.source_filter.adjustSize()
 
         # Filling the list of classes
-        self.class_list.clear()
+        self.class_filter.clear()
         self.classes = sorted(
             {cls for spell in spells for cls in spell.get("classes", [])}
         )
         for class_name in self.classes:
             item = QListWidgetItem(class_name)
-            self.class_list.addItem(item)
+            self.class_filter.addItem(item)
             item.setSelected(True)
-        self.class_list.adjustSize()
+        self.class_filter.adjustSize()
 
         self.apply_filters()
 
@@ -392,9 +335,9 @@ class MainWindow(QMainWindow):
         self.table.setSortingEnabled(False)
 
         # Filters
-        selected_classes = [item.text() for item in self.class_list.selectedItems()]
-        selected_sources = [item.text() for item in self.source_list.selectedItems()]
-        selected_schools = [item.text() for item in self.school_list.selectedItems()]
+        selected_classes = self.class_filter.get_selected_item_texts()
+        selected_sources = self.source_filter.get_selected_item_texts()
+        selected_schools = self.school_filter.get_selected_item_texts()
         min_level = self.minlevel.value()
         max_level = self.maxlevel.value()
         name_filter = self.name_filter.text().strip().lower()
@@ -526,54 +469,6 @@ class MainWindow(QMainWindow):
         spell_name = item.text()
         self.show_spell_details(self.spell_models.get_spell(spell_name))
 
-    def toggle_school_selection(self, state):
-        checked = state == Qt.CheckState.Checked
-
-        for i in range(self.school_list.count()):
-            self.school_list.item(i).setSelected(checked)
-
-    def toggle_source_selection(self, state):
-        checked = state == Qt.CheckState.Checked
-
-        for i in range(self.source_list.count()):
-            self.source_list.item(i).setSelected(checked)
-
-    def toggle_class_selection(self, state):
-        checked = state == Qt.CheckState.Checked
-
-        for i in range(self.class_list.count()):
-            self.class_list.item(i).setSelected(checked)
-
-    def update_school_checkbox_state(self):
-        total = self.school_list.count()
-        selected = sum(item.isSelected() for item in self.school_list.selectedItems())
-
-        all_selected = selected == total
-
-        self.toggle_school_selection_box.blockSignals(True)
-        self.toggle_school_selection_box.setChecked(all_selected)
-        self.toggle_school_selection_box.blockSignals(False)
-
-    def update_source_checkbox_state(self):
-        total = self.source_list.count()
-        selected = sum(item.isSelected() for item in self.source_list.selectedItems())
-
-        all_selected = selected == total
-
-        self.toggle_source_selection_box.blockSignals(True)
-        self.toggle_source_selection_box.setChecked(all_selected)
-        self.toggle_source_selection_box.blockSignals(False)
-
-    def update_class_checkbox_state(self):
-        total = self.class_list.count()
-        selected = sum(item.isSelected() for item in self.class_list.selectedItems())
-
-        all_selected = selected == total
-
-        self.toggle_class_selection_box.blockSignals(True)
-        self.toggle_class_selection_box.setChecked(all_selected)
-        self.toggle_class_selection_box.blockSignals(False)
-
     def description_checkbox_event(self, state):
         if state == Qt.CheckState.Checked:
             self.description_filter.setVisible(True)
@@ -610,15 +505,10 @@ class MainWindow(QMainWindow):
 
     def save_filters(self):
         filters = {}
-        filters["selected_classes"] = [
-            item.text() for item in self.class_list.selectedItems()
-        ]
-        filters["selected_sources"] = [
-            item.text() for item in self.source_list.selectedItems()
-        ]
-        filters["selected_schools"] = [
-            item.text() for item in self.school_list.selectedItems()
-        ]
+        filters["selected_classes"] = self.class_filter.get_selected_item_texts()
+
+        filters["selected_sources"] = self.source_filter.get_selected_item_texts()
+        filters["selected_schools"] = self.school_filter.get_selected_item_texts()
         filters["min_level"] = self.minlevel.value()
         filters["max_level"] = self.maxlevel.value()
 
@@ -643,23 +533,10 @@ class MainWindow(QMainWindow):
         if os.path.exists(filter_data_path):
             with open(filter_data_path, "r", encoding="utf-8") as f:
                 filters = json.load(f)
-                for c in range(self.class_list.count()):
-                    checked = (
-                        self.class_list.item(c).text() in filters["selected_classes"]
-                    )
-                    self.class_list.item(c).setSelected(checked)
 
-                for s in range(self.source_list.count()):
-                    checked = (
-                        self.source_list.item(s).text() in filters["selected_sources"]
-                    )
-                    self.source_list.item(s).setSelected(checked)
-
-                for sc in range(self.school_list.count()):
-                    checked = (
-                        self.school_list.item(sc).text() in filters["selected_schools"]
-                    )
-                    self.school_list.item(sc).setSelected(checked)
+                self.class_filter.checkItems(filters["selected_classes"])
+                self.source_filter.checkItems(filters["selected_sources"])
+                self.school_filter.checkItems(filters["selected_schools"])
 
                 self.minlevel.setValue(filters["min_level"])
                 self.maxlevel.setValue(filters["max_level"])
