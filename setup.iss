@@ -1,6 +1,6 @@
 [Setup]
 AppName=DnD Spell Viewer
-AppVersion=1.0
+AppVersion=1.1
 DefaultDirName={pf}\SpellViewer
 DefaultGroupName=DnD Spell Viewer
 OutputDir=.

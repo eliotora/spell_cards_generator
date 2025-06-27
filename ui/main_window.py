@@ -28,6 +28,7 @@ from ui.spell_detail_window import SpellDetailWindow
 from ui.widgets.spell_grimoire_widget import SpellGrimoireWidget
 from ui.widgets.multi_selection_list import MultiSelectionListWidget
 from ui.widgets.SpellList import SpellTable
+from ui.widgets.spell_filters import SpellFilters
 from utils.paths import get_export_dir
 import os
 import json
@@ -55,111 +56,8 @@ class MainWindow(QMainWindow):
         self.left_layout = QVBoxLayout()
         self.left_col.setLayout(self.left_layout)
         self.layout.addWidget(self.left_col)
-
-        # ==== Filter row ====
-        filter_layout = QHBoxLayout()
-        filter_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-        # ---- Class Filter ----
-        self.class_filter = MultiSelectionListWidget("Classes")
-        filter_layout.addWidget(self.class_filter)
-
-        # ---- School Filter ----
-        self.school_filter = MultiSelectionListWidget("School")
-        filter_layout.addWidget(self.school_filter)
-
-        # ---- Level Filter ----
-        self.spell_level_box = QVBoxLayout()
-        self.spell_level_box.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.minlevel = QSpinBox()
-        self.minlevel.setRange(0, 9)
-        self.minlevel.setValue(0)
-        self.maxlevel = QSpinBox()
-        self.maxlevel.setRange(0, 9)
-        self.maxlevel.setValue(9)
-
-        self.spell_level_box.addWidget(QLabel("Niveau min:"))
-        self.spell_level_box.addWidget(self.minlevel)
-        self.spell_level_box.addWidget(QLabel("Niveau max:"))
-        self.spell_level_box.addWidget(self.maxlevel)
-
-        filter_layout.addLayout(self.spell_level_box)
-
-        # ---- Source Filter ----
-        self.source_filter = MultiSelectionListWidget("Sources")
-        filter_layout.addWidget(self.source_filter)
-
-        # ---- Display and filter button column ----
-        # Display column
-        self.display_column = QVBoxLayout()
-        self.display_column.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.display_column.addWidget(QLabel("Affichage:"))
-        self.vf_name_checkbox = QCheckBox("Nom VF")
-        self.vo_name_checkbox = QCheckBox("Nom VO")
-        self.school_checkbox = QCheckBox("École")
-        self.info_checkbox = QCheckBox("Info")
-        self.concentration_checkbox = QCheckBox("Concentration")
-        self.ritual_checkbox = QCheckBox("Rituel")
-        self.description_checkbox = QCheckBox("Description")
-        self.source_checkbox = QCheckBox("Source")
-
-        # Initial state of checkboxes
-        self.school_checkbox.setChecked(True)
-        self.info_checkbox.setChecked(True)
-        self.concentration_checkbox.setChecked(True)
-        self.ritual_checkbox.setChecked(True)
-
-        # Signal connections for checkboxes
-        self.vf_name_checkbox.checkStateChanged.connect(self.apply_filters)
-        self.vo_name_checkbox.checkStateChanged.connect(self.apply_filters)
-        self.school_checkbox.checkStateChanged.connect(self.apply_filters)
-        self.info_checkbox.checkStateChanged.connect(self.apply_filters)
-        self.concentration_checkbox.checkStateChanged.connect(self.apply_filters)
-        self.ritual_checkbox.checkStateChanged.connect(self.apply_filters)
-        self.description_checkbox.checkStateChanged.connect(
-            self.description_checkbox_event
-        )
-        self.source_checkbox.checkStateChanged.connect(self.apply_filters)
-
-        # Add checkboxes to the display column
-        self.display_column.addWidget(self.vf_name_checkbox)
-        self.display_column.addWidget(self.vo_name_checkbox)
-        self.display_column.addWidget(self.school_checkbox)
-        self.display_column.addWidget(self.info_checkbox)
-        self.display_column.addWidget(self.concentration_checkbox)
-        self.display_column.addWidget(self.ritual_checkbox)
-        self.display_column.addWidget(self.description_checkbox)
-        self.display_column.addWidget(self.source_checkbox)
-
-        # Filter button
-        self.filter_button = QPushButton("Filtrer")
-        self.filter_button.clicked.connect(self.apply_filters)
-        self.display_column.addWidget(self.filter_button)
-        filter_layout.addLayout(self.display_column)
-
-        self.display_column.setSpacing(0)
-        self.display_column.setContentsMargins(0, 0, 0, 0)
-
-        checkboxes_count = 8
-        checkbox_height = self.vf_name_checkbox.sizeHint().height()
-        self.class_filter.list.setMaximumHeight(checkboxes_count * checkbox_height + self.filter_button.sizeHint().height())
-        self.school_filter.list.setMaximumHeight(checkboxes_count * checkbox_height + self.filter_button.sizeHint().height())
-        self.source_filter.list.setMaximumHeight(checkboxes_count * checkbox_height + self.filter_button.sizeHint().height())
-
-        self.class_filter.list.setMaximumWidth(200)
-        self.school_filter.list.setMaximumWidth(200)
-        self.source_filter.list.setMaximumWidth(200)
-
-        save_filters_btn = QPushButton("Sauver le filtre")
-        filter_layout.addWidget(save_filters_btn)
-        save_filters_btn.clicked.connect(self.save_filters)
-
-        # Ajoute ce spacer à la fin du layout pour éviter que les éléments s'étendent :
-        filter_layout.addSpacerItem(
-            QSpacerItem(0, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        )
-
-        self.left_layout.addLayout(filter_layout)
+        self.filters_widget = SpellFilters(self.apply_filters, self.description_checkbox_event)
+        self.left_layout.addWidget(self.filters_widget)
 
         # ---- End of filters section ----
         # ---- Live filtering ----
@@ -280,7 +178,7 @@ class MainWindow(QMainWindow):
 
         self.layout.addWidget(spell_list_hide_btn)
 
-        self.load_filters()
+        self.filters_widget.load_filters()
 
         self.showMaximized()
 
@@ -297,34 +195,12 @@ class MainWindow(QMainWindow):
         spells = self.spell_models.get_spells()
         self.table.cellDoubleClicked.connect(self.table_spell_double_click)
 
-        # Filling the list of schools
-        self.school_filter.clear()
         self.schools = sorted(set(spell.get("école", "") for spell in spells))
-        for school in self.schools:
-            item = QListWidgetItem(school)
-            self.school_filter.addItem(item)
-            item.setSelected(True)
-        self.school_filter.adjustSize()
-
-        # Filling the list of sources
-        self.source_filter.clear()
         self.sources = sorted(set(spell.get("source", "") for spell in spells))
-        for source in self.sources:
-            item = QListWidgetItem(source)
-            self.source_filter.addItem(item)
-            item.setSelected(True)
-        self.source_filter.adjustSize()
-
-        # Filling the list of classes
-        self.class_filter.clear()
         self.classes = sorted(
             {cls for spell in spells for cls in spell.get("classes", [])}
         )
-        for class_name in self.classes:
-            item = QListWidgetItem(class_name)
-            self.class_filter.addItem(item)
-            item.setSelected(True)
-        self.class_filter.adjustSize()
+        self.filters_widget.load_filter_options(self.schools, self.sources, self.classes)
 
         self.apply_filters()
 
@@ -335,11 +211,7 @@ class MainWindow(QMainWindow):
         self.table.setSortingEnabled(False)
 
         # Filters
-        selected_classes = self.class_filter.get_selected_item_texts()
-        selected_sources = self.source_filter.get_selected_item_texts()
-        selected_schools = self.school_filter.get_selected_item_texts()
-        min_level = self.minlevel.value()
-        max_level = self.maxlevel.value()
+        selected_classes, selected_sources,selected_schools, min_level, max_level = self.filters_widget.get_filters()
         name_filter = self.name_filter.text().strip().lower()
 
         # Filtering
@@ -361,48 +233,20 @@ class MainWindow(QMainWindow):
                 and (
                     self.description_filter.text().strip().lower()
                     in spell.get("description_short", "").lower()
-                    if self.description_checkbox.isChecked()
+                    if self.filters_widget.description_checkbox.isChecked()
                     else True
                 )
             )
         ]
 
-        headers = [
-            "✔",
-            "Sort",
-            "VF" if self.vf_name_checkbox.isChecked() else None,
-            "VO" if self.vo_name_checkbox.isChecked() else None,
-            "Niv",
-            "École" if self.school_checkbox.isChecked() else None,
-            "Incantation" if self.info_checkbox.isChecked() else None,
-            "Portée" if self.info_checkbox.isChecked() else None,
-            "Composantes" if self.info_checkbox.isChecked() else None,
-            "Concentration" if self.concentration_checkbox.isChecked() else None,
-            "Rituel" if self.ritual_checkbox.isChecked() else None,
-            "Description" if self.description_checkbox.isChecked() else None,
-            "Source" if self.source_checkbox.isChecked() else None,
-        ]
+        headers = self.filters_widget.get_display_headers()
         headers = [header for header in headers if header is not None]
 
         self.table.setColumnCount(len(headers))
         self.table.setHorizontalHeaderLabels(headers)
 
         # Update table
-        cols = [
-            "checkbox",
-            "nom",
-            "nom_VF" if self.vf_name_checkbox.isChecked() else None,
-            "nom_VO" if self.vo_name_checkbox.isChecked() else None,
-            "niveau",
-            "école" if self.school_checkbox.isChecked() else None,
-            "temps_d'incantation" if self.info_checkbox.isChecked() else None,
-            "portée" if self.info_checkbox.isChecked() else None,
-            "composantes" if self.info_checkbox.isChecked() else None,
-            "concentration" if self.concentration_checkbox.isChecked() else None,
-            "rituel" if self.ritual_checkbox.isChecked() else None,
-            "description_short" if self.description_checkbox.isChecked() else None,
-            "source" if self.source_checkbox.isChecked() else None,
-        ]
+        cols = self.filters_widget.get_display_options()
         cols = [col for col in cols if col is not None]
         self.table.setRowCount(len(self.filtered_spells))
         for row, spell in enumerate(self.filtered_spells):
@@ -502,56 +346,6 @@ class MainWindow(QMainWindow):
             if self.table.item(row, 0).checkState() == Qt.CheckState.Checked:
                 selected_spells.append(self.filtered_spells[row])
         return selected_spells
-
-    def save_filters(self):
-        filters = {}
-        filters["selected_classes"] = self.class_filter.get_selected_item_texts()
-
-        filters["selected_sources"] = self.source_filter.get_selected_item_texts()
-        filters["selected_schools"] = self.school_filter.get_selected_item_texts()
-        filters["min_level"] = self.minlevel.value()
-        filters["max_level"] = self.maxlevel.value()
-
-        filters["vf_name"] = self.vf_name_checkbox.isChecked()
-        filters["vo_name"] = self.vo_name_checkbox.isChecked()
-        filters["school"] = self.school_checkbox.isChecked()
-        filters["info"] = self.info_checkbox.isChecked()
-        filters["concentration"] = self.concentration_checkbox.isChecked()
-        filters["rituel"] = self.ritual_checkbox.isChecked()
-        filters["description"] = self.description_checkbox.isChecked()
-        filters["source"] = self.source_checkbox.isChecked()
-
-        with open(
-            f"{os.getcwd().replace("\\", "/")}/data/filter_settings.json",
-            "w",
-            encoding="utf-8",
-        ) as f:
-            f.write(json.dumps(filters))
-
-    def load_filters(self):
-        filter_data_path = f"{os.getcwd().replace("\\","/")}/data/filter_settings.json"
-        if os.path.exists(filter_data_path):
-            with open(filter_data_path, "r", encoding="utf-8") as f:
-                filters = json.load(f)
-
-                self.class_filter.checkItems(filters["selected_classes"])
-                self.source_filter.checkItems(filters["selected_sources"])
-                self.school_filter.checkItems(filters["selected_schools"])
-
-                self.minlevel.setValue(filters["min_level"])
-                self.maxlevel.setValue(filters["max_level"])
-
-                for checkbox_name, checkbox in {
-                    "vf_name": self.vf_name_checkbox,
-                    "vo_name": self.vo_name_checkbox,
-                    "school": self.school_checkbox,
-                    "info": self.info_checkbox,
-                    "concentration": self.concentration_checkbox,
-                    "rituel": self.ritual_checkbox,
-                    "description": self.description_checkbox,
-                    "source": self.source_checkbox,
-                }.items():
-                    checkbox.setChecked(filters[checkbox_name])
 
     def export_html(self, spells):
         path, _ = QFileDialog.getSaveFileName(
