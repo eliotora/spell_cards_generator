@@ -25,6 +25,7 @@ from export.html_export import html_export
 from model.spell_model import SpellModels
 from profile_loader import load_profiles_from_folder
 from ui.spell_detail_window import SpellDetailWindow
+from ui.widgets.export_section import ExportSection
 from ui.widgets.spell_grimoire_widget import SpellGrimoireWidget
 from ui.widgets.multi_selection_list import MultiSelectionListWidget
 from ui.widgets.SpellList import SpellTable
@@ -49,80 +50,32 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         # Main layout
-        self.layout = QHBoxLayout()
+        layout = QHBoxLayout()
         self.central_widget.setLayout(self.layout)
 
         ##### Left part #####
         self.left_col = QWidget()
         self.left_layout = QVBoxLayout()
         self.left_col.setLayout(self.left_layout)
-        self.layout.addWidget(self.left_col)
+        layout.addWidget(self.left_col)
         self.filters_and_table = FilterableTable(self.details_windows)
         self.filters_widget = SpellFilters(self.apply_filters, self.description_checkbox_event)
         self.left_layout.addWidget(self.filters_widget)
         self.left_layout.addWidget(self.filters_and_table)
 
         self.load_spells()
-        self.load_profiles()
 
         # ==== Export section ====
-        export_options_layout = QHBoxLayout()
-        select_data_layout = QHBoxLayout()
-        select_data_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.select_everything_checkbox = QCheckBox("Tout sélectionner")
-        self.select_everything_checkbox.setChecked(False)
-        self.select_everything_checkbox.checkStateChanged.connect(
-            self.filters_and_table.toggle_select_all
-        )
-        self.print_vo_name_checkbox = QCheckBox("Imprimer le nom en VO")
-        self.print_source_checkbox = QCheckBox("Imprimer la source")
-        select_data_layout.addWidget(self.select_everything_checkbox)
-        select_data_layout.addWidget(self.print_vo_name_checkbox)
-        select_data_layout.addWidget(self.print_source_checkbox)
 
-        export_mode_layout = QHBoxLayout()
-        export_mode_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.export_mode_label = QLabel("Format:")
-        self.radio_rules = QRadioButton("Règles")
-        self.radio_grimoire = QRadioButton("Grimoire")
-        self.radio_cards = QRadioButton("Cartes")
-        self.radio_rules.setChecked(True)
-
-        self.format_group = QButtonGroup()
-        self.format_group.addButton(self.radio_rules, id=0)
-        self.format_group.addButton(self.radio_grimoire, id=1)
-        self.format_group.addButton(self.radio_cards, id=2)
-        export_mode_layout.addWidget(self.export_mode_label)
-        export_mode_layout.addWidget(self.radio_rules)
-        export_mode_layout.addWidget(self.radio_grimoire)
-        export_mode_layout.addWidget(self.radio_cards)
-
-        export_options_layout.addLayout(select_data_layout)
-        export_options_layout.addLayout(export_mode_layout)
+        self.export_section = ExportSection()
+        self.export_section.select_everything_checkbox.checkStateChanged.connect(self.filters_and_table.toggle_select_all)
+        self.export_section.export_html_btn.clicked.connect(self.export_selected_html)
+        self.left_layout.addWidget(self.export_section)
         self.filters_and_table.table.itemChanged.connect(self.update_selected_spell_count)
-
-        self.left_layout.addLayout(export_options_layout)
-
-        # Adding export buttons
-        export_buttons_layout = QHBoxLayout()
-        self.selected_spell_count_label = QLabel("Sorts sélectionnés: 0")
-
-        # Boutons d'export
-        export_pdf_btn = QPushButton("Exporter en PDF")
-        # export_pdf_btn.clicked.connect(self.export_pdf)
-        export_pdf_btn.setDisabled(True)
-
-        export_html_btn = QPushButton("Exporter en HTML")
-        export_html_btn.clicked.connect(self.export_selected_html)
-
-        export_buttons_layout.addWidget(self.selected_spell_count_label)
-        export_buttons_layout.addWidget(export_pdf_btn)
-        export_buttons_layout.addWidget(export_html_btn)
-        self.left_layout.addLayout(export_buttons_layout)
 
         ##### Right part #####
         self.spell_grimoire = SpellGrimoireWidget(self.details_windows, self)
-        self.layout.addWidget(self.spell_grimoire)
+        layout.addWidget(self.spell_grimoire)
         self.spell_grimoire.html_export_btn.clicked.connect(self.export_spell_list_html)
         self.spell_grimoire.hide()
 
@@ -143,20 +96,11 @@ class MainWindow(QMainWindow):
         spell_list_hide_btn.setFixedWidth(20)
         spell_list_hide_btn.setText(">")
 
-        self.layout.addWidget(spell_list_hide_btn)
+        layout.addWidget(spell_list_hide_btn)
 
         self.filters_widget.load_filters()
 
         self.showMaximized()
-
-    def load_profiles(self):
-        self.profiles = load_profiles_from_folder("data")
-
-    def get_profile(self, profile_name):
-        for p in self.profiles:
-            if p["nom"] == profile_name:
-                return p
-        return None
 
     def load_spells(self):
         spells = self.spell_models.get_spells()
@@ -182,10 +126,6 @@ class MainWindow(QMainWindow):
         cols = [col for col in cols if col is not None]
         self.filters_and_table.display_spells(headers, cols)
 
-    def spell_list_double_click(self, item):
-        spell_name = item.text()
-        self.show_spell_details(self.spell_models.get_spell(spell_name))
-
     def description_checkbox_event(self, state):
         self.filters_and_table.toggle_description_filtering(state)
         self.apply_filters()
@@ -195,14 +135,8 @@ class MainWindow(QMainWindow):
             return
 
         # Update the count of selected spells
-        selected_count = self.filters_and_table.get_selected_spell_count(item)
-
-        self.selected_spell_count_label.setText(f"Sorts sélectionnés: {selected_count}")
-        self.select_everything_checkbox.blockSignals(True)
-        self.select_everything_checkbox.setChecked(
-            selected_count == self.filters_and_table.table.rowCount()
-        )
-        self.select_everything_checkbox.blockSignals(False)
+        selected_count, all = self.filters_and_table.get_selected_spell_count(item)
+        self.export_section.change_selected_spell_count_label(selected_count, all)
 
     def export_html(self, spells):
         path, _ = QFileDialog.getSaveFileName(
@@ -214,15 +148,7 @@ class MainWindow(QMainWindow):
         if not path:
             return  # L'utilisateur a annulé
 
-        if self.radio_rules.isChecked():
-            mode = "rules"
-        elif self.radio_grimoire.isChecked():
-            mode = "grimoire"
-        elif self.radio_cards.isChecked():
-            mode = "cards"
-
-        show_VO_name = self.print_vo_name_checkbox.isChecked()
-        show_source = self.print_source_checkbox.isChecked()
+        mode, show_VO_name, show_source = self.export_section.get_export_options()
 
         if spells and path:
             html_export(

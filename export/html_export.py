@@ -1,6 +1,10 @@
 from jinja2 import Template
 from os import getcwd
 
+RULES = 1
+GRIMOIRE = 2
+CARDS = 3
+
 spell_template_rules = """
 <html>
 <head>
@@ -126,7 +130,7 @@ spell_template_cards = """
 </body></html>
 """
 
-def html_export(spells, path, mode='rules', show_source=False, show_VO_name=False):
+def html_export(spells, path, mode=RULES, show_source=False, show_VO_name=False):
     if not spells:
         return
 
@@ -141,12 +145,12 @@ def html_export(spells, path, mode='rules', show_source=False, show_VO_name=Fals
         processed_spells.append(processed)
     spells = processed_spells
 
-    if mode == 'rules':
+    if mode == RULES:
         template = Template(spell_template_rules)
-    elif mode == 'grimoire':
+    elif mode == GRIMOIRE:
         spells = sort_by_level(spells)
         template = Template(spell_template_grimoire)
-    elif mode == 'cards':
+    elif mode == CARDS:
         spells = determine_card_size(spells)
         template = Template(spell_template_cards)
 

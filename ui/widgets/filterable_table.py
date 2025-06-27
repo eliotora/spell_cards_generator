@@ -119,7 +119,7 @@ class FilterableTable(QWidget):
             if check_item and check_item.checkState() == Qt.CheckState.Checked:
                 selected_count += 1
 
-        return selected_count
+        return selected_count, selected_count == self.table.rowCount()
 
     def get_selected_spells(self):
         selected_spells = []
