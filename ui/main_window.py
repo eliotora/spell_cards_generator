@@ -29,6 +29,7 @@ from ui.widgets.spell_grimoire_widget import SpellGrimoireWidget
 from ui.widgets.multi_selection_list import MultiSelectionListWidget
 from ui.widgets.SpellList import SpellTable
 from ui.widgets.spell_filters import SpellFilters
+from ui.widgets.filterable_table import FilterableTable
 from utils.paths import get_export_dir
 import os
 import json
@@ -56,37 +57,10 @@ class MainWindow(QMainWindow):
         self.left_layout = QVBoxLayout()
         self.left_col.setLayout(self.left_layout)
         self.layout.addWidget(self.left_col)
+        self.filters_and_table = FilterableTable(self.details_windows)
         self.filters_widget = SpellFilters(self.apply_filters, self.description_checkbox_event)
         self.left_layout.addWidget(self.filters_widget)
-
-        # ---- End of filters section ----
-        # ---- Live filtering ----
-        filter_layout2 = QHBoxLayout()
-        self.name_filter = QLineEdit()
-        self.name_filter.setPlaceholderText("sort")
-        self.name_filter.textChanged.connect(self.live_filter)
-        self.name_filter.setClearButtonEnabled(True)
-        self.name_filter.setAcceptDrops(False)
-        filter_layout2.addWidget(self.name_filter)
-
-        self.description_filter = QLineEdit()
-        self.description_filter.setPlaceholderText("description")
-        self.description_filter.textChanged.connect(self.live_filter)
-        self.description_filter.setClearButtonEnabled(True)
-        self.description_filter.setAcceptDrops(False)
-        self.description_filter.setVisible(False)  # Initially hidden
-        filter_layout2.addWidget(self.description_filter)
-
-        self.left_layout.addLayout(filter_layout2)
-
-        # Table des sorts
-        self.table = SpellTable()
-        self.table.verticalHeader().setVisible(False)
-        self.table.setDragEnabled(True)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
-        self.table.setSortingEnabled(True)
-        self.left_layout.addWidget(self.table)
+        self.left_layout.addWidget(self.filters_and_table)
 
         self.load_spells()
         self.load_profiles()
@@ -98,14 +72,7 @@ class MainWindow(QMainWindow):
         self.select_everything_checkbox = QCheckBox("Tout sélectionner")
         self.select_everything_checkbox.setChecked(False)
         self.select_everything_checkbox.checkStateChanged.connect(
-            lambda state: [
-                self.table.item(row, 0).setCheckState(
-                    Qt.CheckState.Checked
-                    if state == Qt.CheckState.Checked
-                    else Qt.CheckState.Unchecked
-                )
-                for row in range(self.table.rowCount())
-            ]
+            self.filters_and_table.toggle_select_all
         )
         self.print_vo_name_checkbox = QCheckBox("Imprimer le nom en VO")
         self.print_source_checkbox = QCheckBox("Imprimer la source")
@@ -132,7 +99,7 @@ class MainWindow(QMainWindow):
 
         export_options_layout.addLayout(select_data_layout)
         export_options_layout.addLayout(export_mode_layout)
-        self.table.itemChanged.connect(self.update_selected_spell_count)
+        self.filters_and_table.table.itemChanged.connect(self.update_selected_spell_count)
 
         self.left_layout.addLayout(export_options_layout)
 
@@ -193,7 +160,6 @@ class MainWindow(QMainWindow):
 
     def load_spells(self):
         spells = self.spell_models.get_spells()
-        self.table.cellDoubleClicked.connect(self.table_spell_double_click)
 
         self.schools = sorted(set(spell.get("école", "") for spell in spells))
         self.sources = sorted(set(spell.get("source", "") for spell in spells))
@@ -205,120 +171,23 @@ class MainWindow(QMainWindow):
         self.apply_filters()
 
     def apply_filters(self):
-        spells = self.spell_models.get_spells()
-
-        # Reset sorts
-        self.table.setSortingEnabled(False)
-
         # Filters
         selected_classes, selected_sources,selected_schools, min_level, max_level = self.filters_widget.get_filters()
-        name_filter = self.name_filter.text().strip().lower()
-
-        # Filtering
-        self.filtered_spells = [
-            spell
-            for spell in spells
-            if (
-                any(cls in selected_classes for cls in spell.get("classes", []))
-                and spell.get("source") in selected_sources
-                and spell.get("école") in selected_schools
-                and min_level <= spell.get("niveau", 0) <= max_level
-                and (
-                    name_filter in spell.get("nom", "").lower()
-                    or (
-                        spell.get("nom_VF", "") is not None
-                        and name_filter in spell.get("nom_VF", "").lower()
-                    )
-                )
-                and (
-                    self.description_filter.text().strip().lower()
-                    in spell.get("description_short", "").lower()
-                    if self.filters_widget.description_checkbox.isChecked()
-                    else True
-                )
-            )
-        ]
-
-        headers = self.filters_widget.get_display_headers()
-        headers = [header for header in headers if header is not None]
-
-        self.table.setColumnCount(len(headers))
-        self.table.setHorizontalHeaderLabels(headers)
+        self.filters_and_table.apply_filters(selected_classes, selected_sources, selected_schools, min_level, max_level)
 
         # Update table
+        headers = self.filters_widget.get_display_headers()
+        headers = [header for header in headers if header is not None]
         cols = self.filters_widget.get_display_options()
         cols = [col for col in cols if col is not None]
-        self.table.setRowCount(len(self.filtered_spells))
-        for row, spell in enumerate(self.filtered_spells):
-            for col, key in enumerate(cols):
-                if key == "checkbox":
-                    item = QTableWidgetItem()
-                    item.setFlags(
-                        Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled
-                    )
-                    item.setCheckState(Qt.CheckState.Unchecked)
-                    self.table.setItem(row, col, item)
-                    continue
-                value = spell.get(key, "")
-                if isinstance(value, list):
-                    values = [v.split("(")[0].strip() for v in value if v]
-                    if len(values) == 4:
-                        print(value, values)
-                    value = ", ".join(values)
-                elif isinstance(value, bool):
-                    value = "Oui" if value else "Non"
-                elif key == "temps_d'incantation":
-                    value = spell.get("temps_d'incantation", "").split(",")[0].strip()
-                if value is None:
-                    value = ""
-                self.table.setItem(row, col, QTableWidgetItem(str(value)))
-        self.table.resizeColumnsToContents()
-        self.table.setSortingEnabled(True)
-
-    def live_filter(self):
-        name_filter = self.name_filter.text().strip().lower()
-        description_filter = self.description_filter.text().strip().lower()
-
-        # Apply filters to the spells
-        for row in range(self.table.rowCount()):
-            spell = self.filtered_spells[row]
-            matches_name = name_filter in spell.get("nom", "").lower() or (
-                spell.get("nom_VF", "") is not None
-                and name_filter in spell.get("nom_VF", "").lower()
-            )
-            matches_description = (
-                description_filter in spell.get("description_short", "").lower()
-            )
-
-            # Check if the spell matches the filters
-            if matches_name and (
-                not self.description_checkbox.isChecked() or matches_description
-            ):
-                self.table.showRow(row)
-            else:
-                self.table.hideRow(row)
-
-    def show_spell_details(self, spell):
-        window = SpellDetailWindow(spell)
-        self.details_windows[spell["nom"]] = window
-        window.main_controler = self
-        window.show()
-
-    def table_spell_double_click(self, row, column):
-        spell_name = self.table.item(row, 1).text()
-        spell = self.spell_models.get_spell(spell_name)
-        self.show_spell_details(spell)
+        self.filters_and_table.display_spells(headers, cols)
 
     def spell_list_double_click(self, item):
         spell_name = item.text()
         self.show_spell_details(self.spell_models.get_spell(spell_name))
 
     def description_checkbox_event(self, state):
-        if state == Qt.CheckState.Checked:
-            self.description_filter.setVisible(True)
-        else:
-            self.description_filter.setVisible(False)
-            self.description_filter.clear()
+        self.filters_and_table.toggle_description_filtering(state)
         self.apply_filters()
 
     def update_selected_spell_count(self, item):
@@ -326,26 +195,14 @@ class MainWindow(QMainWindow):
             return
 
         # Update the count of selected spells
-
-        selected_count = 0
-        for row in range(self.table.rowCount()):
-            check_item = self.table.item(row, 0)
-            if check_item and check_item.checkState() == Qt.CheckState.Checked:
-                selected_count += 1
+        selected_count = self.filters_and_table.get_selected_spell_count(item)
 
         self.selected_spell_count_label.setText(f"Sorts sélectionnés: {selected_count}")
         self.select_everything_checkbox.blockSignals(True)
         self.select_everything_checkbox.setChecked(
-            selected_count == self.table.rowCount()
+            selected_count == self.filters_and_table.table.rowCount()
         )
         self.select_everything_checkbox.blockSignals(False)
-
-    def get_selected_spells(self):
-        selected_spells = []
-        for row in range(self.table.rowCount()):
-            if self.table.item(row, 0).checkState() == Qt.CheckState.Checked:
-                selected_spells.append(self.filtered_spells[row])
-        return selected_spells
 
     def export_html(self, spells):
         path, _ = QFileDialog.getSaveFileName(
@@ -378,7 +235,7 @@ class MainWindow(QMainWindow):
             )
 
     def export_selected_html(self):
-        selected_spells = self.get_selected_spells()
+        selected_spells = self.filters_and_table.get_selected_spells()
         if not selected_spells:
             QMessageBox.warning(
                 self,

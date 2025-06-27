@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
 from ui.profile_detail_window import Profile_detail_window
+from profile_loader import load_profiles_from_folder
 import re
 
 
@@ -160,7 +161,12 @@ class SpellDetailWindow(QWidget):
         if path[0] == "profile":
             profile_name = path[1]
             if self.main_controler is not None:
-                p = self.main_controler.get_profile(profile_name)
+
+                profiles = load_profiles_from_folder("data")
+                p = None
+                for p in profiles:
+                    if p["nom"] == profile_name:
+                        break
                 window = Profile_detail_window(p)
                 self.profile_windows[p["nom"]] = window
                 window.show()
