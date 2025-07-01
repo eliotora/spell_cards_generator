@@ -22,10 +22,15 @@ class AideddNavigator():
         self.driver.get(url)
 
     def accept_cookies(self):
+        sleep(3)
         try:
             self.driver.find_element(By.ID, "cmpwelcomebtnyes").click()
+
         except:
-            print(f"Could not accept cookies")
+            try:
+                self.driver.find_element(By.ID, "cmpbntyestxt").click()
+            except:
+                print(f"Could not accept cookies")
 
     def multiple_select(self, checkbox_id: str, select_id: str, options: list[str]=None):
         checkbox = self.driver.find_element(By.ID, checkbox_id)
@@ -53,7 +58,7 @@ class AideddNavigator():
         select.select_by_value(str(level))  # Select the desired level by value
         # select.find_element(By.XPATH, f'//option[@value="{level}"]').selected = "selected"  # Select the desired level
 
-    def filter_by(self, classes:list[str]=None, schools:list[str]=None, level_min: int = 0, level_max: int = 9, sources:list[str]=["Player's Handbook"]):
+    def spell_filter_by(self, classes:list[str]=None, schools:list[str]=None, level_min: int = 0, level_max: int = 9, sources:list[str]=["Player's Handbook"]):
         # Select classes
         self.multiple_select("selectAllF1", "FormF1", classes)
         sleep(5)
@@ -64,7 +69,7 @@ class AideddNavigator():
         self.select_level(select_name="nivMax", level=level_max)
         # Select sources
         self.multiple_select("selectAllS", "FormSource", sources)
-    
+
         tasha_list = self.driver.find_element(By.ID, "opt_tcoe")  # Select Tasha's Cauldron of Everything
         if not tasha_list.is_selected():
             tasha_list.click()
@@ -79,7 +84,21 @@ class AideddNavigator():
         # Click on the filter button
         self.driver.find_element(By.NAME, "filtrer").click()
 
-    def get_all_lines(self):
+    def feat_filter_by(self, sources:list[str]=["Player's Handbook"]):
+        # Select sources
+        self.multiple_select("selectAllS", "FormSource", sources)
+
+        # Select all display options
+        coche_group = self.driver.find_element(By.CLASS_NAME, "coche")
+        input_list = coche_group.find_elements(By.TAG_NAME, "input")
+        for input in input_list:
+            if not input.is_selected():
+                input.click()
+
+        # Click on the filter button
+        self.driver.find_element(By.NAME, "filtrer").click()
+
+    def spell_get_all_lines(self):
         table = self.driver.find_element(By.ID, "liste")
         rows = table.find_elements(By.TAG_NAME, "tr")
         spells = []
@@ -95,6 +114,23 @@ class AideddNavigator():
                 spells.append(spell)
         print(f"Found {len(spells)} spells.")
         return spells
+
+    def feat_get_all_lines(self):
+        table = self.driver.find_element(By.ID, "liste")
+        rows = table.find_elements(By.TAG_NAME, "tr")
+        feats = []
+        for row in rows:
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if cells:
+                feat = {
+                    "lien": cells[1].find_element(By.TAG_NAME, "a").get_attribute("href"),
+                    "nom": cells[1].text,
+                    "description_short": cells[5].text,
+                    # "source": cells[12].text
+                }
+                feats.append(feat)
+        print(f"Found {len(feats)} feats.")
+        return feats
 
     def get_spell_details(self, spell, spell_url: str):
         self.driver.get(spell_url)
@@ -117,7 +153,7 @@ class AideddNavigator():
         if "(" in composantes_text:
             composantes = composantes_text.split(" (")[0].split(", ")
             composantes[-1] = " (".join([composantes[-1], composantes_text.split(" (")[1]])
-        else: 
+        else:
             composantes = composantes_text.split(", ")
         spell["composantes"] = composantes
         spell["durée"] = content.find_element(By.CLASS_NAME, "d").text.split(": ")[1]
@@ -126,8 +162,26 @@ class AideddNavigator():
         spell["description"] = description.split("<strong><em>Aux niveaux supérieurs</em></strong>. ")[0].strip()
         spell["à_niveau_supérieur"] = description.split("<strong><em>Aux niveaux supérieurs</em></strong>. ")[1].strip() if "<strong><em>Aux niveaux supérieurs</em></strong>. " in description else ""
 
+    def get_feat_details(self, feat, feat_url: str):
+        self.driver.get(feat_url)
+        sleep(2)
+        content = self.driver.find_element(By.CLASS_NAME, "col1")
+        trad = content.find_element(By.CLASS_NAME, "trad")
 
-def scrap_source(source:str, navigator: AideddNavigator):
+        feat["nom_vo"] = trad.find_element(By.TAG_NAME, "a").text
+        if len(trad.text.split("[")) > 2:
+            feat["nom_vf"] = trad.text.split("[")[2].split("]")[0].strip()
+        else:
+            feat["nom_vf"] = None
+        try:
+            prerequisite = content.find_element(By.CLASS_NAME, "prerequis").text
+            feat["prérequis"] = prerequisite.split(" : ")[1]
+        except:
+            feat["prérequis"] = ""
+        description = content.find_element(By.CLASS_NAME, "description").get_attribute("innerHTML")
+        feat["description"] = description
+
+def spells_scrap_source(source:str, navigator: AideddNavigator):
     """
     Scraps the spells from the given source.
     :param source: The source to scrap.
@@ -139,18 +193,18 @@ def scrap_source(source:str, navigator: AideddNavigator):
     for classe in ["Artificier", "Barde", "Clerc", "Druide", "Ensorceleur", "Magicien", "Occultiste", "Paladin", "Rôdeur"]:
         spells = scrap_class_spell_list(classe, source, navigator)
         if spells:
-            write_spell_list_to_json(classe, spells, f"data/{source}/spell_lists/")
+            write_spell_list_to_json(classe, spells, f"data_imports/{source}/spell_lists/")
             print(f"Spells for {classe} from {source} written to JSON.")
         else:
             print(f"No spells found for {classe} in {source}.")
 
     spells = scrap_spells_from_source(source, navigator)
     if spells:
-        write_spells_to_json(spells, f"data/{source}/spells/")
+        write_spells_to_json(spells, f"data_imports/{source}/spells/")
         print(f"All spells from {source} written to JSON.")
     else:
         print(f"No spells found in {source}.")
-    
+
 def scrap_class_spell_list(classe:str, source:str, navigator):
     """
     Scraps the spells for a given class and source.
@@ -186,10 +240,10 @@ def scrap_spells_from_source(source:str, navigator):
     )
     sleep(1)
     spells = navigator.get_all_lines()
-    
+
     for spell in spells:
         navigator.get_spell_details(spell, spell["lien"])
-    
+
     return spells
 
 def write_spells_to_json(spells:list, path:str):
@@ -200,7 +254,7 @@ def write_spells_to_json(spells:list, path:str):
     """
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
-    
+
     print(f"Writing {len(spells)} spells to JSON in {path}")
 
     for spell in spells:
@@ -219,7 +273,7 @@ def write_spell_list_to_json(classe:str, spells:list, path:str):
     """
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
-    
+
     data = {
         "classe": classe,
         "sorts": [
@@ -233,6 +287,59 @@ def write_spell_list_to_json(classe:str, spells:list, path:str):
     with open(class_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
+
+def feat_scrap_source(source:str, navigator: AideddNavigator):
+    """
+    Scraps the feats from the given source.
+    :param source: The source to scrap.
+    :param driver: The webdriver to use.
+    """
+    navigator.driver.get("https://www.aidedd.org/dnd-filters/dons.php")
+    navigator.accept_cookies()
+
+    feats = scrap_feats_from_source(source, navigator)
+    if feats:
+        write_feats_to_json(feats, f"data_imports/{source}/feats/")
+        print(f"All feats from {source} written to JSON.")
+    else:
+        print(f"No feats found in {source}.")
+
+def scrap_feats_from_source(source:str, navigator:AideddNavigator):
+    """
+    Scraps all feats from a given source.
+    :param source: The source to scrap.
+    :param navigator: The navigator to use.
+    :return: A list of feats.
+    """
+    navigator.feat_filter_by(
+        sources=[source]
+    )
+    sleep(1)
+    feats = navigator.feat_get_all_lines()
+
+    for feat in feats:
+        navigator.get_feat_details(feat, feat["lien"])
+
+    return feats
+
+def write_feats_to_json(feats:list, path:str):
+    """
+    Writes the feats to a JSON file.
+    :param feats: The list of feats to write.
+    :param path: The path to the JSON file.
+    """
+    if not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+
+    print(f"Writing {len(feats)} feats to JSON in {path}")
+
+    for feat in feats:
+        feat_to_write = {k: v for k, v in feat.items() if k not in ["lien"]}
+        feat_name = feat_to_write["nom"].replace(" ", "_").replace("/", "_")
+        feat_path = os.path.join(path, f"{feat_name}.json")
+        with open(feat_path, 'w', encoding='utf-8') as f:
+            json.dump(feat_to_write, f, ensure_ascii=False, indent=4)
+
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     options = Options()
@@ -244,12 +351,12 @@ if __name__ == "__main__":
 
     navigator = AideddNavigator(driver)
 
-    # scrap_source("Xanathar´s Guide to Everything", navigator)
-    scrap_source("Tasha´s Cauldron of Everything", navigator)
-    # scrap_source("Fizban´s Treasury of Dragons", navigator)
-    # scrap_source("Settings", navigator)
-    # scrap_source("Extra (divers)", navigator)
+    # feat_scrap_source("Player´s Handbook", navigator)
+    feat_scrap_source("Xanathar´s Guide to Everything", navigator)
+    feat_scrap_source("Tasha´s Cauldron of Everything", navigator)
+    # feat_scrap_source("Fizban´s Treasury of Dragons", navigator)
+    # feat_scrap_source("Settings", navigator)
+    # feat_scrap_source("Extra (divers)", navigator)
     driver.quit()
-    exit() 
+    exit()
 
-    

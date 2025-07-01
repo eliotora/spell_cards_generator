@@ -15,7 +15,7 @@ from ui.widgets.multi_selection_list import MultiSelectionListWidget
 import os, json
 
 class SpellFilters(QWidget):
-    def __init__(self, apply_filters, description_checkbox_event):
+    def __init__(self, apply_filters, description_checkbox_event, display_checkbox_event):
         super().__init__()
 
         layout = QHBoxLayout()
@@ -50,6 +50,7 @@ class SpellFilters(QWidget):
         self.source_filter = MultiSelectionListWidget("Sources")
         layout.addWidget(self.source_filter)
 
+        # --- Display options ---
         self.display_column = QVBoxLayout()
         self.display_column.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.display_column.addWidget(QLabel("Affichage:"))
@@ -62,23 +63,35 @@ class SpellFilters(QWidget):
         self.description_checkbox = QCheckBox("Description")
         self.source_checkbox = QCheckBox("Source")
 
-        # Initial state of checkboxes
-        self.school_checkbox.setChecked(True)
-        self.info_checkbox.setChecked(True)
-        self.concentration_checkbox.setChecked(True)
-        self.ritual_checkbox.setChecked(True)
-
         # Signal connections for checkboxes
-        self.vf_name_checkbox.checkStateChanged.connect(apply_filters)
-        self.vo_name_checkbox.checkStateChanged.connect(apply_filters)
-        self.school_checkbox.checkStateChanged.connect(apply_filters)
-        self.info_checkbox.checkStateChanged.connect(apply_filters)
-        self.concentration_checkbox.checkStateChanged.connect(apply_filters)
-        self.ritual_checkbox.checkStateChanged.connect(apply_filters)
+        self.vf_name_checkbox.checkStateChanged.connect(
+            lambda state: display_checkbox_event(2, state == Qt.CheckState.Unchecked)
+        )
+        self.vo_name_checkbox.checkStateChanged.connect(
+            lambda state: display_checkbox_event(3, state == Qt.CheckState.Unchecked)
+        )
+        self.school_checkbox.checkStateChanged.connect(
+            lambda state: display_checkbox_event(5, state == Qt.CheckState.Unchecked)
+        )
+        self.info_checkbox.checkStateChanged.connect(
+            lambda state: [
+                display_checkbox_event(6, state == Qt.CheckState.Unchecked),
+                display_checkbox_event(7, state == Qt.CheckState.Unchecked),
+                display_checkbox_event(8, state == Qt.CheckState.Unchecked)
+            ]
+        )
+        self.concentration_checkbox.checkStateChanged.connect(
+            lambda state: display_checkbox_event(9, state == Qt.CheckState.Unchecked)
+        )
+        self.ritual_checkbox.checkStateChanged.connect(
+            lambda state: display_checkbox_event(10, state == Qt.CheckState.Unchecked)
+        )
         self.description_checkbox.checkStateChanged.connect(
             description_checkbox_event
         )
-        self.source_checkbox.checkStateChanged.connect(apply_filters)
+        self.source_checkbox.checkStateChanged.connect(
+            lambda state: display_checkbox_event(12, state == Qt.CheckState.Unchecked)
+        )
 
         # Add checkboxes to the display column
         self.display_column.addWidget(self.vf_name_checkbox)
@@ -89,6 +102,12 @@ class SpellFilters(QWidget):
         self.display_column.addWidget(self.ritual_checkbox)
         self.display_column.addWidget(self.description_checkbox)
         self.display_column.addWidget(self.source_checkbox)
+
+        # Initial state of checkboxes
+        self.school_checkbox.setChecked(True)
+        self.info_checkbox.setChecked(True)
+        self.concentration_checkbox.setChecked(True)
+        self.ritual_checkbox.setChecked(True)
 
         # Filter button
         self.filter_button = QPushButton("Filtrer")
@@ -171,34 +190,34 @@ class SpellFilters(QWidget):
         return [
             "✔",
             "Sort",
-            "VF" if self.vf_name_checkbox.isChecked() else None,
-            "VO" if self.vo_name_checkbox.isChecked() else None,
+            "VF",
+            "VO",
             "Niv",
-            "École" if self.school_checkbox.isChecked() else None,
-            "Incantation" if self.info_checkbox.isChecked() else None,
-            "Portée" if self.info_checkbox.isChecked() else None,
-            "Composantes" if self.info_checkbox.isChecked() else None,
-            "Concentration" if self.concentration_checkbox.isChecked() else None,
-            "Rituel" if self.ritual_checkbox.isChecked() else None,
-            "Description" if self.description_checkbox.isChecked() else None,
-            "Source" if self.source_checkbox.isChecked() else None
+            "École",
+            "Incantation",
+            "Portée",
+            "Composantes",
+            "Concentration",
+            "Rituel",
+            "Description",
+            "Source"
         ]
 
     def get_display_options(self):
         return [
             "checkbox",
             "nom",
-            "nom_VF" if self.vf_name_checkbox.isChecked() else None,
-            "nom_VO" if self.vo_name_checkbox.isChecked() else None,
+            "nom_VF",
+            "nom_VO",
             "niveau",
-            "école" if self.school_checkbox.isChecked() else None,
-            "temps_d'incantation" if self.info_checkbox.isChecked() else None,
-            "portée" if self.info_checkbox.isChecked() else None,
-            "composantes" if self.info_checkbox.isChecked() else None,
-            "concentration" if self.concentration_checkbox.isChecked() else None,
-            "rituel" if self.ritual_checkbox.isChecked() else None,
-            "description_short" if self.description_checkbox.isChecked() else None,
-            "source" if self.source_checkbox.isChecked() else None,
+            "école",
+            "temps_d'incantation",
+            "portée",
+            "composantes",
+            "concentration",
+            "rituel",
+            "description_short",
+            "source"
         ]
 
     def load_filters(self):
@@ -225,3 +244,16 @@ class SpellFilters(QWidget):
                     "source": self.source_checkbox,
                 }.items():
                     checkbox.setChecked(filters[checkbox_name])
+
+    def fire_checked_signals(self):
+        for checkbox in [
+            self.vf_name_checkbox,
+            self.vo_name_checkbox,
+            self.school_checkbox,
+            self.info_checkbox,
+            self.concentration_checkbox,
+            self.ritual_checkbox,
+            self.description_checkbox,
+            self.source_checkbox
+        ]:
+            checkbox.checkStateChanged.emit(checkbox.checkState())
