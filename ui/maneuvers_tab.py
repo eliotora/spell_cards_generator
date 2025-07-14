@@ -1,12 +1,11 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QFileDialog
-from ui.widgets.featsTab import feat_filters, feat_table, feat_export
-from model.feat_model import FeatModels
+from ui.widgets.maneuversTab import maneuvers_filters, maneuvers_table, maneuvers_export
+from model.maneuvers_model import ManeuversModel
 import os
 from utils.paths import get_export_dir
-from export.html_export import html_export, FEAT
+from export.html_export import html_export, MANEUVER
 
-
-class FeatTabContent(QWidget):
+class ManeuversTabContent(QWidget):
     details_windows = {}
     default_export_dir = os.path.join(os.getcwd(), "output")
 
@@ -15,27 +14,23 @@ class FeatTabContent(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        self.feat_models = FeatModels()
+        self.maneuvers_model = ManeuversModel()
 
         # === Filters ===
-        self.filters_and_table = feat_table.FeatTable(self.details_windows)
-        self.filters_widget = feat_filters.FeatFilters(self.apply_filters, self.description_checkbox_event, self.filters_and_table.toggle_column_display)
+        self.filters_and_table = maneuvers_table.ManeuverTable(self.details_windows)
+        self.filters_widget = maneuvers_filters.ManeuverFilters(self.apply_filters, self.description_checkbox_event, self.filters_and_table.toggle_column_display)
         layout.addWidget(self.filters_widget)
         layout.addWidget(self.filters_and_table)
 
-        self.load_feats()
+        self.load_maneuvers()
         self.update_display()
 
-
-        # === Table ===
-
         # === Export ===
-        self.export_section = feat_export.FeatExport()
+        self.export_section = maneuvers_export.ManeuverExport()
         self.export_section.select_everything_checkbox.checkStateChanged.connect(self.filters_and_table.toggle_select_all)
         self.export_section.export_html_btn.clicked.connect(self.export_selected_html)
         layout.addWidget(self.export_section)
-        self.filters_and_table.table.itemChanged.connect(self.update_selected_feat_count)
-
+        self.filters_and_table.table.itemChanged.connect(self.update_selected_maneuver_count)
 
     def apply_filters(self):
         # Filters
@@ -45,10 +40,9 @@ class FeatTabContent(QWidget):
         # Update table
         headers = [
             "✔",
-            "Don",
+            "Manoeuvre",
             "VF",
             "VO",
-            "Prérequis",
             "Description",
             "Source"
         ]
@@ -58,21 +52,20 @@ class FeatTabContent(QWidget):
             "nom",
             "nom_VF",
             "nom_VO",
-            "prérequis",
             "description_short",
             "source"
         ]
         cols = [col for col in cols if col is not None]
-        self.filters_and_table.display_feats(headers, cols)
+        self.filters_and_table.display_maneuvers(headers, cols)
 
     def description_checkbox_event(self, state):
         self.filters_and_table.toggle_description_filtering(state)
         self.apply_filters()
 
-    def load_feats(self):
-        feats = self.feat_models.get_feats()
+    def load_maneuvers(self):
+        maneuvers = self.maneuvers_model.get_maneuvers()
 
-        self.sources = sorted(set(feat.get("source", "") for feat in feats))
+        self.sources = sorted(set(maneuver.get("source", "") for maneuver in maneuvers))
         self.filters_widget.load_filter_options(self.sources)
 
         self.apply_filters()
@@ -80,44 +73,36 @@ class FeatTabContent(QWidget):
     def update_display(self):
         self.filters_widget.fire_checked_signals()
 
-    def update_selected_feat_count(self, item):
+    def update_selected_maneuver_count(self, item):
         if item.column() != 0:
             return
-
-        # Update the count of selected feats
-        selected_count, all = self.filters_and_table.get_selected_feat_count(item)
-        self.export_section.change_selected_feat_count_label(selected_count, all)
+        selected_count, all = self.filters_and_table.get_selected_maneuver_count(item)
+        self.export_section.update_selected_count(selected_count, all)
 
     def export_selected_html(self):
-        selected_feats = self.filters_and_table.get_selected_feats()
-        if not selected_feats:
-            QMessageBox.warning(
-                self,
-                "Aucun don sélectionné",
-                "Veuillez sélectionner au moins un don à exporter.",
-            )
+        selected_maneuvers = self.filters_and_table.get_selected_maneuvers()
+        if not selected_maneuvers:
+            QMessageBox.warning(self, "Aucun résultat", "Veuillez sélectionner au moins une manoeuvre à exporter.")
             return
 
-        self.export_html(selected_feats)
+        self.export_html(selected_maneuvers)
 
-    def export_html(self, feats):
+    def export_html(self, maneuvers):
         path, _ = QFileDialog.getSaveFileName(
             self,
             "Enregistrer HTML",
-            str(get_export_dir()),
-            "Fichier HTML (*.html)",
+            get_export_dir(self.default_export_dir),
+            "HTML Files (*.html);;All Files (*)"
         )
-        if not path:
-            return  # L'utilisateur a annulé
 
         mode, show_VO_name, show_source = self.export_section.get_export_options()
 
-        if feats and path:
+        if maneuvers and path:
             html_export(
-                feats, path, mode, show_VO_name=show_VO_name, show_source=show_source, data_type=FEAT
+                maneuvers, path, mode, show_VO_name=show_VO_name, show_source=show_source, data_type=MANEUVER
             )
             QMessageBox.information(
                 self,
                 "Exportation réussie",
-                f"{len(feats)} sorts ont été exportés avec succès en HTML.",
+                f"{len(maneuvers)} manoeuvres ont été exportées avec succès en HTML."
             )

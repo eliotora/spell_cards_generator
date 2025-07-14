@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QAbstractTableModel, Qt
-from spell_loader import load_spells_from_folder
+from model.loaders.spell_loader import load_spells_from_folder
 from copy import deepcopy
 import locale
 
@@ -13,12 +13,14 @@ class SpellModels:
             cls.instance = super(SpellModels, cls).__new__(cls)
         return cls.instance
 
+    @classmethod
     def get_spell(cls, name:str):
         for spell in cls.spells:
             if spell["nom"].lower() == name.lower():
                 return deepcopy(spell)
         return None
 
+    @classmethod
     def get_spells(cls):
         return deepcopy(cls.spells)
 

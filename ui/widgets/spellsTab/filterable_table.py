@@ -1,11 +1,20 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QAbstractItemView, QTableWidgetItem
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLineEdit,
+    QAbstractItemView,
+    QTableWidgetItem,
+)
 from ui.spell_detail_window import SpellDetailWindow
-from ui.widgets.SpellList import SpellTable
+from ui.widgets.SpellList import DDTable
 from model.spell_model import SpellModels
 from PyQt6.QtCore import Qt
 
+
 class FilterableTable(QWidget):
     details_windows = None
+
     def __init__(self, details_windows):
         super().__init__()
         self.details_windows = details_windows
@@ -31,7 +40,7 @@ class FilterableTable(QWidget):
         self.description_filter.setVisible(False)  # Initially hidden
         filter_layout.addWidget(self.description_filter)
 
-        self.table = SpellTable()
+        self.table = DDTable()
         self.table.verticalHeader().setVisible(False)
         self.table.setDragEnabled(True)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -60,7 +69,10 @@ class FilterableTable(QWidget):
         self.table.setHorizontalHeaderLabels(headers)
 
         self.table.setRowCount(len(self.filtered_spells))
-        for row, spell, in enumerate(self.filtered_spells):
+        for (
+            row,
+            spell,
+        ) in enumerate(self.filtered_spells):
             for col, key in enumerate(options):
                 if key == "checkbox":
                     item = QTableWidgetItem()
@@ -130,7 +142,8 @@ class FilterableTable(QWidget):
         return selected_spells
 
     def toggle_select_all(self, state):
-        for row in range(self.table.rowCount()): self.table.item(row, 0).setCheckState(state)
+        for row in range(self.table.rowCount()):
+            self.table.item(row, 0).setCheckState(state)
 
     def table_spell_double_click(self, row, column):
         spell_name = self.table.item(row, 1).text()

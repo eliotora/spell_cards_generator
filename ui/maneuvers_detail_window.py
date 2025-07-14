@@ -1,24 +1,12 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
-from model.spell_model import SpellModels
-from ui.profile_detail_window import Profile_detail_window
-from ui.spell_detail_window import SpellDetailWindow
-from model.loaders.profile_loader import load_profiles_from_folder
 import re
 
-
-class FeatDetailWindow(QWidget):
-    main_controler = None
-    details_windows = None
-
-    def __init__(self, feat, details_windows):
+class ManeuverDetailWindow(QWidget):
+    def __init__(self, maneuver):
         super().__init__()
-        self.details_windows = details_windows
         self.setStyleSheet("")
-        with open("styles/spell_detail.qss", "r") as f:
-            style = f.read()
-            self.setStyleSheet(style)
-        self.setWindowTitle(feat.get("nom", "Détails du don"))
+        self.setWindowTitle(maneuver.get("nom", "Détails de la manœuvre"))
         self.resize(400, 600)
 
         # Layout principal
@@ -40,52 +28,45 @@ class FeatDetailWindow(QWidget):
         self.content_layout.setContentsMargins(0, 0, 0, 0)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.title = QLabel(f"<strong><span style='font-size:18pt;'>{feat["nom"][0]}</span><span style='font-size:16pt;'>{feat['nom'][1:].upper()}</span></strong>")
+        self.title = QLabel(f"<strong><span style='font-size:18pt;'>{maneuver['nom'][0]}</span><span style='font-size:16pt;'>{maneuver['nom'][1:].upper()}</span></strong>")
         self.title.setProperty("class", "h1")
         self.content_layout.addWidget(self.title)
 
         trad = ""
-        if "nom_vo" in feat and feat["nom_vo"] != "" and feat["nom_vo"] is not None:
-            trad += f"[ {feat['nom_vo']} ]"
-        if "nom_vf" in feat and feat["nom_vf"] != "" and feat["nom_vf"] is not None:
-            if "nom_vo" in feat and feat["nom_vo"] != "":
+        if "nom_vo" in maneuver and maneuver["nom_vo"] != "" and maneuver["nom_vo"] is not None:
+            trad += f"[ {maneuver['nom_vo']} ]"
+        if "nom_vf" in maneuver and maneuver["nom_vf"] != "" and maneuver["nom_vf"] is not None:
+            if "nom_vo" in maneuver and maneuver["nom_vo"] != "":
                 trad += " - "
-            trad += f"[ {feat['nom_vf']} ]"
+            trad += f"[ {maneuver['nom_vf']} ]"
         self.trad = QLabel(f"{trad}")
         self.trad.setProperty("class", "trad")
         self.content_layout.addWidget(self.trad)
 
-        if "prérequis" in feat and feat["prérequis"]:
-            self.prereq = QLabel(f"<em>Prérequis: {feat.get("prérequis", "N/A")}")
-            self.content_layout.addWidget(self.prereq)
-
-
-        description_text = feat.get("description", "Aucune description disponible.")
+        description_text = maneuver.get("description", "Aucune description disponible.")
         description_text = self.inbed_table_style(description_text)
         self.description = QLabel(description_text)
         self.description.setProperty("class", "description")
         self.description.setWordWrap(True)
         self.description.setOpenExternalLinks(False)
-        self.description.linkActivated.connect(self.handle_link_click)
+        # self.description.linkActivated.connect(self.handle_link_click)
         self.content_layout.addWidget(self.description)
-
 
         self.footer = QWidget()
         self.footer.setProperty("class", "footer")
         self.footer_layout = QHBoxLayout()
         self.footer.setLayout(self.footer_layout)
 
-        source_label = QLabel(f"{feat.get('source', 'N/A')}")
+        source_label = QLabel(f"{maneuver.get('source', 'N/A')}")
         source_label.setProperty("class", "source")
         self.footer_layout.addWidget(source_label)
 
         self.content_layout.addWidget(self.footer)
-        self.footer_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
+        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         with open("styles/spell_detail.qss", "r", encoding="utf-8") as f:
-            stylesheet = f.read()
-            self.apply_stylesheet(stylesheet)
+            style = f.read()
+            self.setStyleSheet(style)
 
         self.scroll_area.adjustSize()
 
@@ -128,30 +109,9 @@ class FeatDetailWindow(QWidget):
             description = description.replace("</table>", "</table><br>")
         return description
 
-    def handle_link_click(self, link):
-        path = link.split("/")
-        if path[0] == "profile":
-            profile_name = path[1]
-            if self.main_controler is not None:
-
-                profiles = load_profiles_from_folder("data")
-                p = None
-                for p in profiles:
-                    if p["nom"] == profile_name:
-                        break
-                window = Profile_detail_window(p)
-                self.details_windows[p["nom"]] = window
-                window.show()
-        if path[0] == "sort":
-            spell_name = path[1]
-            if self.details_windows is not None:
-                spell = SpellModels().get_spell(spell_name)
-                if spell is None:
-                    return
-                window = SpellDetailWindow(spell)
-                self.details_windows[spell["nom"]] = window
-                window.show()
-
     def closeEvent(self, event):
         for k,w in self.details_windows.items():
             w.close()
+
+
+

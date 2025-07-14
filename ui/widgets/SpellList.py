@@ -89,7 +89,7 @@ class LeveledSpellList(QListWidget):
             self.adjustSizeToContents()
 
 
-class SpellTable(QTableWidget):
+class DDTable(QTableWidget):
     def __init__(self):
         super().__init__()
         self.setDragEnabled(True)

@@ -1,5 +1,6 @@
 from jinja2 import Template
 from os import getcwd
+from model.generic_model import ExplorableModel, Feat
 
 RULES = 1
 GRIMOIRE = 2
@@ -7,6 +8,12 @@ CARDS = 3
 
 SPELL = "spell"
 FEAT = "feat"
+MANEUVER = "maneuver"
+
+export_type_dict = {
+    Feat: FEAT
+}
+
 
 spell_template_rules = """
 <html>
@@ -274,3 +281,52 @@ def determine_card_size(spells):
             sized_spell["card_size"] = "blocCarte"
         sized_spells.append(sized_spell)
     return sized_spells
+
+
+
+#### NEW
+
+def html_export2(items: list[ExplorableModel], path, mode=RULES, show_source=False, show_VO_name=False, data_type=None):
+    if not items or not data_type:
+        return
+
+    data_type = export_type_dict[data_type]
+    print(data_type)
+
+    processed_items = []
+    for item in items:
+        data = item.to_dict()
+        data['description'] = data['description'].replace('\n', '<br>')
+        if data['description'][-4:] != '<br>':
+            data['description'] += '<br>'
+        if 'à_niveau_supérieur' in data:
+            data['à_niveau_supérieur'] = data.get('à_niveau_supérieur', '').replace('\n', '<br>')
+        if 'composantes' in data:
+            data['composantes'] = ', '.join(data['composantes'])
+        processed_items.append(data)
+    items = processed_items
+
+    if data_type == SPELL:
+        if mode == RULES:
+            template = Template(spell_template_rules)
+        elif mode == GRIMOIRE:
+            items = sort_by_level(items)
+            template = Template(spell_template_grimoire)
+        elif mode == CARDS:
+            items = determine_card_size(items)
+            template = Template(spell_template_cards)
+    elif data_type == FEAT:
+        print("FEAT detected")
+        if mode == RULES:
+            print("RULES detected")
+            template = Template(feat_template_rules)
+        elif mode == CARDS:
+            items = determine_card_size(items)
+            template = Template(feat_template_cards)
+
+    style_path = f"file:///{getcwd()}/styles/style.css"
+    background_image_path = f"file:///{getcwd().replace("\\", "/")}/images/fond-ph.jpg"
+
+    html = template.render(data=items, show_source=show_source, show_VO_name=show_VO_name, style_path=style_path, background_image_path=background_image_path)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(html)
