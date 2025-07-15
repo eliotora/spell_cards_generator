@@ -103,10 +103,8 @@ class Profile_detail_window(QWidget):
             stat_mod = (profile[stat] - 10) // 2
             l1 = QLabel(f"<strong>{stat[:3].upper()}</strong><br>{profile[stat]} ({"{0:+}".format(stat_mod)})")
             l1.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            # l1.setContentsMargins(0,0,0,0)
             self.stat_layout.addWidget(l1, stretch=1)
 
-            # print(stat_box.size())
 
         svg_sep = QSvgWidget("./images/profile_sep.svg")
         self.red_layout.addWidget(svg_sep)

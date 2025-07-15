@@ -1,6 +1,9 @@
 from jinja2 import Template
 from os import getcwd
-from model.generic_model import ExplorableModel, Feat
+from model.generic_model import ExplorableModel
+from model.feat_model import Feat
+from model.spell_model import Spell
+from model.maneuvers_model import Maneuver
 
 RULES = 1
 GRIMOIRE = 2
@@ -11,7 +14,9 @@ FEAT = "feat"
 MANEUVER = "maneuver"
 
 export_type_dict = {
-    Feat: FEAT
+    Feat: FEAT,
+    Spell: SPELL,
+    Maneuver: MANEUVER
 }
 
 
@@ -32,25 +37,25 @@ spell_template_rules = """
     <div class="cols2">
         {% for row in data %}
             <div class="bloc">
-                <h1>{{ row['nom'] }}</h1>
+                <h1>{{ row["name"] }}</h1>
                 {% if show_VO_name %}
-                <div class="trad">[ {{ row.get('nom_VO', '').capitalize() }} ]</div>
+                <div class="trad">[ {{ row["vo_name"].capitalize() }} ]</div>
                 {% endif %}
-                <div class="ecole">niveau {{ row['niveau'] }} - {{ row['école'] }} {% if row['rituel'] %}(rituel){% endif %}</div>
-                <div><strong>Temps d'incantation</strong> : {{ row["temps_d'incantation"] }}</div>
-                <div><strong>Portée</strong> : {{ row['portée'] }}</div>
-                <div><strong>Composantes</strong> : {{ row['composantes'] }}</div>
-                <div><strong>Durée</strong> : {{ row['durée'] }}</div>
-                <div class="description"> {{ row['description'] }}
-                    {% if row['à_niveau_supérieur'] %}
-                        <strong><em>Aux niveaux supérieurs. </em></strong> : {{ row['à_niveau_supérieur'] }}
+                <div class="ecole">niveau {{ row["level"] }} - {{ row["school"] }} {% if row["ritual"] %}(rituel){% endif %}</div>
+                <div><strong>Temps d'incantation</strong> : {{ row["casting_time"] }}</div>
+                <div><strong>Portée</strong> : {{ row["range"] }}</div>
+                <div><strong>Composantes</strong> : {{ row["components"] }}</div>
+                <div><strong>Durée</strong> : {{ row["duration"] }}</div>
+                <div class="description"> {{ row["description"] }}
+                    {% if row["at_higher_levels"] %}
+                        <strong><em>Aux niveaux supérieurs. </em></strong> : {{ row["at_higher_levels"] }}
                     {% endif %}
                 </div>
                 {% if show_source %}
-                {% for class_name in row.get('classes', []) %}
+                {% for class_name in row["classes"] %}
                     <div class="classe">{{ class_name }}</div>
                 {% endfor %}
-                <div class="source">{{ row.get('source') }}</div>
+                <div class="source">{{ row["source"] }}</div>
                 {% endif %}
             </div>
         {% endfor %}
@@ -77,18 +82,18 @@ spell_template_grimoire = """
         {% if row['bandeaulvl'] %}<div class="niveau">{{ row['text'] }}</div>
         {% else %}
             <div class="bloc">
-                <h1>{{ row['nom'] }}</h1>
+                <h1>{{ row['name'] }}</h1>
                 {% if show_VO_name %}
-                <div class="trad">[ {{ row.get('nom_VO', '').capitalize() }} ]</div>
+                <div class="trad">[ {{ row.get('vo_name', '').capitalize() }} ]</div>
                 {% endif %}
-                <div class="ecole">niveau {{ row['niveau'] }} - {{ row['école'] }} {% if row['rituel'] %}(rituel){% endif %}</div>
-                <div><strong>Temps d'incantation</strong> : {{ row["temps_d'incantation"] }}</div>
-                <div><strong>Portée</strong> : {{ row['portée'] }}</div>
-                <div><strong>Composantes</strong> : {{ row['composantes'] }}</div>
-                <div><strong>Durée</strong> : {{ row['durée'] }}</div>
+                <div class="ecole">niveau {{ row['level'] }} - {{ row['school'] }} {% if row['ritual'] %}(rituel){% endif %}</div>
+                <div><strong>Temps d'incantation</strong> : {{ row["casting_time"] }}</div>
+                <div><strong>Portée</strong> : {{ row['range'] }}</div>
+                <div><strong>Composantes</strong> : {{ row['components'] }}</div>
+                <div><strong>Durée</strong> : {{ row['duration'] }}</div>
                 <div class="description"> {{ row['description'] }}
-                    {% if row['à_niveau_supérieur'] %}
-                        <strong><em>Aux niveaux supérieurs. </em></strong> : {{ row['à_niveau_supérieur'] }}
+                    {% if row['at_higher_levels'] %}
+                        <strong><em>Aux niveaux supérieurs. </em></strong> : {{ row['at_higher_levels'] }}
                     {% endif %}
                 </div>
                 {% if show_source %}
@@ -120,15 +125,15 @@ spell_template_cards = """
     <div class="blocCarteContainer">
     {% for row in data %}
         <div class="blocCarte {{ row['card_size'] }}">
-            <h1>{{ row['nom'] }}</h1>
-            <div class="ecole">niveau {{ row['niveau'] }} - {{ row['école'] }} {% if row['rituel'] %}(rituel){% endif %}</div>
-            <div><strong>Temps d'incantation</strong> : {{ row["temps_d'incantation"] }}</div>
-            <div><strong>Portée</strong> : {{ row['portée'] }}</div>
-            <div><strong>Composantes</strong> : {{ row['composantes'] }}</div>
-            <div><strong>Durée</strong> : {{ row['durée'] }}</div>
+            <h1>{{ row['name'] }}</h1>
+            <div class="ecole">niveau {{ row['level'] }} - {{ row['school'] }} {% if row['ritual'] %}(rituel){% endif %}</div>
+            <div><strong>Temps d'incantation</strong> : {{ row["casting_time"] }}</div>
+            <div><strong>Portée</strong> : {{ row['range'] }}</div>
+            <div><strong>Composantes</strong> : {{ row['components'] }}</div>
+            <div><strong>Durée</strong> : {{ row['duration'] }}</div>
             <div class="description"> {{ row['description'] }}
-                {% if row['à_niveau_supérieur'] %}
-                    <strong><em>Aux niveaux supérieurs. </em></strong> : {{ row['à_niveau_supérieur'] }}
+                {% if row['at_higher_levels'] %}
+                    <strong><em>Aux niveaux supérieurs. </em></strong> : {{ row['at_higher_levels'] }}
                 {% endif %}
             </div>
             {% if show_source %}
@@ -157,9 +162,9 @@ feat_template_rules = """
     <div class="cols2">
         {% for row in data %}
             <div class="bloc">
-                <h1>{{ row['nom'] }}</h1>
+                <h1>{{ row['name'] }}</h1>
                 {% if show_vo_name %}
-                <div class="trad">[ {{ row.get('nom_vo', '').capitalize() }} ]</div>
+                <div class="trad">[ {{ row.get('vo_name', '').capitalize() }} ]</div>
                 {% endif %}
                 <div class="description"> {{ row['description'] }}</div>
                 {% if show_source %}
@@ -190,7 +195,7 @@ feat_template_cards = """
     <div class="blocCarteContainer">
     {% for row in data %}
         <div class="blocCarte {{ row['card_size'] }}">
-            <h1>{{ row['nom'] }}</h1>
+            <h1>{{ row['name'] }}</h1>
             <div class="description"> {{ row['description'] }}
             </div>
             {% if show_source %}
@@ -247,14 +252,14 @@ def sort_by_level(spells):
     """
     Sorts spells by their level.
     """
-    spells = sorted(spells, key=lambda x: (x['niveau'], x['nom']))
+    spells = sorted(spells, key=lambda x: (x['level'], x['name']))
     current_level = -1
     for i, spell in enumerate(spells):
-        if spell['niveau'] > current_level:
-            current_level = spell['niveau']
+        if spell['level'] > current_level:
+            current_level = spell['level']
             new_spell = {
                 "bandeaulvl": True,
-                "text": f'NIVEAU {spell["niveau"]}' if spell['niveau'] > 0 else 'SORTS MINEURS',
+                "text": f'NIVEAU {spell["level"]}' if spell['level'] > 0 else 'SORTS MINEURS',
             }
             spells.insert(i, new_spell)
             i += 1
@@ -291,7 +296,6 @@ def html_export2(items: list[ExplorableModel], path, mode=RULES, show_source=Fal
         return
 
     data_type = export_type_dict[data_type]
-    print(data_type)
 
     processed_items = []
     for item in items:
@@ -299,10 +303,10 @@ def html_export2(items: list[ExplorableModel], path, mode=RULES, show_source=Fal
         data['description'] = data['description'].replace('\n', '<br>')
         if data['description'][-4:] != '<br>':
             data['description'] += '<br>'
-        if 'à_niveau_supérieur' in data:
-            data['à_niveau_supérieur'] = data.get('à_niveau_supérieur', '').replace('\n', '<br>')
-        if 'composantes' in data:
-            data['composantes'] = ', '.join(data['composantes'])
+        if 'at_higher_levels' in data:
+            data['at_higher_levels'] = data.get('at_higher_levels', '').replace('\n', '<br>')
+        if 'components' in data:
+            data['components'] = ', '.join(data['components'])
         processed_items.append(data)
     items = processed_items
 
@@ -316,9 +320,7 @@ def html_export2(items: list[ExplorableModel], path, mode=RULES, show_source=Fal
             items = determine_card_size(items)
             template = Template(spell_template_cards)
     elif data_type == FEAT:
-        print("FEAT detected")
         if mode == RULES:
-            print("RULES detected")
             template = Template(feat_template_rules)
         elif mode == CARDS:
             items = determine_card_size(items)

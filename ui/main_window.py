@@ -2,15 +2,15 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QTabWidget
 )
-from ui.spell_tab import SpellTabContent
-from ui.feat_tab import FeatTabContent
-from ui.maneuvers_tab import ManeuversTabContent
 from ui.widgets.generic_tab import GenericTab
-from model.generic_model import Feat
-import os
+from ui.widgets.specificTabs.spell_tab import SpellTab
+from model.feat_model import Feat
+from model.spell_model import Spell
+from model.maneuvers_model import Maneuver
 
 
 class MainWindow(QMainWindow):
+    details_window = {}
 
     def __init__(self):
         super().__init__()
@@ -20,20 +20,18 @@ class MainWindow(QMainWindow):
         self.central_widget = QTabWidget()
         self.setCentralWidget(self.central_widget)
 
-        self.spell_tab = SpellTabContent()
+        self.spell_tab = SpellTab(self.details_window)
         self.central_widget.addTab(self.spell_tab, "Sorts")
 
-        # self.feat_tab = FeatTabContent()
-        # self.central_widget.addTab(self.feat_tab, "Dons")
+        self.feat_tab = GenericTab(Feat, self.details_window)
+        self.central_widget.addTab(self.feat_tab, "Dons")
 
-        self.maneuver_tab = ManeuversTabContent()
+        self.maneuver_tab = GenericTab(Maneuver, self.details_window)
         self.central_widget.addTab(self.maneuver_tab, "Manœuvres")
-
-        self.feat_tab2 = GenericTab(Feat, None)
-        self.central_widget.addTab(self.feat_tab2, "Feats")
 
         self.showMaximized()
 
     def closeEvent(self, event):
-        for k, w in self.spell_tab.details_windows.items():
-            w.close()
+        pass
+        # for k, w in self.spell_tab.details_windows.items():
+        #     w.close()

@@ -119,11 +119,11 @@ class SpellGrimoireWidget(QWidget):
 
     def spell_double_click(self, item):
         spell_name = item.text()
-        self.show_spell_details(self.spell_models.get_spell(spell_name))
+        self.show_spell_details(self.spell_models.get_item(spell_name))
 
     def show_spell_details(self, spell):
-        window = SpellDetailWindow(spell)
-        self.details_windows[spell["nom"]] = window
+        window = SpellDetailWindow(spell, self.details_windows)
+        self.details_windows[spell.name] = window
         window.main_controler = self
         window.show()
 
@@ -179,13 +179,13 @@ class SpellGrimoireWidget(QWidget):
                 btn.click()
 
         for spell_name in spell_list["spells"]:
-            spell = SpellModels().get_spell(spell_name)
-            lvl = spell["niveau"]
-            self.spell_lists[lvl][0].addItem(spell["nom"])
+            spell = SpellModels().get_item(spell_name)
+            lvl = spell.level
+            self.spell_lists[lvl][0].addItem(spell.name)
 
     def get_spells(self) -> dict[str, str|int|list[str]]:
         spell_list = []
         for key, item in self.spell_lists.items():
             for i in range(item[0].count()):
-                spell_list.append(SpellModels().get_spell(item[0].item(i).text()))
+                spell_list.append(SpellModels().get_item(item[0].item(i).text()))
         return spell_list

@@ -3,10 +3,11 @@ from PyQt6.QtCore import Qt
 import re
 
 class ManeuverDetailWindow(QWidget):
-    def __init__(self, maneuver):
+    def __init__(self, maneuver, details_window):
         super().__init__()
+        self.details_window = details_window
         self.setStyleSheet("")
-        self.setWindowTitle(maneuver.get("nom", "Détails de la manœuvre"))
+        self.setWindowTitle(maneuver.name)
         self.resize(400, 600)
 
         # Layout principal
@@ -28,22 +29,22 @@ class ManeuverDetailWindow(QWidget):
         self.content_layout.setContentsMargins(0, 0, 0, 0)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.title = QLabel(f"<strong><span style='font-size:18pt;'>{maneuver['nom'][0]}</span><span style='font-size:16pt;'>{maneuver['nom'][1:].upper()}</span></strong>")
+        self.title = QLabel(f"<strong><span style='font-size:18pt;'>{maneuver.name[0]}</span><span style='font-size:16pt;'>{maneuver.name[1:].upper()}</span></strong>")
         self.title.setProperty("class", "h1")
         self.content_layout.addWidget(self.title)
 
         trad = ""
-        if "nom_vo" in maneuver and maneuver["nom_vo"] != "" and maneuver["nom_vo"] is not None:
-            trad += f"[ {maneuver['nom_vo']} ]"
-        if "nom_vf" in maneuver and maneuver["nom_vf"] != "" and maneuver["nom_vf"] is not None:
-            if "nom_vo" in maneuver and maneuver["nom_vo"] != "":
+        if maneuver.vo_name != "" and maneuver.vo_name is not None:
+            trad += f"[ {maneuver.vo_name} ]"
+        if maneuver.vf_name != "" and maneuver.vf_name is not None:
+            if maneuver.vf_name != "":
                 trad += " - "
-            trad += f"[ {maneuver['nom_vf']} ]"
+            trad += f"[ {maneuver.vf_name} ]"
         self.trad = QLabel(f"{trad}")
         self.trad.setProperty("class", "trad")
         self.content_layout.addWidget(self.trad)
 
-        description_text = maneuver.get("description", "Aucune description disponible.")
+        description_text = maneuver.description
         description_text = self.inbed_table_style(description_text)
         self.description = QLabel(description_text)
         self.description.setProperty("class", "description")
@@ -57,12 +58,12 @@ class ManeuverDetailWindow(QWidget):
         self.footer_layout = QHBoxLayout()
         self.footer.setLayout(self.footer_layout)
 
-        source_label = QLabel(f"{maneuver.get('source', 'N/A')}")
+        source_label = QLabel(f"{maneuver.source}")
         source_label.setProperty("class", "source")
         self.footer_layout.addWidget(source_label)
 
         self.content_layout.addWidget(self.footer)
-        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.footer_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         with open("styles/spell_detail.qss", "r", encoding="utf-8") as f:
             style = f.read()

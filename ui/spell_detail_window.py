@@ -7,15 +7,15 @@ import re
 
 class SpellDetailWindow(QWidget):
     main_controler = None
-    profile_windows = {}
 
-    def __init__(self, spell):
+    def __init__(self, spell, details_window):
         super().__init__()
+        self.details_window = details_window
         self.setStyleSheet("")
         with open("styles/spell_detail.qss", "r") as f:
             style = f.read()
             self.setStyleSheet(style)
-        self.setWindowTitle(spell.get("nom", "Détails du sort"))
+        self.setWindowTitle(spell.name)
         self.resize(400, 600)
 
         # Layout principal
@@ -37,47 +37,47 @@ class SpellDetailWindow(QWidget):
         self.content_layout.setContentsMargins(0, 0, 0, 0)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.title = QLabel(f"<strong><span style='font-size:18pt;'>{spell["nom"][0]}</span><span style='font-size:16pt;'>{spell['nom'][1:].upper()}</span></strong>")
+        self.title = QLabel(f"<strong><span style='font-size:18pt;'>{spell.name[0]}</span><span style='font-size:16pt;'>{spell.name[1:].upper()}</span></strong>")
         self.title.setProperty("class", "h1")
         self.content_layout.addWidget(self.title)
 
         trad = ""
-        if "nom_VO" in spell and spell["nom_VO"] != "" and spell["nom_VO"] is not None:
-            trad += f"[ {spell['nom_VO']} ]"
-        if "nom_VF" in spell and spell["nom_VF"] != "" and spell["nom_VF"] is not None:
-            if "nom_VO" in spell and spell["nom_VO"] != "":
+        if spell.vo_name != "" and spell.vo_name is not None:
+            trad += f"[ {spell.vo_name} ]"
+        if spell.vf_name != "" and spell.vf_name is not None:
+            if spell.vo_name != "":
                 trad += " - "
-            trad += f"[ {spell['nom_VF']} ]"
+            trad += f"[ {spell.vf_name} ]"
         self.trad = QLabel(f"{trad}")
         self.trad.setProperty("class", "trad")
         self.content_layout.addWidget(self.trad)
 
-        ecole = "niveau " + str(spell.get("niveau", "N/A")) + " - " + spell.get("école", "N/A") + (" (rituel)" if spell.get("rituel", False) else "")
+        ecole = "niveau " + str(spell.level) + " - " + spell.school + (" (rituel)" if spell.ritual else "")
         self.ecole = QLabel(ecole)
         self.ecole.setProperty("class", "ecole")
         self.content_layout.addWidget(self.ecole)
 
-        self.t = QLabel(f"<strong>Temps d'incantation:</strong> {spell.get('temps_d\'incantation', 'N/A')}")
+        self.t = QLabel(f"<strong>Temps d'incantation:</strong> {spell.casting_time}")
         self.t.setProperty("class", "t")
         self.t.setWordWrap(True)
         self.content_layout.addWidget(self.t)
 
-        self.r = QLabel(f"<strong>Portée:</strong> {spell.get('portée', 'N/A')}")
+        self.r = QLabel(f"<strong>Portée:</strong> {spell.range}")
         self.r.setProperty("class", "r")
         self.r.setWordWrap(True)
         self.content_layout.addWidget(self.r)
 
-        self.c = QLabel(f"<strong>Composantes:</strong> {', '.join(spell.get('composantes', []))}")
+        self.c = QLabel(f"<strong>Composantes:</strong> {', '.join(spell.components)}")
         self.c.setProperty("class", "c")
         self.c.setWordWrap(True)
         self.content_layout.addWidget(self.c)
 
-        self.d = QLabel(f"<strong>Durée:</strong> {spell.get('durée', 'N/A')}")
+        self.d = QLabel(f"<strong>Durée:</strong> {spell.duration}")
         self.d.setProperty("class", "d")
         self.d.setWordWrap(True)
         self.content_layout.addWidget(self.d)
 
-        description_text = spell.get("description", "Aucune description disponible.")
+        description_text = spell.description
         description_text = self.inbed_table_style(description_text)
         self.description = QLabel(description_text)
         self.description.setProperty("class", "description")
@@ -87,8 +87,8 @@ class SpellDetailWindow(QWidget):
         self.content_layout.addWidget(self.description)
 
 
-        if spell.get("à_niveau_supérieur", "") != "" and spell.get("à_niveau_supérieur", "") is not None:
-            self.niveau_sup = QLabel(f"<strong><em>À niveau supérieur:</em></strong> {spell['à_niveau_supérieur']}")
+        if spell.at_higher_levels is not None:
+            self.niveau_sup = QLabel(f"<strong><em>À niveau supérieur:</em></strong> {spell.at_higher_levels}")
             self.niveau_sup.setProperty("class", "description")
             self.niveau_sup.setWordWrap(True)
             self.content_layout.addWidget(self.niveau_sup)
@@ -98,12 +98,12 @@ class SpellDetailWindow(QWidget):
         self.footer_layout = QHBoxLayout()
         self.footer.setLayout(self.footer_layout)
 
-        for class_name in spell.get("classes", []):
+        for class_name in spell.classes:
             class_label = QLabel(f"{class_name}")
             class_label.setProperty("class", "classe")
             self.footer_layout.addWidget(class_label)
 
-        source_label = QLabel(f"{spell.get('source', 'N/A')}")
+        source_label = QLabel(f"{spell.source}")
         source_label.setProperty("class", "source")
         self.footer_layout.addWidget(source_label)
 
@@ -160,17 +160,16 @@ class SpellDetailWindow(QWidget):
         path = link.split("/")
         if path[0] == "profile":
             profile_name = path[1]
-            if self.main_controler is not None:
 
-                profiles = load_profiles_from_folder("data")
-                p = None
-                for p in profiles:
-                    if p["nom"] == profile_name:
-                        break
-                window = Profile_detail_window(p)
-                self.profile_windows[p["nom"]] = window
-                window.show()
+            profiles = load_profiles_from_folder("data")
+            p = None
+            for p in profiles:
+                if p["nom"] == profile_name:
+                    break
+            window = Profile_detail_window(p)
+            self.details_window[p["nom"]] = window
+            window.show()
 
     def closeEvent(self, event):
-        for k,w in self.profile_windows.items():
+        for k,w in self.details_window.items():
             w.close()

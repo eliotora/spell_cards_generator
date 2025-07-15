@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, fields
-from typing import Optional
+from typing import Optional, Type
 import enum
 
 
@@ -36,6 +36,8 @@ class FilterOption(enum.IntEnum):
     def value_in_filter(self, value: str|int, filters: list[str|int]) -> bool:
         """Check if a value is in the filter options"""
         if self == FilterOption.LIST:
+            if type(value) == list:
+                return any(v in filters for v in value)
             return value in filters
         elif self == FilterOption.INT_RANGE:
             if isinstance(value, int) and len(filters) == 2:
@@ -74,44 +76,6 @@ class ExplorableModel:
     def to_dict(self) -> dict[str, str|bool|int]:
         return {fname: getattr(self, fname) for fname in self.__dataclass_fields__}
 
-@dataclass
-class Feat(ExplorableModel):
-    name : str = field_metadata(label="Nom", filter_type=FilterOption.LINE_EDIT, visibility=VisibilityOption.ALWAYS_VISIBLE)
-    vf_name: Optional[str] = field_metadata(label="Nom VF", visibility=VisibilityOption.HIDDABLE, cols_to_hide=[2])
-    vo_name: Optional[str] = field_metadata(label="Nom VO", visibility=VisibilityOption.HIDDABLE, cols_to_hide=[3])
-    prerequisite: str = field_metadata(label="Prérequis", visibility=VisibilityOption.HIDDABLE, cols_to_hide=[4])
-    description: str = field_metadata(label="Description", visibility=VisibilityOption.ALWAYS_HIDDEN)
-    short_description: Optional[str] = field_metadata(label="Description", filter_type=FilterOption.LINE_EDIT, visibility=VisibilityOption.HIDDABLE_WITH_FILTER, cols_to_hide=[5])
-    source: str = field_metadata(label="Source", filter_type=FilterOption.LIST, visibility=VisibilityOption.HIDDABLE, cols_to_hide=[6])
-
-    def __str__(self):
-        """String representation of the Feat."""
-        return f"{self.name} ({self.source}) - {self.description[:50]}..."
-
     @classmethod
-    def from_dict(cls, data: dict) -> 'Feat':
-        """Create a Feat instance from a dictionary."""
-        return cls(
-            name=data.get("nom", ""),
-            vo_name=data.get("nom_vo"),
-            vf_name=data.get("nom_vf"),
-            prerequisite=data.get("prérequis", ""),
-            description=data.get("description", ""),
-            short_description=data.get("description_short"),
-            source=data.get("source", "")
-        )
-
-if __name__ == "__main__":
-    feat = Feat(
-        name="Exemple de talent",
-        vo_name="Example Feat",
-        vf_name="Talent d'exemple",
-        prerequisite="Aucun",
-        description="Ceci est une description d'exemple pour un talent.",
-        short_description="Description courte de l'exemple.",
-        source="Manuel de base"
-    )
-    print(feat)
-    print(fields(feat)[0].metadata["label"])
-    for key, item in feat.__dataclass_fields__.items():
-        print(f"{key}: {item.metadata.get('label', 'No label')}, Filter Type: {item.metadata.get('filter_type', 'No filter type')}, Visibility: {item.metadata.get('visibility', 'No visibility')}")
+    def get_collection(cls) -> Type:
+        pass

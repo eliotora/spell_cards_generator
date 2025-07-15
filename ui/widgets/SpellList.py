@@ -29,25 +29,25 @@ class LeveledSpellList(QListWidget):
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasText():
-            spell = SpellModels().get_spell(event.mimeData().text())
+            spell = SpellModels().get_item(event.mimeData().text())
             if (
                 spell
-                and spell["niveau"] == self.level
-                and not self.findItems(spell["nom"], Qt.MatchFlag.MatchExactly)
+                and spell.level == self.level
+                and not self.findItems(spell.name, Qt.MatchFlag.MatchExactly)
             ):
                 event.acceptProposedAction()
 
     def dragMoveEvent(self, event: QDragMoveEvent):
-        spell = SpellModels().get_spell(event.mimeData().text())
+        spell = SpellModels().get_item(event.mimeData().text())
         if (
             event.mimeData().hasText()
-            and spell["niveau"] == self.level
-            and not self.findItems(spell["nom"], Qt.MatchFlag.MatchExactly)
+            and spell.level == self.level
+            and not self.findItems(spell.name, Qt.MatchFlag.MatchExactly)
         ):
             event.acceptProposedAction()
 
     def dropEvent(self, event):
-        self.addItem(SpellModels().get_spell(event.mimeData().text())["nom"])
+        self.addItem(SpellModels().get_item(event.mimeData().text()).name)
         event.acceptProposedAction()
         self.adjustSizeToContents()
         self.sortItems()

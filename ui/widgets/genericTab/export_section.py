@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QRadioButton, QButtonGroup, QLabel, QPushButton
 from PyQt6.QtCore import Qt
 from model.generic_model import ExplorableModel
-from model.feat_model import model_selection_mapping
 from typing import Type
 
 
@@ -9,7 +8,7 @@ class GenericExport(QWidget):
     def __init__(self, model: Type[ExplorableModel]):
         super().__init__()
         self.model = model
-        model_collection = model_selection_mapping[model]
+        model_collection =model.get_collection()
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -38,6 +37,8 @@ class GenericExport(QWidget):
             self.format_group.addButton(rbutton, id=export_mode)
             self.export_mode_rbuttons[export_mode] = rbutton
             export_mode_layout.addWidget(rbutton)
+
+        self.format_group.buttons()[0].setChecked(True)
 
         export_options_layout.addLayout(select_data_layout)
         export_options_layout.addLayout(export_mode_layout)

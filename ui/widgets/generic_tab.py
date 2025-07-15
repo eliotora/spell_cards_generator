@@ -1,8 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QFileDialog
 from PyQt6.QtCore import Qt
-from model.feat_model import FeatModels2, model_selection_mapping
 from model.generic_model import ExplorableModel, FilterOption, VisibilityOption
-from typing import TypeVar, Generic, Type
+from typing import Any, TypeVar, Generic, Type
 
 from utils.paths import get_export_dir
 from export.html_export import html_export2
@@ -17,11 +16,9 @@ T = TypeVar("T", bound=ExplorableModel)
 
 class GenericTab(Generic[T], QWidget):
     """A generic tab class that presents a model with a list, filters and export section."""
-    display_windows = {}
-
     def __init__(self, model: Type[T], details_windows):
         self.model = model
-        self.items = model_selection_mapping[model]
+        self.items = model.get_collection()
         self.details_windows = details_windows
 
         super().__init__()
@@ -35,7 +32,7 @@ class GenericTab(Generic[T], QWidget):
 
         self.table_widget = GenericTable(
             self.model,
-            self.display_windows
+            self.details_windows
         )
         self.filters_widget = GenericFilter(
             self.model,
@@ -72,12 +69,15 @@ class GenericTab(Generic[T], QWidget):
         return layout
 
     def load_data(self):
-        data = self.items().get_feats()
+        data = self.items().get_items()
 
+        options = {}
         for fname, field in self.model.__dataclass_fields__.items():
-            options = {}
             if field.metadata.get("filter_type") == FilterOption.LIST:
-                options[fname] = sorted(set(item.__getattribute__(fname) for item in data))
+                if field.type == list[str]:
+                    options[fname] = sorted(set(item for object in data for item in object.__getattribute__(fname)))
+                else:
+                    options[fname] = sorted(set(item.__getattribute__(fname) for item in data))
 
         self.filters_widget.load_filter_options(options)
         self.apply_filters()
