@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
+from model.generic_model import ExplorableModel
 from model.spell_model import SpellModels
 from ui.profile_detail_window import Profile_detail_window
 from ui.spell_detail_window import SpellDetailWindow
@@ -7,18 +8,18 @@ from model.loaders.profile_loader import load_profiles_from_folder
 import re
 
 
-class FeatDetailWindow(QWidget):
+class GenericDetailWindow(QWidget):
     main_controler = None
     details_windows = None
 
-    def __init__(self, feat, details_windows):
+    def __init__(self, item: ExplorableModel, details_windows):
         super().__init__()
         self.details_windows = details_windows
         self.setStyleSheet("")
         with open("styles/spell_detail.qss", "r") as f:
             style = f.read()
             self.setStyleSheet(style)
-        self.setWindowTitle(feat.name)
+        self.setWindowTitle(item.name)
         self.resize(400, 600)
 
         # Layout principal
@@ -41,27 +42,31 @@ class FeatDetailWindow(QWidget):
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.title = QLabel(
-            f"<strong><span style='font-size:18pt;'>{feat.name[0]}</span><span style='font-size:16pt;'>{feat.name[1:].upper()}</span></strong>"
+            f"<strong><span style='font-size:18pt;'>{item.name[0]}</span><span style='font-size:16pt;'>{item.name[1:].upper()}</span></strong>"
         )
         self.title.setProperty("class", "h1")
         self.content_layout.addWidget(self.title)
 
         trad = ""
-        if feat.vo_name != "" and feat.vo_name is not None:
-            trad += f"[ {feat.vo_name} ]"
-        if feat.vf_name != "" and feat.vf_name is not None:
-            if feat.vo_name != "":
+        if item.vo_name != "" and item.vo_name is not None:
+            trad += f"[ {item.vo_name} ]"
+        if item.vf_name != "" and item.vf_name is not None:
+            if item.vo_name != "":
                 trad += " - "
-            trad += f"[ {feat.vf_name} ]"
+            trad += f"[ {item.vf_name} ]"
         self.trad = QLabel(f"{trad}")
         self.trad.setProperty("class", "trad")
         self.content_layout.addWidget(self.trad)
 
-        if feat.prerequisite:
-            self.prereq = QLabel(f"<em>Prérequis: {feat.prerequisite}</em>")
-            self.content_layout.addWidget(self.prereq)
+        for fname, field in item.__dataclass_fields__.items():
+            if fname not in ["name", "vo_name", "vf_name", "description", "source", "classes", "short_description"]:
+                f = item.__getattribute__(fname)
+                if f:
+                    label = QLabel(f"<em>{field.metadata.get("label")}: {f}</em>")
+                    label.setWordWrap(True)
+                    self.content_layout.addWidget(label)
 
-        description_text = feat.description
+        description_text = item.description
         description_text = self.inbed_table_style(description_text)
         self.description = QLabel(description_text)
         self.description.setProperty("class", "description")
@@ -75,7 +80,7 @@ class FeatDetailWindow(QWidget):
         self.footer_layout = QHBoxLayout()
         self.footer.setLayout(self.footer_layout)
 
-        source_label = QLabel(f"{feat.source}")
+        source_label = QLabel(f"{item.source}")
         source_label.setProperty("class", "source")
         self.footer_layout.addWidget(source_label)
 
@@ -170,7 +175,7 @@ class FeatDetailWindow(QWidget):
                 spell = SpellModels().get_item(spell_name)
                 if spell is None:
                     return
-                window = SpellDetailWindow(spell)
+                window = SpellDetailWindow(spell, self.details_windows)
                 self.details_windows[spell.name] = window
                 window.show()
 

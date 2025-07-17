@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Type
-from PyQt6.QtCore import QAbstractTableModel, Qt
-from model.loaders.spell_loader import load_spells_from_folder
+from typing import Optional
 from copy import deepcopy
 from model.generic_model import (
     field_metadata,
@@ -105,7 +103,7 @@ class Spell(ExplorableModel):
         label="Aux niveaux supérieurs", visibility=VisibilityOption.ALWAYS_HIDDEN
     )
     source: str = field_metadata(
-        label="Sources",
+        label="Source",
         visibility=VisibilityOption.HIDDABLE,
         filter_type=FilterOption.LIST,
         cols_to_hide=[12],

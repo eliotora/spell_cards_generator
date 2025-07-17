@@ -340,6 +340,59 @@ def write_feats_to_json(feats:list, path:str):
         with open(feat_path, 'w', encoding='utf-8') as f:
             json.dump(feat_to_write, f, ensure_ascii=False, indent=4)
 
+
+def eldritch_scrap_source(source:str, navigator: AideddNavigator):
+    """
+    Scraps the eldritch from the given source.
+    :param source: The source to scrap.
+    :param driver: The webdriver to use.
+    """
+    navigator.driver.get("https://www.aidedd.org/dnd-filters/manifestations-occultes.php")
+    navigator.accept_cookies()
+
+    eldritchs = scrap_eldritchs_from_source(source, navigator)
+    if eldritchs:
+        write_eldritchs_to_json(eldritchs, f"data_imports/{source}/eldritchs/")
+        print(f"All eldritchs from {source} written to JSON.")
+    else:
+        print(f"No eldritchs found in {source}.")
+
+def scrap_eldritchs_from_source(source:str, navigator:AideddNavigator):
+    """
+    Scraps all eldritchs from a given source.
+    :param source: The source to scrap.
+    :param navigator: The navigator to use.
+    :return: A list of eldritchs.
+    """
+    navigator.feat_filter_by(
+        sources=[source]
+    )
+    sleep(1)
+    eldritchs = navigator.feat_get_all_lines()
+
+    for eldritch in eldritchs:
+        navigator.get_feat_details(eldritch, eldritch["lien"])
+
+    return eldritchs
+
+def write_eldritchs_to_json(eldritchs:list, path:str):
+    """
+    Writes the eldritchs to a JSON file.
+    :param eldritchs: The list of eldritchs to write.
+    :param path: The path to the JSON file.
+    """
+    if not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+
+    print(f"Writing {len(eldritchs)} eldritchs to JSON in {path}")
+
+    for eldritch in eldritchs:
+        eldritch_to_write = {k: v for k, v in eldritch.items() if k not in ["lien"]}
+        eldritch_name = eldritch_to_write["nom"].replace(" ", "_").replace("/", "_")
+        eldritch_path = os.path.join(path, f"{eldritch_name}.json")
+        with open(eldritch_path, 'w', encoding='utf-8') as f:
+            json.dump(eldritch_to_write, f, ensure_ascii=False, indent=4)
+
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     options = Options()
@@ -351,9 +404,9 @@ if __name__ == "__main__":
 
     navigator = AideddNavigator(driver)
 
-    # feat_scrap_source("Player´s Handbook", navigator)
-    feat_scrap_source("Xanathar´s Guide to Everything", navigator)
-    feat_scrap_source("Tasha´s Cauldron of Everything", navigator)
+    eldritch_scrap_source("Player´s Handbook", navigator)
+    eldritch_scrap_source("Xanathar´s Guide to Everything", navigator)
+    eldritch_scrap_source("Tasha´s Cauldron of Everything", navigator)
     # feat_scrap_source("Fizban´s Treasury of Dragons", navigator)
     # feat_scrap_source("Settings", navigator)
     # feat_scrap_source("Extra (divers)", navigator)
