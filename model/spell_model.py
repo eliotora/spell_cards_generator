@@ -8,7 +8,7 @@ from model.generic_model import (
     VisibilityOption,
     ExplorableModel,
 )
-from ui.spell_detail_window import SpellDetailWindow
+from ui.details_windows.spell_detail_window import SpellDetailWindow
 import locale, os, json
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")

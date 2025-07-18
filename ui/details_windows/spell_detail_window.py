@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
-from ui.profile_detail_window import Profile_detail_window
+from ui.details_windows.profile_detail_window import Profile_detail_window
 from model.loaders.profile_loader import load_profiles_from_folder
 import re
 

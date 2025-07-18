@@ -1,7 +1,6 @@
-from dataclasses import dataclass, field, fields
-from typing import Optional, Type
+from dataclasses import dataclass, field
+from typing import Type
 import enum
-
 
 class ExportOption(enum.IntEnum):
     """Enum for export options."""
@@ -78,4 +77,8 @@ class ExplorableModel:
 
     @classmethod
     def get_collection(cls) -> Type:
+        pass
+
+    @classmethod
+    def get_detail_windowclass(cls):
         pass

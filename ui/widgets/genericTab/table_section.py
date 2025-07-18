@@ -9,8 +9,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 
 from model.generic_model import ExplorableModel, FilterOption
-from ui.feat_detail_window import FeatDetailWindow
-from ui.widgets.SpellList import DDTable
+from ui.widgets.specificTabs.SpellList import DDTable
 
 
 class GenericTable(QWidget):

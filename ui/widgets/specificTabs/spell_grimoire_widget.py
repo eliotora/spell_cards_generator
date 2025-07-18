@@ -9,13 +9,14 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QFileDialog,
     QSpacerItem,
-    QSizePolicy
+    QSizePolicy,
+    QMessageBox
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from ui.widgets.SpellList import LeveledSpellList
-from ui.spell_detail_window import SpellDetailWindow
-from model.spell_model import SpellModels
+from ui.widgets.specificTabs.SpellList import LeveledSpellList
+from ui.details_windows.spell_detail_window import SpellDetailWindow
+from model.spell_model import Spell, SpellModels
 from utils.paths import get_export_dir
 import json
 
@@ -108,13 +109,13 @@ class SpellGrimoireWidget(QWidget):
         main_layout.addWidget(self.html_export_btn)
 
         save_btn = QPushButton()
-        save_btn.setText("Sauver")
-        save_btn.clicked.connect(self.save_spell_list)
+        save_btn.setText("Enregistrer")
+        save_btn.clicked.connect(self.save_list)
         main_layout.addWidget(save_btn)
 
         load_btn = QPushButton()
         load_btn.setText("Charger")
-        load_btn.clicked.connect(self.load_spell_list)
+        load_btn.clicked.connect(self.load_list)
         main_layout.addWidget(load_btn)
 
     def spell_double_click(self, item):
@@ -138,7 +139,7 @@ class SpellGrimoireWidget(QWidget):
 
         return toggle_lock
 
-    def save_spell_list(self):
+    def save_list(self):
         path, _ = QFileDialog.getSaveFileName(
             self,
             "Enregistrer la liste de sorts",
@@ -147,18 +148,24 @@ class SpellGrimoireWidget(QWidget):
         )
         if not path:
             return
-        spells = []
+        spells = self.list_to_dict()
+
+        if spells:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(spells, f)
+
+    def list_to_dict(self) -> dict:
+        items = []
         for key, item in self.spell_lists.items():
             for i in range(item[0].count()):
                 spell = item[0].item(i)
-                spells.append(spell.text())
+                items.append(spell.text())
 
-        if spells:
-            spell_list = {"nom": self.grimoire_name_field.text(), "spells": spells}
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(spell_list, f)
+        if items:
+            list = {"nom": self.grimoire_name_field.text(), "spells": items, "model_name": Spell.__name__}
+            return list
 
-    def load_spell_list(self):
+    def load_list(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Ouvrir une liste de sorts",
@@ -169,19 +176,35 @@ class SpellGrimoireWidget(QWidget):
             return
         with open(path, "r", encoding="utf-8") as f:
             spell_list = json.load(f)
-        self.grimoire_name_field.setText(spell_list["nom"])
+
+        self.load_list_items(spell_list)
+
+
+    def load_list_items(self, list:dict):
+        if list["model_name"] != Spell.__name__:
+            QMessageBox.warning(
+                self,
+                "Fichier non valide",
+                f"Le fichier sélectionné ne correspond pas au bon model mais correspond au model {list["model_name"]}"
+            )
+            return
+
+        self.grimoire_name_field.setText(list["nom"])
 
         for key, item in self.spell_lists.items():
             liste = item[0]
             liste.clear()
-            btn: QPushButton = item[1]
-            if not btn.isChecked():
-                btn.click()
 
-        for spell_name in spell_list["spells"]:
+        for spell_name in list["spells"]:
             spell = SpellModels().get_item(spell_name)
             lvl = spell.level
             self.spell_lists[lvl][0].addItem(spell.name)
+
+        for key, item in self.spell_lists.items():
+            btn: QPushButton = item[1]
+            btn.click()
+            if not btn.isChecked():
+                btn.click()
 
     def get_spells(self) -> dict[str, str|int|list[str]]:
         spell_list = []

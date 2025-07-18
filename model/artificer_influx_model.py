@@ -11,8 +11,7 @@ from model.generic_model import (
 # from ui.influx_detail_window import InfluxDetailWindow
 import locale, os, json
 
-from ui.feat_detail_window import FeatDetailWindow
-from ui.generic_detail_window import GenericDetailWindow
+from ui.details_windows.generic_detail_window import GenericDetailWindow
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")
 

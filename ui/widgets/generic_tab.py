@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QFileDialog
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QFileDialog, QHBoxLayout, QPushButton, QSizePolicy
 from PyQt6.QtCore import Qt
 from model.generic_model import ExplorableModel, FilterOption, VisibilityOption
-from typing import Any, TypeVar, Generic, Type
+from typing import TypeVar, Generic, Type
 
+from ui.widgets.genericTab.genericDDList import SavebleDDList
 from utils.paths import get_export_dir
 from export.html_export import html_export2
 
@@ -84,7 +85,6 @@ class GenericTab(Generic[T], QWidget):
         self.filters_widget.load_filters(f"{os.getcwd().replace("\\", "/")}/data/{self.model.__name__}_settings.json")
         self.apply_filters()
 
-
     def apply_filters(self):
         filters = self.filters_widget.get_filters()
         self.table_widget.apply_filters(filters)
@@ -132,3 +132,39 @@ class GenericTab(Generic[T], QWidget):
 
         seleted_count, all = self.table_widget.get_selected_count(item)
         self.export_widget.change_selected_count_label(seleted_count, all)
+
+class GenericTabWithList(GenericTab):
+    def __init__(self, model: Type[T], details_windows):
+        super().__init__(model, details_windows)
+
+    def create_layout(self):
+        layout = QHBoxLayout()
+        left_layout = super().create_layout()
+        layout.addLayout(left_layout)
+
+        ##### Right part #####
+        self.list_widget = SavebleDDList(self.model, self.details_windows)
+        self.list_widget.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
+        layout.addWidget(self.list_widget)
+        self.list_widget.hide()
+
+        ##### Side grimoire button #####
+        spell_list_hide_btn = QPushButton()
+        spell_list_hide_btn.clicked.connect(
+            lambda: self.list_widget.setHidden(
+                bool(
+                    spell_list_hide_btn.setText(
+                        "<" if self.list_widget.isHidden() else ">"
+                    )
+                    or not (self.list_widget.isHidden())
+                )
+            )
+        )
+        spell_list_hide_btn.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding
+        )
+        spell_list_hide_btn.setFixedWidth(20)
+        spell_list_hide_btn.setText(">")
+        layout.addWidget(spell_list_hide_btn)
+
+        return layout

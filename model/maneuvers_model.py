@@ -7,8 +7,7 @@ from model.generic_model import (
     VisibilityOption,
     field_metadata,
 )
-from ui.generic_detail_window import GenericDetailWindow
-from ui.maneuvers_detail_window import ManeuverDetailWindow
+from ui.details_windows.generic_detail_window import GenericDetailWindow
 from copy import deepcopy
 import locale, os, json
 
@@ -90,9 +89,6 @@ class Maneuver(ExplorableModel):
     def get_collection(cls) -> Type:
         return ManeuversModels
 
-    @classmethod
-    def get_detail_windowclass(cls):
-        return GenericDetailWindow
 
 
 def load_maneuvers_from_folder(folder_path: str):

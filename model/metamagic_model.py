@@ -8,10 +8,9 @@ from model.generic_model import (
     VisibilityOption,
     ExplorableModel,
 )
-from ui.feat_detail_window import FeatDetailWindow
 import locale, os, json
 
-from ui.generic_detail_window import GenericDetailWindow
+from ui.details_windows.generic_detail_window import GenericDetailWindow
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")
 

@@ -149,11 +149,12 @@ class GenericFilter(QWidget, Generic[T]):
 
         for fname, values in filters.items():
             if not "_checkbox" in fname:
-                if type(values) == list[str]:
+                filt = self.filters[fname]
+                if type(filt) == MultiSelectionListWidget:
                     self.filters[fname].checkItems(values)
-                elif type(values) == list[int]:
+                elif type(filt) == tuple:
                     self.filters[fname][0].setValue(values[0])
                     self.filters[fname][1].setValue(values[1])
-            elif "_checkbox":
+            elif "_checkbox" in fname:
                 key = fname.replace("_checkbox", "")
                 self.display_checkboxes[key].setChecked(values)
