@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 
 from model.generic_model import ExplorableModel, FilterOption
-from ui.widgets.specificTabs.SpellList import DDTable
+from ui.widgets.specificTabs.spell_tab.SpellList import DDTable
 
 
 class GenericTable(QWidget):
@@ -151,6 +151,7 @@ class GenericTable(QWidget):
             details_window = self.details_windows.get(item.name)
             if details_window:
                 details_window.show()
+                details_window.activateWindow()
             else:
                 # Create a new details window if it doesn't exist
                 window_class = self.model.get_detail_windowclass()

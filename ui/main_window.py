@@ -11,7 +11,8 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from ui.widgets.generic_tab import GenericTabWithList
-from ui.widgets.specificTabs.spell_tab import SpellTab
+from ui.widgets.specificTabs.spell_tab.spell_tab import SpellTab
+from ui.widgets.specificTabs.all_lists_tab.all_lists_tab import AllListsTab
 from model.generic_model import ExplorableModel
 from model.spell_model import Spell
 from model.feat_model import Feat
@@ -20,6 +21,7 @@ from model.metamagic_model import Metamagic
 from model.artificer_influx_model import Influx
 from model.eldritch_invocation_model import EldritchInvocation
 from utils.paths import get_export_dir
+from utils.shared_dict import SharedDict
 
 
 class MainWindow(QMainWindow):
@@ -30,6 +32,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Liste des Sorts")
 
         self.tabs: dict[str, GenericTabWithList|SpellTab]= {}
+        self.shared_dict = SharedDict()
+        self.spell_dict = SharedDict()
 
         # Main widget
         self.central_widget = QWidget()
@@ -39,29 +43,33 @@ class MainWindow(QMainWindow):
         self.tab_widget = QTabWidget()
         layout.addWidget(self.tab_widget)
 
-        self.spell_tab = SpellTab(self.details_window)
+        self.spell_tab = SpellTab(self.details_window, self.spell_dict)
         self.tabs[Spell.__name__] = self.spell_tab
         self.tab_widget.addTab(self.spell_tab, "Sorts")
 
-        self.feat_tab = GenericTabWithList(Feat, self.details_window)
+        self.feat_tab = GenericTabWithList(Feat, self.details_window, self.shared_dict)
         self.tabs[Feat.__name__] = self.feat_tab
         self.tab_widget.addTab(self.feat_tab, "Dons")
 
-        self.eldritch_invocation_tab = GenericTabWithList(EldritchInvocation, self.details_window)
+        self.eldritch_invocation_tab = GenericTabWithList(EldritchInvocation, self.details_window, self.shared_dict)
         self.tabs[EldritchInvocation.__name__] = self.eldritch_invocation_tab
         self.tab_widget.addTab(self.eldritch_invocation_tab, "Invocations occultes")
 
-        self.maneuver_tab = GenericTabWithList(Maneuver, self.details_window)
+        self.maneuver_tab = GenericTabWithList(Maneuver, self.details_window, self.shared_dict)
         self.tabs[Maneuver.__name__] = self.maneuver_tab
         self.tab_widget.addTab(self.maneuver_tab, "Manœuvres")
 
-        self.metamagic_tab = GenericTabWithList(Metamagic, self.details_window)
+        self.metamagic_tab = GenericTabWithList(Metamagic, self.details_window, self.shared_dict)
         self.tabs[Metamagic.__name__] = self.metamagic_tab
         self.tab_widget.addTab(self.metamagic_tab, "Métamagie")
 
-        self.influx_tab = GenericTabWithList(Influx, self.details_window)
+        self.influx_tab = GenericTabWithList(Influx, self.details_window, self.shared_dict)
         self.tabs[Influx.__name__] = self.influx_tab
         self.tab_widget.addTab(self.influx_tab, "Influx d'artificier")
+
+        self.all_lists_tab = AllListsTab(self.details_window, self.spell_dict, self.shared_dict)
+        self.tabs["All_lists"] = self.all_lists_tab
+        self.tab_widget.addTab(self.all_lists_tab, "Toutes les listes")
 
         load_layout = QHBoxLayout()
         save_btn = QPushButton()

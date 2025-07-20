@@ -6,9 +6,13 @@ from ui.widgets.genericTab.genericDDList import DDList
 
 
 class LeveledSpellList(DDList):
-    def __init__(self, level: int):
-        super().__init__(Spell)
+    def __init__(self, level: int, shared_dict):
         self.level = level
+        super().__init__(Spell, shared_dict)
+
+    def _register_list(self):
+        self._key = str(self.level)
+        self._shared_dict.add_list(self._key, [])
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasText():

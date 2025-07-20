@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Type
 import enum
 
+
 class ExportOption(enum.IntEnum):
     """Enum for export options."""
     RULES = 1
@@ -75,6 +76,10 @@ class ExplorableModel:
     def to_dict(self) -> dict[str, str|bool|int]:
         return {fname: getattr(self, fname) for fname in self.__dataclass_fields__}
 
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+        MODEL_NAME_MAPPING[cls.__name__] = cls
+
     @classmethod
     def get_collection(cls) -> Type:
         pass
@@ -82,3 +87,6 @@ class ExplorableModel:
     @classmethod
     def get_detail_windowclass(cls):
         pass
+
+
+MODEL_NAME_MAPPING: dict[str, ExplorableModel] = {}

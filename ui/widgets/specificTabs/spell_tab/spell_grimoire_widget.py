@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from ui.widgets.specificTabs.SpellList import LeveledSpellList
+from ui.widgets.specificTabs.spell_tab.SpellList import LeveledSpellList
 from ui.details_windows.spell_detail_window import SpellDetailWindow
 from model.spell_model import Spell, SpellModels
 from utils.paths import get_export_dir
@@ -24,7 +24,7 @@ import json
 class SpellGrimoireWidget(QWidget):
     spell_models = SpellModels()
 
-    def __init__(self, details_windows, parent = ...):
+    def __init__(self, details_windows, shared_dict, parent = ...):
         super().__init__(parent)
         self.details_windows = details_windows
         main_layout = QVBoxLayout()
@@ -68,7 +68,7 @@ class SpellGrimoireWidget(QWidget):
             level_label = QLabel(
                 f"Niveau {level}" if level > 0 else "Tours de magie"
             )
-            spell_list = LeveledSpellList(level)
+            spell_list = LeveledSpellList(level, shared_dict)
             spell_list.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
             spell_list.itemDoubleClicked.connect(self.spell_double_click)
 
@@ -123,10 +123,13 @@ class SpellGrimoireWidget(QWidget):
         self.show_spell_details(self.spell_models.get_item(spell_name))
 
     def show_spell_details(self, spell):
-        window = SpellDetailWindow(spell, self.details_windows)
-        self.details_windows[spell.name] = window
+        if spell.name not in self.details_windows:
+            window = SpellDetailWindow(spell, self.details_windows)
+            self.details_windows[spell.name] = window
+        else: window = self.details_windows[spell.name]
         window.main_controler = self
         window.show()
+        window.activateWindow()
 
     def toggle_lock_factory(self, btn: QPushButton, list: LeveledSpellList):
         def toggle_lock(locked):

@@ -5,17 +5,25 @@ from PyQt6.QtCore import Qt, QMimeData
 from typing import Type
 import json
 
+from utils.shared_dict import SharedDict
 from utils.paths import get_export_dir
 
 
 
 class DDList(QListWidget):
-    def __init__(self, model: Type[ExplorableModel]):
+    def __init__(self, model: Type[ExplorableModel], shared_dict: SharedDict):
         super().__init__()
         self.item_model = model
+        self._shared_dict = shared_dict
+        self._shared_dict.categoryChanged.connect(self.update_list)
+        self._register_list()
         self.setAcceptDrops(True)
         self.setDragDropMode(QListWidget.DragDropMode.DragDrop)
         self.setDefaultDropAction(Qt.DropAction.MoveAction)
+
+    def _register_list(self):
+        self._key = self.item_model.__name__
+        self._shared_dict.add_list(self._key, [])
 
     def dragEnterEvent(self, e: QDragEnterEvent):
         if e.mimeData().hasText():
@@ -33,6 +41,7 @@ class DDList(QListWidget):
         self.addItem(
             self.item_model.get_collection().get_item(event.mimeData().text()).name
         )
+        self._shared_dict.add_item(self._key, self.item_model.get_collection().get_item(event.mimeData().text()).name)
         event.acceptProposedAction()
         self.adjustSizeToContents()
         self.sortItems()
@@ -69,12 +78,33 @@ class DDList(QListWidget):
 
         if result == Qt.DropAction.IgnoreAction:
             row = self.row(item)
-            self.takeItem(row)
+            self.takeItem(row) # TODO test si c'est pas redondant.
+            self._shared_dict.remove_item(self._key, item)
             self.adjustSizeToContents()
 
+    def update_list(self, key:str, items: list[str]):
+        if self._key == key:
+            current = [self.item(i).text() for i in range(self.count())]
+            if current != items:
+                self.clear()
+                self.addItems(items)
+                self.adjustSizeToContents()
+
+    def addItems(self, labels):
+        # self._shared_dict.blockSignals(True)
+        super().addItems(labels)
+        for label in labels:
+            self._shared_dict.add_item(self._key, label)
+        # self._shared_dict.blockSignals(False)
+
+    def addItem(self, label):
+        super().addItem(label)
+        # self._shared_dict.blockSignals(True)
+        self._shared_dict.add_item(self._key, label)
+        # self._shared_dict.blockSignals(False)
 
 class SavebleDDList(QWidget):
-    def __init__(self, model: Type[ExplorableModel], details_windows):
+    def __init__(self, model: Type[ExplorableModel], details_windows, shared_dict: SharedDict):
         super().__init__()
         self.model = model
         self.details_windows = details_windows
@@ -104,7 +134,7 @@ class SavebleDDList(QWidget):
         name_layout.addWidget(self.list_name_field)
         main_layout.addLayout(name_layout)
 
-        self.list = DDList(self.model)
+        self.list = DDList(self.model, shared_dict)
         self.list.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.list.itemDoubleClicked.connect(self.item_double_click)
 
@@ -150,9 +180,13 @@ class SavebleDDList(QWidget):
         self.show_details(self.model.get_collection.get_item(item.text()))
 
     def show_details(self, item: ExplorableModel):
-        window = item.get_detail_windowclass()(item, self.details_windows)
-        self.details_windows[item.name] = window
+        print("Called")
+        if item.name not in self.details_windows:
+            window = item.get_detail_windowclass()(item, self.details_windows)
+            self.details_windows[item.name] = window
+        else: window = self.details_windows[item.name]
         window.show()
+        window.activateWindow()
 
     def save_list(self):
         path, _ = QFileDialog.getSaveFileName(

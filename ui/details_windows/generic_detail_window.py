@@ -1,9 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
-# from model.generic_model import ExplorableModel
-from model.spell_model import SpellModels
 from ui.details_windows.profile_detail_window import Profile_detail_window
-from ui.details_windows.spell_detail_window import SpellDetailWindow
 from model.loaders.profile_loader import load_profiles_from_folder
 from utils.show_details import get_item_from_path
 import re
@@ -168,17 +165,22 @@ class GenericDetailWindow(QWidget):
                 for p in profiles:
                     if p["nom"] == profile_name:
                         break
-                window = Profile_detail_window(p)
-                self.details_windows[p["nom"]] = window
+                if p["nom"] not in self.details_windows:
+                    window = Profile_detail_window(p)
+                    self.details_windows[p["nom"]] = window
+                else: window = self.details_windows[p["nom"]]
                 window.show()
+                window.activateWindow()
         if path[0] == "sort":
             spell = get_item_from_path(link)
-            print(spell)
             if spell is None:
                     return
-            window = spell.get_detail_windowclass()(spell, self.details_windows)
-            self.details_windows[spell.name] = window
+            if spell.name not in self.details_windows:
+                window = spell.get_detail_windowclass()(spell, self.details_windows)
+                self.details_windows[spell.name] = window
+            else: window = self.details_windows[spell.name]
             window.show()
+            window.activateWindow()
 
     def closeEvent(self, event):
         for k, w in self.details_windows.items():

@@ -134,7 +134,8 @@ class GenericTab(Generic[T], QWidget):
         self.export_widget.change_selected_count_label(seleted_count, all)
 
 class GenericTabWithList(GenericTab):
-    def __init__(self, model: Type[T], details_windows):
+    def __init__(self, model: Type[T], details_windows, shared_dict):
+        self._shared_dict = shared_dict
         super().__init__(model, details_windows)
 
     def create_layout(self):
@@ -143,7 +144,7 @@ class GenericTabWithList(GenericTab):
         layout.addLayout(left_layout)
 
         ##### Right part #####
-        self.list_widget = SavebleDDList(self.model, self.details_windows)
+        self.list_widget = SavebleDDList(self.model, self.details_windows, self._shared_dict)
         self.list_widget.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
         layout.addWidget(self.list_widget)
         self.list_widget.hide()

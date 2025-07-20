@@ -1,10 +1,11 @@
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy, QMessageBox
 from ui.widgets.generic_tab import GenericTab
-from ui.widgets.specificTabs.spell_grimoire_widget import SpellGrimoireWidget
+from ui.widgets.specificTabs.spell_tab.spell_grimoire_widget import SpellGrimoireWidget
 from model.spell_model import Spell
 
 class SpellTab(GenericTab):
-    def __init__(self, details_windows):
+    def __init__(self, details_windows, shared_dict):
+        self._shared_dict = shared_dict
         super().__init__(Spell, details_windows)
 
     def create_layout(self):
@@ -13,7 +14,7 @@ class SpellTab(GenericTab):
         layout.addLayout(left_layout)
 
         ##### Right part #####
-        self.list_widget = SpellGrimoireWidget(self.details_windows, self)
+        self.list_widget = SpellGrimoireWidget(self.details_windows, self._shared_dict, self)
         layout.addWidget(self.list_widget)
         self.list_widget.html_export_btn.clicked.connect(self.export_spell_list_html)
         self.list_widget.hide()

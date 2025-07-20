@@ -166,9 +166,12 @@ class SpellDetailWindow(QWidget):
             for p in profiles:
                 if p["nom"] == profile_name:
                     break
-            window = Profile_detail_window(p)
-            self.details_window[p["nom"]] = window
+            if p["nom"] not in self.details_window:
+                window = Profile_detail_window(p)
+                self.details_window[p["nom"]] = window
+            else: window = self.details_window[p['nom']]
             window.show()
+            window.activateWindow()
 
     def closeEvent(self, event):
         for k,w in self.details_window.items():
