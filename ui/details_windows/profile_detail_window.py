@@ -10,8 +10,8 @@ from PyQt6.QtSvgWidgets import QSvgWidget
 from ui.details_windows.generic_detail_window import GenericDetailWindow
 
 class ProfileDetailWindow(GenericDetailWindow):
-    def __init__(self, profile, details_windows):
-        super().__init__(profile, details_windows)
+    def __init__(self, profile):
+        super().__init__(profile)
 
     def setup_layout(self):
         self.setWindowTitle(self.item.name)

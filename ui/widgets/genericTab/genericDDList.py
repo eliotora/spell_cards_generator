@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt, QMimeData
 from typing import Type
 import json
 
+from ui.details_windows.windows_manager import WindowsManager
 from utils.shared_dict import SharedDict
 from utils.paths import get_export_dir
 
@@ -104,10 +105,9 @@ class DDList(QListWidget):
         # self._shared_dict.blockSignals(False)
 
 class SavebleDDList(QWidget):
-    def __init__(self, model: Type[ExplorableModel], details_windows, shared_dict: SharedDict):
+    def __init__(self, model: Type[ExplorableModel], shared_dict: SharedDict):
         super().__init__()
         self.model = model
-        self.details_windows = details_windows
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
         main_layout.setSpacing(4)
@@ -180,11 +180,10 @@ class SavebleDDList(QWidget):
         self.show_details(self.model.get_collection.get_item(item.text()))
 
     def show_details(self, item: ExplorableModel):
-        print("Called")
-        if item.name not in self.details_windows:
-            window = item.get_detail_windowclass()(item, self.details_windows)
-            self.details_windows[item.name] = window
-        else: window = self.details_windows[item.name]
+        window = WindowsManager().get_window(self.model.__name__.lower(), item.name)
+        if window is None:
+            window = item.get_detail_windowclass()(item)
+            WindowsManager().register_window(self.model.__name__.lower(), item.name, window)
         window.show()
         window.activateWindow()
 

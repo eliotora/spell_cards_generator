@@ -5,8 +5,8 @@ from ui.details_windows.generic_detail_window import GenericDetailWindow
 
 class SpellDetailWindow(GenericDetailWindow):
 
-    def __init__(self, spell, details_windows):
-        super().__init__(spell, details_windows)
+    def __init__(self, spell):
+        super().__init__(spell)
 
     def setup_layout(self):
         self.setStyleSheet("")

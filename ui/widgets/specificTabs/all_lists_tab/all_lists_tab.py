@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QListWidget, QListWidgetItem, QGridLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QListWidget, QListWidgetItem, QGridLayout
 from utils.shared_dict import SharedDict
 from model.generic_model import MODEL_NAME_MAPPING
 from ui.widgets.detailled_item_list import DetailledItemList
@@ -8,11 +8,10 @@ from math import sqrt, ceil
 class AllListsTab(QWidget):
     _othersDict : SharedDict
     _spellsDict : SharedDict
-    def __init__(self, details_windows, spells_dict: SharedDict, others_dict: SharedDict):
+    def __init__(self, spells_dict: SharedDict, others_dict: SharedDict):
         super().__init__()
         self._othersDict = others_dict
         self._spellsDict = spells_dict
-        self.details_windows = details_windows
         self.setup_layout()
         self._othersDict.categoryChanged.connect(self.on_category_changed)
         self._spellsDict.categoryChanged.connect(self.on_category_changed)
@@ -30,7 +29,7 @@ class AllListsTab(QWidget):
         right_col = QVBoxLayout()
         for key, list in self._spellsDict.items():
             label = QLabel("Niveau " + key if int(key) != 0 else "Tours de magie")
-            wlist = DetailledItemList(self.details_windows, MODEL_NAME_MAPPING["spell"])
+            wlist = DetailledItemList(MODEL_NAME_MAPPING["spell"])
             self._lists[key] = wlist
             if int(key) < 5:
                 left_col.addWidget(label)
@@ -45,7 +44,7 @@ class AllListsTab(QWidget):
         i = 0
         for key, list in self._othersDict.items():
             label = QLabel(key)
-            wlist = DetailledItemList(self.details_windows, MODEL_NAME_MAPPING[key.lower()])
+            wlist = DetailledItemList(MODEL_NAME_MAPPING[key.lower()])
             self._lists[key] = wlist
             layout.addWidget(label, 2*(i//line_nbr), i%line_nbr+2)
             layout.addWidget(wlist, 2*(i//line_nbr)+1, i%line_nbr+2)

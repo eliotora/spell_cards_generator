@@ -9,16 +9,16 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 
 from model.generic_model import ExplorableModel, FilterOption
+from ui.details_windows.windows_manager import WindowsManager
 from ui.widgets.specificTabs.spell_tab.SpellList import DDTable
 
 
 class GenericTable(QWidget):
     """A generic table class that can be used to display a model with a list."""
 
-    def __init__(self, model: ExplorableModel, details_windows):
+    def __init__(self, model: ExplorableModel):
         super().__init__()
         self.model = model
-        self.details_windows = details_windows
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -147,17 +147,10 @@ class GenericTable(QWidget):
 
     def show_item_details(self, item):
         """Show details of the selected item in a new window."""
-        if self.details_windows is not None:
-            details_window = self.details_windows.get(item.name)
-            if details_window:
-                details_window.show()
-                details_window.activateWindow()
-            else:
-                # Create a new details window if it doesn't exist
-                window_class = self.model.get_detail_windowclass()
-                window = window_class(item, self.details_windows)
-                self.details_windows[item.name] = window
-                window.main_controller = self
-                window.show()
-        else:
-            print(f"No details window available for {item.name}")
+        window = WindowsManager().get_window(self.model.__class__.__name__.lower(), item.name)
+        if not window:
+            window_class = self.model.get_detail_windowclass()
+            window = window_class(item)
+            WindowsManager().register_window(self.model.__class__.__name__.lower(), item.name, window)
+        window.show()
+        window.activateWindow()

@@ -23,11 +23,10 @@ from model.eldritch_invocation_model import EldritchInvocation
 from model.profile_model import Profile
 from utils.paths import get_export_dir
 from utils.shared_dict import SharedDict
+from ui.details_windows.windows_manager import WindowsManager
 
 
 class MainWindow(QMainWindow):
-    details_window = {}
-
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Liste des Sorts")
@@ -44,31 +43,31 @@ class MainWindow(QMainWindow):
         self.tab_widget = QTabWidget()
         layout.addWidget(self.tab_widget)
 
-        self.spell_tab = SpellTab(self.details_window, self.spell_dict)
+        self.spell_tab = SpellTab(self.spell_dict)
         self.tabs[Spell.__name__] = self.spell_tab
         self.tab_widget.addTab(self.spell_tab, "Sorts")
 
-        self.feat_tab = GenericTabWithList(Feat, self.details_window, self.shared_dict)
+        self.feat_tab = GenericTabWithList(Feat, self.shared_dict)
         self.tabs[Feat.__name__] = self.feat_tab
         self.tab_widget.addTab(self.feat_tab, "Dons")
 
-        self.eldritch_invocation_tab = GenericTabWithList(EldritchInvocation, self.details_window, self.shared_dict)
+        self.eldritch_invocation_tab = GenericTabWithList(EldritchInvocation, self.shared_dict)
         self.tabs[EldritchInvocation.__name__] = self.eldritch_invocation_tab
         self.tab_widget.addTab(self.eldritch_invocation_tab, "Invocations occultes")
 
-        self.maneuver_tab = GenericTabWithList(Maneuver, self.details_window, self.shared_dict)
+        self.maneuver_tab = GenericTabWithList(Maneuver, self.shared_dict)
         self.tabs[Maneuver.__name__] = self.maneuver_tab
         self.tab_widget.addTab(self.maneuver_tab, "Manœuvres")
 
-        self.metamagic_tab = GenericTabWithList(Metamagic, self.details_window, self.shared_dict)
+        self.metamagic_tab = GenericTabWithList(Metamagic, self.shared_dict)
         self.tabs[Metamagic.__name__] = self.metamagic_tab
         self.tab_widget.addTab(self.metamagic_tab, "Métamagie")
 
-        self.influx_tab = GenericTabWithList(Influx, self.details_window, self.shared_dict)
+        self.influx_tab = GenericTabWithList(Influx, self.shared_dict)
         self.tabs[Influx.__name__] = self.influx_tab
         self.tab_widget.addTab(self.influx_tab, "Influx d'artificier")
 
-        self.all_lists_tab = AllListsTab(self.details_window, self.spell_dict, self.shared_dict)
+        self.all_lists_tab = AllListsTab(self.spell_dict, self.shared_dict)
         self.tabs["All_lists"] = self.all_lists_tab
         self.tab_widget.addTab(self.all_lists_tab, "Toutes les listes")
 
@@ -92,8 +91,7 @@ class MainWindow(QMainWindow):
         self.showMaximized()
 
     def closeEvent(self, event):
-        for k, w in self.details_window.items():
-            w.close()
+        WindowsManager().close_all_windows()
 
     def save_all_lists(self):
         path, _ = QFileDialog.getSaveFileName(

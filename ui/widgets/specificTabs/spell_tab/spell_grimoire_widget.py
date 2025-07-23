@@ -14,8 +14,8 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
+from ui.details_windows.windows_manager import WindowsManager
 from ui.widgets.specificTabs.spell_tab.SpellList import LeveledSpellList
-from ui.details_windows.spell_detail_window import SpellDetailWindow
 from model.spell_model import Spell, SpellModels
 from utils.paths import get_export_dir
 import json
@@ -24,9 +24,8 @@ import json
 class SpellGrimoireWidget(QWidget):
     spell_models = SpellModels()
 
-    def __init__(self, details_windows, shared_dict, parent = ...):
+    def __init__(self, shared_dict, parent = ...):
         super().__init__(parent)
-        self.details_windows = details_windows
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
         main_layout.setSpacing(4)
@@ -122,12 +121,11 @@ class SpellGrimoireWidget(QWidget):
         spell_name = item.text()
         self.show_spell_details(self.spell_models.get_item(spell_name))
 
-    def show_spell_details(self, spell):
-        if spell.name not in self.details_windows:
-            window = SpellDetailWindow(spell, self.details_windows)
-            self.details_windows[spell.name] = window
-        else: window = self.details_windows[spell.name]
-        window.main_controler = self
+    def show_spell_details(self, spell:Spell):
+        window = WindowsManager().get_window(Spell.__name__.lower(), spell.name)
+        if window is None:
+            window = spell.get_detail_windowclass()(spell)
+            WindowsManager().register_window(Spell.__name__.lower(), spell.name, window)
         window.show()
         window.activateWindow()
 

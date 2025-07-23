@@ -5,13 +5,11 @@ import re
 
 
 class GenericDetailWindow(QWidget):
-    main_controler = None
-    details_windows = None
+    windows: list[QWidget] = []
 
-    def __init__(self, item, details_windows):
+    def __init__(self, item):
         super().__init__()
         self.item = item
-        self.details_windows = details_windows
         self.setLayout(self.setup_layout())
         self.adjustSize()
 
@@ -165,8 +163,8 @@ class GenericDetailWindow(QWidget):
         return description
 
     def handle_link_click(self, link):
-        create_and_register_window(link, self.details_windows)
+        self.windows.append(create_and_register_window(link))
 
     def closeEvent(self, event):
-        for k, w in self.details_windows.items():
+        for w in self.windows:
             w.close()

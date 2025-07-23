@@ -4,9 +4,9 @@ from ui.widgets.specificTabs.spell_tab.spell_grimoire_widget import SpellGrimoir
 from model.spell_model import Spell
 
 class SpellTab(GenericTab):
-    def __init__(self, details_windows, shared_dict):
+    def __init__(self, shared_dict):
         self._shared_dict = shared_dict
-        super().__init__(Spell, details_windows)
+        super().__init__(Spell)
 
     def create_layout(self):
         layout = QHBoxLayout()
@@ -14,7 +14,7 @@ class SpellTab(GenericTab):
         layout.addLayout(left_layout)
 
         ##### Right part #####
-        self.list_widget = SpellGrimoireWidget(self.details_windows, self._shared_dict, self)
+        self.list_widget = SpellGrimoireWidget(self._shared_dict, self)
         layout.addWidget(self.list_widget)
         self.list_widget.html_export_btn.clicked.connect(self.export_spell_list_html)
         self.list_widget.hide()
