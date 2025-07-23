@@ -30,7 +30,7 @@ class AllListsTab(QWidget):
         right_col = QVBoxLayout()
         for key, list in self._spellsDict.items():
             label = QLabel("Niveau " + key if int(key) != 0 else "Tours de magie")
-            wlist = DetailledItemList(self.details_windows, MODEL_NAME_MAPPING["Spell"])
+            wlist = DetailledItemList(self.details_windows, MODEL_NAME_MAPPING["spell"])
             self._lists[key] = wlist
             if int(key) < 5:
                 left_col.addWidget(label)
@@ -45,7 +45,7 @@ class AllListsTab(QWidget):
         i = 0
         for key, list in self._othersDict.items():
             label = QLabel(key)
-            wlist = DetailledItemList(self.details_windows, MODEL_NAME_MAPPING[key])
+            wlist = DetailledItemList(self.details_windows, MODEL_NAME_MAPPING[key.lower()])
             self._lists[key] = wlist
             layout.addWidget(label, 2*(i//line_nbr), i%line_nbr+2)
             layout.addWidget(wlist, 2*(i//line_nbr)+1, i%line_nbr+2)

@@ -1,8 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
-from ui.details_windows.profile_detail_window import ProfileDetailWindow
-from model.profile_model import load_profiles_from_folder
-from utils.show_details import get_item_from_path
+from utils.show_details import create_and_register_window
 import re
 
 
@@ -14,21 +12,25 @@ class GenericDetailWindow(QWidget):
         super().__init__()
         self.item = item
         self.details_windows = details_windows
+        self.setLayout(self.setup_layout())
+        self.adjustSize()
+
+
+    def setup_layout(self) -> QVBoxLayout:
         self.setStyleSheet("")
         with open("styles/spell_detail.qss", "r") as f:
             style = f.read()
             self.setStyleSheet(style)
-        self.setWindowTitle(item.name)
+        self.setWindowTitle(self.item.name)
         self.resize(400, 600)
 
         # Layout principal
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        layout = QVBoxLayout()
 
         # Scroll area pour le contenu
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-        self.layout.addWidget(self.scroll_area)
+        layout.addWidget(self.scroll_area)
 
         # Body
         self.content_widget = QWidget()
@@ -41,23 +43,23 @@ class GenericDetailWindow(QWidget):
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.title = QLabel(
-            f"<strong><span style='font-size:18pt;'>{item.name[0]}</span><span style='font-size:16pt;'>{item.name[1:].upper()}</span></strong>"
+            f"<strong><span style='font-size:18pt;'>{self.item.name[0]}</span><span style='font-size:16pt;'>{self.item.name[1:].upper()}</span></strong>"
         )
         self.title.setProperty("class", "h1")
         self.content_layout.addWidget(self.title)
 
         trad = ""
-        if item.vo_name != "" and item.vo_name is not None:
-            trad += f"[ {item.vo_name} ]"
-        if item.vf_name != "" and item.vf_name is not None:
-            if item.vo_name != "":
+        if self.item.vo_name != "" and self.item.vo_name is not None:
+            trad += f"[ {self.item.vo_name} ]"
+        if self.item.vf_name != "" and self.item.vf_name is not None:
+            if self.item.vo_name != "":
                 trad += " - "
-            trad += f"[ {item.vf_name} ]"
+            trad += f"[ {self.item.vf_name} ]"
         self.trad = QLabel(f"{trad}")
         self.trad.setProperty("class", "trad")
         self.content_layout.addWidget(self.trad)
 
-        for fname, field in item.__dataclass_fields__.items():
+        for fname, field in self.item.__dataclass_fields__.items():
             if fname not in [
                 "name",
                 "vo_name",
@@ -67,13 +69,13 @@ class GenericDetailWindow(QWidget):
                 "classes",
                 "short_description",
             ]:
-                f = item.__getattribute__(fname)
+                f = self.item.__getattribute__(fname)
                 if f:
                     label = QLabel(f"<em>{field.metadata.get("label")}: {f}</em>")
                     label.setWordWrap(True)
                     self.content_layout.addWidget(label)
 
-        description_text = item.description
+        description_text = self.item.description
         description_text = self.inbed_table_style(description_text)
         self.description = QLabel(description_text)
         self.description.setProperty("class", "description")
@@ -87,7 +89,7 @@ class GenericDetailWindow(QWidget):
         self.footer_layout = QHBoxLayout()
         self.footer.setLayout(self.footer_layout)
 
-        source_label = QLabel(f"{item.source}")
+        source_label = QLabel(f"{self.item.source}")
         source_label.setProperty("class", "source")
         self.footer_layout.addWidget(source_label)
 
@@ -100,7 +102,7 @@ class GenericDetailWindow(QWidget):
 
         self.scroll_area.adjustSize()
 
-        self.adjustSize()
+        return layout
 
     def apply_stylesheet(self, stylesheet):
         """Applies a custom stylesheet to the widget."""
@@ -163,34 +165,7 @@ class GenericDetailWindow(QWidget):
         return description
 
     def handle_link_click(self, link):
-        path = link.split("/")
-        if path[0] == "profile":
-            profile_name = path[1]
-            if self.main_controler is not None:
-
-                profiles = load_profiles_from_folder("data")
-                p = None
-                for p in profiles:
-                    if p.name == profile_name:
-                        break
-                if p.name not in self.details_windows:
-                    window = ProfileDetailWindow(p)
-                    self.details_windows[p.name] = window
-                else:
-                    window = self.details_windows[p.name]
-                window.show()
-                window.activateWindow()
-        if path[0] == "sort":
-            spell = get_item_from_path(link)
-            if spell is None:
-                return
-            if spell.name not in self.details_windows:
-                window = spell.get_detail_windowclass()(spell, self.details_windows)
-                self.details_windows[spell.name] = window
-            else:
-                window = self.details_windows[spell.name]
-            window.show()
-            window.activateWindow()
+        create_and_register_window(link, self.details_windows)
 
     def closeEvent(self, event):
         for k, w in self.details_windows.items():

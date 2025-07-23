@@ -1,7 +1,9 @@
+from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Type
-import enum
+from typing import Callable, Type
+import enum, locale
 
+locale.setlocale(locale.LC_COLLATE, "French_France.1252")
 
 class ExportOption(enum.IntEnum):
     """Enum for export options."""
@@ -70,23 +72,45 @@ def field_metadata(label=None, filter_type: FilterOption = None, visibility: Vis
     """Helper function to create field metadata."""
     return field(metadata={"label": label, "filter_type": filter_type, "visibility": visibility, "cols_to_hide": cols_to_hide})
 
+class ModelCollection:
+    export_options: list[ExportOption] = [
+        ExportOption.RULES,
+        ExportOption.CARDS,
+    ]
+    load_items_method: Callable[[str], list]
+
+    def __new__(cls):
+        if not hasattr(cls, "instance"):
+            cls.items: list[ExplorableModel] = cls.load_items_method("data")
+            cls.items.sort(key=lambda i: locale.strxfrm(i.name))
+            cls.instance = super(ModelCollection, cls).__new__(cls)
+        return cls.instance
+
+    @classmethod
+    def get_item(cls, name: str):
+        for item in cls.items:
+            if item.name.lower() == name.lower():
+                return deepcopy(item)
+        return None
+
+    @classmethod
+    def get_items(cls):
+        return deepcopy(cls.items)
+
 @dataclass
 class ExplorableModel:
     """Model that can have a tab and should be explorable by users"""
+    collection = ModelCollection
     def to_dict(self) -> dict[str, str|bool|int]:
         return {fname: getattr(self, fname) for fname in self.__dataclass_fields__}
 
     def __init_subclass__(cls):
         super().__init_subclass__()
-        MODEL_NAME_MAPPING[cls.__name__] = cls
+        MODEL_NAME_MAPPING[cls.__name__.lower()] = cls
 
     @classmethod
     def get_collection(cls) -> Type:
-        pass
-
-    @classmethod
-    def get_detail_windowclass(cls):
-        pass
+        return cls.collection
 
 
 MODEL_NAME_MAPPING: dict[str, ExplorableModel] = {}

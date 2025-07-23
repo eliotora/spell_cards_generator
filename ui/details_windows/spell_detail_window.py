@@ -1,31 +1,28 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
-from ui.details_windows.profile_detail_window import ProfileDetailWindow
-from model.profile_model import load_profiles_from_folder, Profile
-import re
+from ui.details_windows.generic_detail_window import GenericDetailWindow
 
 
-class SpellDetailWindow(QWidget):
-    main_controler = None
+class SpellDetailWindow(GenericDetailWindow):
 
-    def __init__(self, spell, details_window):
-        super().__init__()
-        self.details_window = details_window
+    def __init__(self, spell, details_windows):
+        super().__init__(spell, details_windows)
+
+    def setup_layout(self):
         self.setStyleSheet("")
         with open("styles/spell_detail.qss", "r") as f:
             style = f.read()
             self.setStyleSheet(style)
-        self.setWindowTitle(spell.name)
+        self.setWindowTitle(self.item.name)
         self.resize(400, 600)
 
         # Layout principal
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        layout = QVBoxLayout()
 
         # Scroll area pour le contenu
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-        self.layout.addWidget(self.scroll_area)
+        layout.addWidget(self.scroll_area)
 
         # Body
         self.content_widget = QWidget()
@@ -38,54 +35,54 @@ class SpellDetailWindow(QWidget):
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.title = QLabel(
-            f"<strong><span style='font-size:18pt;'>{spell.name[0]}</span><span style='font-size:16pt;'>{spell.name[1:].upper()}</span></strong>"
+            f"<strong><span style='font-size:18pt;'>{self.item.name[0]}</span><span style='font-size:16pt;'>{self.item.name[1:].upper()}</span></strong>"
         )
         self.title.setProperty("class", "h1")
         self.content_layout.addWidget(self.title)
 
         trad = ""
-        if spell.vo_name != "" and spell.vo_name is not None:
-            trad += f"[ {spell.vo_name} ]"
-        if spell.vf_name != "" and spell.vf_name is not None:
-            if spell.vo_name != "":
+        if self.item.vo_name != "" and self.item.vo_name is not None:
+            trad += f"[ {self.item.vo_name} ]"
+        if self.item.vf_name != "" and self.item.vf_name is not None:
+            if self.item.vo_name != "":
                 trad += " - "
-            trad += f"[ {spell.vf_name} ]"
+            trad += f"[ {self.item.vf_name} ]"
         self.trad = QLabel(f"{trad}")
         self.trad.setProperty("class", "trad")
         self.content_layout.addWidget(self.trad)
 
         ecole = (
             "niveau "
-            + str(spell.level)
+            + str(self.item.level)
             + " - "
-            + spell.school
-            + (" (rituel)" if spell.ritual else "")
+            + self.item.school
+            + (" (rituel)" if self.item.ritual else "")
         )
         self.ecole = QLabel(ecole)
         self.ecole.setProperty("class", "ecole")
         self.content_layout.addWidget(self.ecole)
 
-        self.t = QLabel(f"<strong>Temps d'incantation:</strong> {spell.casting_time}")
+        self.t = QLabel(f"<strong>Temps d'incantation:</strong> {self.item.casting_time}")
         self.t.setProperty("class", "t")
         self.t.setWordWrap(True)
         self.content_layout.addWidget(self.t)
 
-        self.r = QLabel(f"<strong>Portée:</strong> {spell.range}")
+        self.r = QLabel(f"<strong>Portée:</strong> {self.item.range}")
         self.r.setProperty("class", "r")
         self.r.setWordWrap(True)
         self.content_layout.addWidget(self.r)
 
-        self.c = QLabel(f"<strong>Composantes:</strong> {', '.join(spell.components)}")
+        self.c = QLabel(f"<strong>Composantes:</strong> {', '.join(self.item.components)}")
         self.c.setProperty("class", "c")
         self.c.setWordWrap(True)
         self.content_layout.addWidget(self.c)
 
-        self.d = QLabel(f"<strong>Durée:</strong> {spell.duration}")
+        self.d = QLabel(f"<strong>Durée:</strong> {self.item.duration}")
         self.d.setProperty("class", "d")
         self.d.setWordWrap(True)
         self.content_layout.addWidget(self.d)
 
-        description_text = spell.description
+        description_text = self.item.description
         description_text = self.inbed_table_style(description_text)
         self.description = QLabel(description_text)
         self.description.setProperty("class", "description")
@@ -94,9 +91,9 @@ class SpellDetailWindow(QWidget):
         self.description.linkActivated.connect(self.handle_link_click)
         self.content_layout.addWidget(self.description)
 
-        if spell.at_higher_levels is not None:
+        if self.item.at_higher_levels is not None:
             self.niveau_sup = QLabel(
-                f"<strong><em>À niveau supérieur:</em></strong> {spell.at_higher_levels}"
+                f"<strong><em>À niveau supérieur:</em></strong> {self.item.at_higher_levels}"
             )
             self.niveau_sup.setProperty("class", "description")
             self.niveau_sup.setWordWrap(True)
@@ -107,12 +104,12 @@ class SpellDetailWindow(QWidget):
         self.footer_layout = QHBoxLayout()
         self.footer.setLayout(self.footer_layout)
 
-        for class_name in spell.classes:
+        for class_name in self.item.classes:
             class_label = QLabel(f"{class_name}")
             class_label.setProperty("class", "classe")
             self.footer_layout.addWidget(class_label)
 
-        source_label = QLabel(f"{spell.source}")
+        source_label = QLabel(f"{self.item.source}")
         source_label.setProperty("class", "source")
         self.footer_layout.addWidget(source_label)
 
@@ -125,89 +122,4 @@ class SpellDetailWindow(QWidget):
 
         self.scroll_area.adjustSize()
 
-        self.adjustSize()
-
-    def apply_stylesheet(self, stylesheet):
-        """Applies a custom stylesheet to the widget."""
-        self.setStyleSheet(stylesheet)
-        self.scroll_area.setStyleSheet(stylesheet)
-        self.content_widget.setStyleSheet(stylesheet)
-        for i in range(self.content_layout.count()):
-            widget = self.content_layout.itemAt(i).widget()
-            if widget:
-                widget.setStyleSheet(stylesheet)
-
-    def inbed_table_style(self, description):
-        """Applies a custom style to tables in the description."""
-        if "<table" in description:
-            description = description.replace(
-                "<table",
-                "<table style='margin:6px 0 0 0; border-spacing:0; font-family:arial, sans-serif; font-size:17px; padding:0; box-sizing: border-box; display:table; border-collapse: separate; text-indent: initial; unicode-bidi: isolate; border-color: gray; text-align: justify; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'",
-            )
-            description = description.replace(
-                "<tbody",
-                "tbody style=margin:0; padding:0; box-sizing: border-box; displace: table-row-group; vertical-align: middle; unicode-bidi: isolate; border-color: inherit; margin-top: 6: border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; text-align: justify; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'",
-            )
-            tr_style = "margin:0; padding:0; box-sizing: border-box; display: table-row; vertical-align: inherit; unicode-bidi: isolate; border-color: inherit; margin-top: 6px; border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; text-align: justify; padding: 6px 0 6px 0; line-height: 1.5; overflow-y: scroll;"
-            description = description.replace(
-                '<th class="center"',
-                "<th style='min-width: 45px; padding: 2 4 2 4; text-align: center; font-weight: bold; vertical-align: bottom; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial; sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'",
-            )
-            description = description.replace(
-                "<th>",
-                "<th style='min-width: 45px; padding: 2 4 2 4; text-align: left; font-weight: bold; vertical-align: bottom; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial; sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'>",
-            )
-            description = description.replace(
-                '<td class="center"',
-                "<td style='min-width: 45px; padding: 2 4 2 4; text-align: center; vertical-align: top; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'",
-            )
-            description = description.replace(
-                "<td>",
-                "<td style='min-width: 45px; padding: 2 4 2 4; text-align: left; vertical-align: top; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'>",
-            )
-
-            # Trouver tous les <tr ...> et ajouter un style selon l'index
-            def tr_replacer(match):
-                idx = tr_replacer.counter
-                tr_replacer.counter += 1
-                style = (
-                    tr_style + " background-color: #D6d0e0;"
-                    if idx % 2 == 1
-                    else tr_style
-                )
-                if style:
-                    return f"<tr style='{style}'"
-                else:
-                    return "<tr"
-
-            tr_replacer.counter = 0
-
-            # Remplacer chaque <tr> (avec ou sans attributs)
-            description = re.sub("<tr", tr_replacer, description)
-            description = description.replace("</table>", "</table><br>")
-        return description
-
-    def handle_link_click(self, link):
-        print(link)
-        path = link.split("/")
-        if path[0] == "profile":
-            profile_name = path[1]
-
-            p = Profile.get_collection()().get_item(profile_name)
-            if "profile" not in self.details_window:
-                self.details_window["profile"] = {}
-            if p.name not in self.details_window["profile"]:
-                window = ProfileDetailWindow(p)
-                self.details_window["profile"][p.name] = window
-            else:
-                window = self.details_window["profile"][p.name]
-            window.show()
-            window.activateWindow()
-
-    def closeEvent(self, event):
-        for k, w in self.details_window.items():
-            if type(w) == dict:
-                for k2, w2 in self.details_window["profile"].items():
-                    w.close()
-            else:
-                w.close()
+        return layout

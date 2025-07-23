@@ -1,43 +1,71 @@
 from dataclasses import dataclass
 from typing import Optional
-from copy import deepcopy
 from model.generic_model import (
     field_metadata,
     ExportOption,
     FilterOption,
     VisibilityOption,
-    ExplorableModel,
+    ModelCollection
 )
+from model.detailable_model import DetailableModel
 from ui.details_windows.profile_detail_window import ProfileDetailWindow
 import locale, os, json
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")
 
 
-class ProfileModels:
+def load_profiles_from_folder(folder_path: str):
+    profiles = []
+
+    for source_folder in os.listdir(folder_path):
+        full_source_path = os.path.join(folder_path, source_folder)
+        if not os.path.isdir(full_source_path):
+            continue
+
+        # --- Load profiles ---
+        profiles_folder = os.path.join(full_source_path, "profiles")
+        if not os.path.exists(profiles_folder):
+            continue
+        for filename in os.listdir(profiles_folder):
+            if filename.endswith(".json"):
+                file_path = os.path.join(profiles_folder, filename)
+                try:
+                    with open(file_path, "r", encoding="utf-8") as file:
+                        profile_data = json.load(file)
+                        profile = Profile(
+                            name=profile_data.get("nom"),
+                            vf_name=profile_data.get("nom_VF"),
+                            vo_name=profile_data.get("nom_VO"),
+                            cr=profile_data.get("cr"),
+                            type=profile_data.get("type"),
+                            size=profile_data.get("taille"),
+                            ac=profile_data.get("classe d'armure"),
+                            hp=profile_data.get("points de vie"),
+                            speed=profile_data.get("vitesse"),
+                            alignment=profile_data.get("alignement"),
+                            legendary=profile_data.get("legendary"),
+                            stats=profile_data.get("stats"),
+                            details=profile_data.get("détails"),
+                            traits=profile_data.get("traits"),
+                            actions=profile_data.get("actions"),
+                            bonus_actions=profile_data.get("action bonus"),
+                            reactions=profile_data.get("réactions"),
+                            legendary_actions=profile_data.get("actions_leg"),
+                            legendary_text=profile_data.get("actions_leg_texte"),
+                            source=source_folder
+                        )
+                        profiles.append(profile)
+                except (json.JSONDecodeError, IOError) as e:
+                    print(f"Erreur lors du chargement de {filename}: {e}")
+
+    return profiles
+
+class ProfileModels(ModelCollection):
     export_options: list[ExportOption] = [ExportOption.RULES, ExportOption.CARDS]
-
-    def __new__(cls):
-        if not hasattr(cls, "instance"):
-            cls.profiles = load_profiles_from_folder("data")
-            cls.profiles.sort(key=lambda i: locale.strxfrm(i.name))
-            cls.instance = super(ProfileModels, cls).__new__(cls)
-        return cls.instance
-
-    @classmethod
-    def get_item(cls, name: str):
-        for item in cls.profiles:
-            if item.name.lower() == name.lower():
-                return deepcopy(item)
-        return None
-
-    @classmethod
-    def get_items(cls):
-        return deepcopy(cls.profiles)
-
+    load_items_method = load_profiles_from_folder
 
 @dataclass
-class Profile(ExplorableModel):
+class Profile(DetailableModel):
     name: str = field_metadata(
         label="Nom",
         filter_type=FilterOption.LINE_EDIT,
@@ -96,61 +124,10 @@ class Profile(ExplorableModel):
     reactions: Optional[dict[str, str]]
     legendary_actions: Optional[dict[str, str]]
     legendary_text: Optional[str]
+    collection = ProfileModels
+    details_window_class = ProfileDetailWindow
 
     def __str__(self):
         """String representation of the Profile"""
         return f"{self.name} ({self.source}) - {self.type}, {self.alignment}"
 
-    @classmethod
-    def get_collection(cls):
-        return ProfileModels
-
-    @classmethod
-    def get_detail_windowclass(cls):
-        return ProfileDetailWindow
-
-def load_profiles_from_folder(folder_path: str):
-    profiles = []
-
-    for source_folder in os.listdir(folder_path):
-        full_source_path = os.path.join(folder_path, source_folder)
-        if not os.path.isdir(full_source_path):
-            continue
-
-        # --- Load profiles ---
-        profiles_folder = os.path.join(full_source_path, "profiles")
-        if not os.path.exists(profiles_folder):
-            continue
-        for filename in os.listdir(profiles_folder):
-            if filename.endswith(".json"):
-                file_path = os.path.join(profiles_folder, filename)
-                try:
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        profile_data = json.load(file)
-                        profile = Profile(
-                            name=profile_data.get("nom"),
-                            vf_name=profile_data.get("nom_VF"),
-                            vo_name=profile_data.get("nom_VO"),
-                            cr=profile_data.get("cr"),
-                            type=profile_data.get("type"),
-                            size=profile_data.get("taille"),
-                            ac=profile_data.get("classe d'armure"),
-                            hp=profile_data.get("points de vie"),
-                            speed=profile_data.get("vitesse"),
-                            alignment=profile_data.get("alignement"),
-                            legendary=profile_data.get("legendary"),
-                            stats=profile_data.get("stats"),
-                            details=profile_data.get("détails"),
-                            traits=profile_data.get("traits"),
-                            actions=profile_data.get("actions"),
-                            bonus_actions=profile_data.get("action bonus"),
-                            reactions=profile_data.get("réactions"),
-                            legendary_actions=profile_data.get("actions_leg"),
-                            legendary_text=profile_data.get("actions_leg_texte"),
-                            source=source_folder
-                        )
-                        profiles.append(profile)
-                except (json.JSONDecodeError, IOError) as e:
-                    print(f"Erreur lors du chargement de {filename}: {e}")
-
-    return profiles

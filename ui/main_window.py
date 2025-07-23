@@ -20,6 +20,7 @@ from model.maneuvers_model import Maneuver
 from model.metamagic_model import Metamagic
 from model.artificer_influx_model import Influx
 from model.eldritch_invocation_model import EldritchInvocation
+from model.profile_model import Profile
 from utils.paths import get_export_dir
 from utils.shared_dict import SharedDict
 
@@ -70,6 +71,8 @@ class MainWindow(QMainWindow):
         self.all_lists_tab = AllListsTab(self.details_window, self.spell_dict, self.shared_dict)
         self.tabs["All_lists"] = self.all_lists_tab
         self.tab_widget.addTab(self.all_lists_tab, "Toutes les listes")
+
+        Profile.get_collection()()
 
         load_layout = QHBoxLayout()
         save_btn = QPushButton()
