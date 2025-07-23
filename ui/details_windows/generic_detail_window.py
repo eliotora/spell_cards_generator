@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
-from ui.details_windows.profile_detail_window import Profile_detail_window
-from model.loaders.profile_loader import load_profiles_from_folder
+from ui.details_windows.profile_detail_window import ProfileDetailWindow
+from model.profile_model import load_profiles_from_folder
 from utils.show_details import get_item_from_path
 import re
 
@@ -58,7 +58,15 @@ class GenericDetailWindow(QWidget):
         self.content_layout.addWidget(self.trad)
 
         for fname, field in item.__dataclass_fields__.items():
-            if fname not in ["name", "vo_name", "vf_name", "description", "source", "classes", "short_description"]:
+            if fname not in [
+                "name",
+                "vo_name",
+                "vf_name",
+                "description",
+                "source",
+                "classes",
+                "short_description",
+            ]:
                 f = item.__getattribute__(fname)
                 if f:
                     label = QLabel(f"<em>{field.metadata.get("label")}: {f}</em>")
@@ -163,22 +171,24 @@ class GenericDetailWindow(QWidget):
                 profiles = load_profiles_from_folder("data")
                 p = None
                 for p in profiles:
-                    if p["nom"] == profile_name:
+                    if p.name == profile_name:
                         break
-                if p["nom"] not in self.details_windows:
-                    window = Profile_detail_window(p)
-                    self.details_windows[p["nom"]] = window
-                else: window = self.details_windows[p["nom"]]
+                if p.name not in self.details_windows:
+                    window = ProfileDetailWindow(p)
+                    self.details_windows[p.name] = window
+                else:
+                    window = self.details_windows[p.name]
                 window.show()
                 window.activateWindow()
         if path[0] == "sort":
             spell = get_item_from_path(link)
             if spell is None:
-                    return
+                return
             if spell.name not in self.details_windows:
                 window = spell.get_detail_windowclass()(spell, self.details_windows)
                 self.details_windows[spell.name] = window
-            else: window = self.details_windows[spell.name]
+            else:
+                window = self.details_windows[spell.name]
             window.show()
             window.activateWindow()
 

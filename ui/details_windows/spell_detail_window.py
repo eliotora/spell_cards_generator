@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
-from ui.details_windows.profile_detail_window import Profile_detail_window
-from model.loaders.profile_loader import load_profiles_from_folder
+from ui.details_windows.profile_detail_window import ProfileDetailWindow
+from model.profile_model import load_profiles_from_folder, Profile
 import re
 
 
@@ -37,7 +37,9 @@ class SpellDetailWindow(QWidget):
         self.content_layout.setContentsMargins(0, 0, 0, 0)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.title = QLabel(f"<strong><span style='font-size:18pt;'>{spell.name[0]}</span><span style='font-size:16pt;'>{spell.name[1:].upper()}</span></strong>")
+        self.title = QLabel(
+            f"<strong><span style='font-size:18pt;'>{spell.name[0]}</span><span style='font-size:16pt;'>{spell.name[1:].upper()}</span></strong>"
+        )
         self.title.setProperty("class", "h1")
         self.content_layout.addWidget(self.title)
 
@@ -52,7 +54,13 @@ class SpellDetailWindow(QWidget):
         self.trad.setProperty("class", "trad")
         self.content_layout.addWidget(self.trad)
 
-        ecole = "niveau " + str(spell.level) + " - " + spell.school + (" (rituel)" if spell.ritual else "")
+        ecole = (
+            "niveau "
+            + str(spell.level)
+            + " - "
+            + spell.school
+            + (" (rituel)" if spell.ritual else "")
+        )
         self.ecole = QLabel(ecole)
         self.ecole.setProperty("class", "ecole")
         self.content_layout.addWidget(self.ecole)
@@ -86,9 +94,10 @@ class SpellDetailWindow(QWidget):
         self.description.linkActivated.connect(self.handle_link_click)
         self.content_layout.addWidget(self.description)
 
-
         if spell.at_higher_levels is not None:
-            self.niveau_sup = QLabel(f"<strong><em>À niveau supérieur:</em></strong> {spell.at_higher_levels}")
+            self.niveau_sup = QLabel(
+                f"<strong><em>À niveau supérieur:</em></strong> {spell.at_higher_levels}"
+            )
             self.niveau_sup.setProperty("class", "description")
             self.niveau_sup.setWordWrap(True)
             self.content_layout.addWidget(self.niveau_sup)
@@ -109,7 +118,6 @@ class SpellDetailWindow(QWidget):
 
         self.content_layout.addWidget(self.footer)
         self.footer_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
 
         with open("styles/spell_detail.qss", "r", encoding="utf-8") as f:
             stylesheet = f.read()
@@ -132,23 +140,46 @@ class SpellDetailWindow(QWidget):
     def inbed_table_style(self, description):
         """Applies a custom style to tables in the description."""
         if "<table" in description:
-            description = description.replace("<table", "<table style='margin:6px 0 0 0; border-spacing:0; font-family:arial, sans-serif; font-size:17px; padding:0; box-sizing: border-box; display:table; border-collapse: separate; text-indent: initial; unicode-bidi: isolate; border-color: gray; text-align: justify; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'")
-            description = description.replace("<tbody", "tbody style=margin:0; padding:0; box-sizing: border-box; displace: table-row-group; vertical-align: middle; unicode-bidi: isolate; border-color: inherit; margin-top: 6: border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; text-align: justify; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'")
+            description = description.replace(
+                "<table",
+                "<table style='margin:6px 0 0 0; border-spacing:0; font-family:arial, sans-serif; font-size:17px; padding:0; box-sizing: border-box; display:table; border-collapse: separate; text-indent: initial; unicode-bidi: isolate; border-color: gray; text-align: justify; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'",
+            )
+            description = description.replace(
+                "<tbody",
+                "tbody style=margin:0; padding:0; box-sizing: border-box; displace: table-row-group; vertical-align: middle; unicode-bidi: isolate; border-color: inherit; margin-top: 6: border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; text-align: justify; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'",
+            )
             tr_style = "margin:0; padding:0; box-sizing: border-box; display: table-row; vertical-align: inherit; unicode-bidi: isolate; border-color: inherit; margin-top: 6px; border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; text-align: justify; padding: 6px 0 6px 0; line-height: 1.5; overflow-y: scroll;"
-            description = description.replace('<th class="center"', "<th style='min-width: 45px; padding: 2 4 2 4; text-align: center; font-weight: bold; vertical-align: bottom; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial; sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'")
-            description = description.replace('<th>', "<th style='min-width: 45px; padding: 2 4 2 4; text-align: left; font-weight: bold; vertical-align: bottom; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial; sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'>")
-            description = description.replace('<td class="center"', "<td style='min-width: 45px; padding: 2 4 2 4; text-align: center; vertical-align: top; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'")
-            description = description.replace('<td>', "<td style='min-width: 45px; padding: 2 4 2 4; text-align: left; vertical-align: top; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'>")
+            description = description.replace(
+                '<th class="center"',
+                "<th style='min-width: 45px; padding: 2 4 2 4; text-align: center; font-weight: bold; vertical-align: bottom; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial; sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'",
+            )
+            description = description.replace(
+                "<th>",
+                "<th style='min-width: 45px; padding: 2 4 2 4; text-align: left; font-weight: bold; vertical-align: bottom; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial; sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'>",
+            )
+            description = description.replace(
+                '<td class="center"',
+                "<td style='min-width: 45px; padding: 2 4 2 4; text-align: center; vertical-align: top; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'",
+            )
+            description = description.replace(
+                "<td>",
+                "<td style='min-width: 45px; padding: 2 4 2 4; text-align: left; vertical-align: top; margin: 0; box-sizing: border-box; display: table-cell; unicode-bidi: isolate; border-spacing: 0; font-family: arial, sans-serif; font-size: 17px; border-collapse: separate; text-indent: initial; padding: 6 0 6 0; line-height: 1.5; overflow-y: scroll;'>",
+            )
 
             # Trouver tous les <tr ...> et ajouter un style selon l'index
             def tr_replacer(match):
                 idx = tr_replacer.counter
                 tr_replacer.counter += 1
-                style = tr_style + " background-color: #D6d0e0;" if idx % 2 == 1 else tr_style
+                style = (
+                    tr_style + " background-color: #D6d0e0;"
+                    if idx % 2 == 1
+                    else tr_style
+                )
                 if style:
                     return f"<tr style='{style}'"
                 else:
                     return "<tr"
+
             tr_replacer.counter = 0
 
             # Remplacer chaque <tr> (avec ou sans attributs)
@@ -157,22 +188,26 @@ class SpellDetailWindow(QWidget):
         return description
 
     def handle_link_click(self, link):
+        print(link)
         path = link.split("/")
         if path[0] == "profile":
             profile_name = path[1]
 
-            profiles = load_profiles_from_folder("data")
-            p = None
-            for p in profiles:
-                if p["nom"] == profile_name:
-                    break
-            if p["nom"] not in self.details_window:
-                window = Profile_detail_window(p)
-                self.details_window[p["nom"]] = window
-            else: window = self.details_window[p['nom']]
+            p = Profile.get_collection()().get_item(profile_name)
+            if "profile" not in self.details_window:
+                self.details_window["profile"] = {}
+            if p.name not in self.details_window["profile"]:
+                window = ProfileDetailWindow(p)
+                self.details_window["profile"][p.name] = window
+            else:
+                window = self.details_window["profile"][p.name]
             window.show()
             window.activateWindow()
 
     def closeEvent(self, event):
-        for k,w in self.details_window.items():
-            w.close()
+        for k, w in self.details_window.items():
+            if type(w) == dict:
+                for k2, w2 in self.details_window["profile"].items():
+                    w.close()
+            else:
+                w.close()
