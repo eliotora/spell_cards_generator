@@ -97,6 +97,11 @@ class ModelCollection:
     def get_items(cls):
         return deepcopy(cls.items)
 
+    @classmethod
+    def reload_data(cls):
+        cls.items: list[ExplorableModel] = cls.load_items_method("data")
+        cls.items.sort(key= lambda i: locale.strxfrm(i.name))
+
 @dataclass
 class ExplorableModel:
     """Model that can have a tab and should be explorable by users"""
@@ -104,12 +109,8 @@ class ExplorableModel:
     def to_dict(self) -> dict[str, str|bool|int]:
         return {fname: getattr(self, fname) for fname in self.__dataclass_fields__}
 
-    def __init_subclass__(cls):
-        super().__init_subclass__()
-        MODEL_NAME_MAPPING[cls.__name__.lower()] = cls
-
     @classmethod
-    def get_collection(cls) -> Type:
+    def get_collection(cls) -> Type[ModelCollection]:
         return cls.collection
 
 

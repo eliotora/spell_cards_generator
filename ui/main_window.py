@@ -7,13 +7,14 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QSizePolicy,
-    QFileDialog
+    QFileDialog,
+    QMessageBox,
 )
 from PyQt6.QtCore import Qt
-from ui.widgets.generic_tab import GenericTabWithList
+from ui.widgets.generic_tab import GenericTabWithList, GenericTab
 from ui.widgets.specificTabs.spell_tab.spell_tab import SpellTab
 from ui.widgets.specificTabs.all_lists_tab.all_lists_tab import AllListsTab
-from model.generic_model import ExplorableModel
+from model.generic_model import ExplorableModel, MODEL_NAME_MAPPING
 from model.spell_model import Spell
 from model.feat_model import Feat
 from model.maneuvers_model import Maneuver
@@ -21,7 +22,7 @@ from model.metamagic_model import Metamagic
 from model.artificer_influx_model import Influx
 from model.eldritch_invocation_model import EldritchInvocation
 from model.profile_model import Profile
-from utils.paths import get_export_dir
+from utils.paths import get_export_dir, load_data_if_new
 from utils.shared_dict import SharedDict
 from ui.details_windows.windows_manager import WindowsManager
 
@@ -74,6 +75,12 @@ class MainWindow(QMainWindow):
         Profile.get_collection()()
 
         load_layout = QHBoxLayout()
+
+        load_data_button = QPushButton()
+        load_data_button.setText("Charger des données")
+        load_data_button.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+        load_data_button.clicked.connect(self.load_new_data)
+
         save_btn = QPushButton()
         save_btn.setText("Sauvegarder toutes les listes ensemble")
         save_btn.clicked.connect(self.save_all_lists)
@@ -83,6 +90,7 @@ class MainWindow(QMainWindow):
         load_btn.clicked.connect(self.load_all_lists)
         load_btn.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 
+        load_layout.addWidget(load_data_button)
         load_layout.addWidget(save_btn)
         load_layout.addWidget(load_btn)
         load_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -130,3 +138,30 @@ class MainWindow(QMainWindow):
             if list:
                 tab.list_widget.load_list_items(list)
 
+    def load_new_data(self):
+        path = QFileDialog.getExistingDirectory(
+            self,
+            "Sélectionnez les données à charger",
+            str(get_export_dir()),
+        )
+        if not path:
+            return
+
+        ok, t = load_data_if_new(path)
+
+        text = f"L'import a été réalisé avec succès.{t}" if ok else f"L'import n'a pas été fait pour les sources suivantes:\n{t}"
+
+        msg = QMessageBox()
+        msg.setWindowTitle("Résultat de l'import")
+        msg.setText(text)
+        msg.exec()
+
+        self.reload_data()
+
+    def reload_data(self):
+        for key, element in MODEL_NAME_MAPPING.items():
+            element.get_collection().reload_data()
+        for i in range(self.tab_widget.count()):
+            tab = self.tab_widget.widget(i)
+            if isinstance(tab, GenericTab):
+                tab.reload_data()

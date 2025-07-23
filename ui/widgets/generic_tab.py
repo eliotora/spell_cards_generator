@@ -131,6 +131,9 @@ class GenericTab(Generic[T], QWidget):
         seleted_count, all = self.table_widget.get_selected_count(item)
         self.export_widget.change_selected_count_label(seleted_count, all)
 
+    def reload_data(self):
+        self.load_data()
+
 class GenericTabWithList(GenericTab):
     def __init__(self, model: Type[T], shared_dict):
         self._shared_dict = shared_dict
