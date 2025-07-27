@@ -13,7 +13,7 @@ from typing import TypeVar, Generic, Type
 
 from ui.widgets.genericTab.genericDDList import SavebleDDList
 from utils.paths import get_export_dir
-from export.html_export import html_export, html_export2
+from export.html_export import html_export
 
 from ui.widgets.genericTab.table_section import GenericTable
 from ui.widgets.genericTab.filters_section import GenericFilter
@@ -157,7 +157,7 @@ class GenericTab(Generic[T], QWidget):
         mode, show_VO_name, show_source = self.export_widget.get_export_options()
 
         if items and path:
-            html_export2(
+            html_export(
                 items,
                 path,
                 mode,
@@ -168,7 +168,7 @@ class GenericTab(Generic[T], QWidget):
             QMessageBox.information(
                 self,
                 "Exportation réussie",
-                f"{len(items)} sorts ont été exportés avec succès en HTML.",
+                f"{len(items)} {self.model.__name__} ont été exportés avec succès en HTML.",
             )
 
     def update_selected_count(self, item):
