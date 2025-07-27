@@ -8,7 +8,6 @@ from model.generic_model import (
     ModelCollection
 )
 from model.detailable_model import DetailableModel
-from ui.details_windows.generic_detail_window import GenericDetailWindow
 import locale, os, json
 
 
@@ -102,3 +101,20 @@ class Feat(DetailableModel):
             short_description=data.get("description_short"),
             source=data.get("source", ""),
         )
+
+    def to_html_dict(self):
+        result = {}
+        result['title'] = self.name
+        result["subtitle"] = ""
+        if self.vo_name:
+            result['subtitle'] = f"{self.vo_name}"
+            if self.vf_name:
+                result["subtitle"] += f" - {self.vf_name}"
+        result['italics'] = [
+            f"<em>{self.__class__.__dataclass_fields__[field].metadata['label']} : {self.__getattribute__(field) if not isinstance(self.__getattribute__(field), list) else ", ".join(self.__getattribute__(field))}</em>"
+            for field in ["prerequisite"] if self.__getattribute__(field) != ""
+        ]
+        result['bolds'] = []
+        result['main_text'] = self.description
+        result['source'] = self.source
+        return result

@@ -1,19 +1,15 @@
 from dataclasses import dataclass
-from typing import Optional, Type
-from copy import deepcopy
+from typing import Optional
 from model.generic_model import (
     field_metadata,
     ExportOption,
     FilterOption,
     VisibilityOption,
-    ExplorableModel,
     ModelCollection
 )
 from model.detailable_model import DetailableModel
-# from ui.influx_detail_window import InfluxDetailWindow
 import locale, os, json
 
-from ui.details_windows.generic_detail_window import GenericDetailWindow
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")
 
@@ -109,3 +105,20 @@ class Influx(DetailableModel):
             short_description=data.get("description_short"),
             source=data.get("source", ""),
         )
+
+    def to_html_dict(self):
+        result = {}
+        result["title"] = self.name
+        result["subtitle"] = ""
+        if self.vo_name:
+            result["subtitle"] = f"{self.vo_name}"
+            if self.vf_name:
+                result["subtitle"] += f" - {self.vf_name}"
+        result["italics"] = [
+            f"<em>{self.__class__.__dataclass_fields__[field].metadata['label']} : {self.__getattribute__(field) if not isinstance(self.__getattribute__(field), list) else ", ".join(self.__getattribute__(field))}</em>"
+            for field in ["prerequisite", "item"] if self.__getattribute__(field) != ""
+        ]
+        result['bolds'] = []
+        result['main_text'] = self.description
+        result['source'] = self.source
+        return result

@@ -1,0 +1,28 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>List » Spells - DnD 5e</title>
+    <link rel="stylesheet" href="{{ style_path }}">
+    <style>
+        body	{background:white url( "{{ background_image_path }}" ) repeat}
+        .blocCarte h1	{background-color:#6D0000; color:white}
+        .bloc table tr:nth-child(even) {background-color:#e0e0ff}
+    </style>
+</head>
+<body style="background-image:none; max-width:none">
+    <div class="blocCarteContainer">
+    {% for row in data %}
+        <div class="blocCarte {{ row['card_size'] }}">
+            <h1>{{ row['title'] }}</h1>
+            <div class="ecole">{{ row['italics'] }}</div>
+            {% for bold in row['bolds'] %}
+            <div>{{ bold }}</div>
+            {% endfor %}
+            <div class="description"> {{ row['main_text'] }}</div>
+            {% if show_source %}
+            <div class="source">{{ row['source'] }}</div>
+            {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+</body></html>

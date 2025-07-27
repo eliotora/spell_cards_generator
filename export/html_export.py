@@ -1,23 +1,16 @@
-from jinja2 import Template
+from jinja2 import Template, Environment, FileSystemLoader
 from os import getcwd
-from model.generic_model import ExplorableModel
+from model.detailable_model import DetailableModel, MODEL_EXPORT_MODE_HTML_FILES
+from model.generic_model import ExplorableModel, ExportOption
 from model.feat_model import Feat
 from model.spell_model import Spell
 from model.maneuvers_model import Maneuver
-
-RULES = 1
-GRIMOIRE = 2
-CARDS = 3
 
 SPELL = "spell"
 FEAT = "feat"
 MANEUVER = "maneuver"
 
-export_type_dict = {
-    Feat: FEAT,
-    Spell: SPELL,
-    Maneuver: MANEUVER
-}
+export_type_dict = {Feat: FEAT, Spell: SPELL, Maneuver: MANEUVER}
 
 
 spell_template_rules = """
@@ -207,63 +200,28 @@ feat_template_cards = """
 </body></html>
 """
 
-def html_export(datas, path, mode=RULES, show_source=False, show_VO_name=False, data_type = SPELL):
-    if not datas:
-        return
-
-    processed_data = []
-    for data in datas:
-        processed = data.copy()
-        processed['description'] = processed['description'].replace('\n', '<br>')
-        if processed['description'][-4:] != '<br>':
-            processed['description'] += '<br>'
-        if 'à_niveau_supérieur' in processed:
-            processed['à_niveau_supérieur'] = processed.get('à_niveau_supérieur', '').replace('\n', '<br>')
-        if 'composantes' in processed:
-            processed['composantes'] = ', '.join(processed['composantes'])
-        processed_data.append(processed)
-    datas = processed_data
-
-    if data_type == SPELL:
-        if mode == RULES:
-            template = Template(spell_template_rules)
-        elif mode == GRIMOIRE:
-            datas = sort_by_level(datas)
-            template = Template(spell_template_grimoire)
-        elif mode == CARDS:
-            datas = determine_card_size(datas)
-            template = Template(spell_template_cards)
-    elif data_type == FEAT:
-        if mode == RULES:
-            template = Template(feat_template_rules)
-        elif mode == CARDS:
-            datas = determine_card_size(datas)
-            template = Template(feat_template_cards)
-
-    style_path = f"file:///{getcwd()}/styles/style.css"
-    background_image_path = f"file:///{getcwd().replace("\\", "/")}/images/fond-ph.jpg"
-
-
-    html = template.render(data=datas, show_source=show_source, show_VO_name=show_VO_name, style_path=style_path, background_image_path=background_image_path)
-    with open(path, 'w', encoding='utf-8') as f:
-        f.write(html)
 
 def sort_by_level(spells):
     """
     Sorts spells by their level.
     """
-    spells = sorted(spells, key=lambda x: (x['level'], x['name']))
+    spells = sorted(spells, key=lambda x: (x["level"], x["name"]))
     current_level = -1
     for i, spell in enumerate(spells):
-        if spell['level'] > current_level:
-            current_level = spell['level']
+        if spell["level"] > current_level:
+            current_level = spell["level"]
             new_spell = {
                 "bandeaulvl": True,
-                "text": f'NIVEAU {spell["level"]}' if spell['level'] > 0 else 'SORTS MINEURS',
+                "text": (
+                    f'NIVEAU {spell["level"]}'
+                    if spell["level"] > 0
+                    else "SORTS MINEURS"
+                ),
             }
             spells.insert(i, new_spell)
             i += 1
     return spells
+
 
 def determine_card_size(spells):
     """
@@ -272,9 +230,9 @@ def determine_card_size(spells):
     sized_spells = []
     for spell in spells:
         sized_spell = spell.copy()
-        total_length = len(sized_spell['description'])
+        total_length = len(sized_spell["main_text"])
         if "à_niveau_supérieur" in sized_spell:
-            total_length += len(sized_spell['à_niveau_supérieur'])
+            total_length += len(sized_spell["à_niveau_supérieur"])
 
         if total_length > 1250:
             sized_spell["card_size"] = "blocCarte blocCarteTTP"
@@ -288,10 +246,17 @@ def determine_card_size(spells):
     return sized_spells
 
 
-
 #### NEW
 
-def html_export2(items: list[ExplorableModel], path, mode=RULES, show_source=False, show_VO_name=False, data_type=None):
+
+def html_export(
+    items: list[ExplorableModel],
+    path,
+    mode=ExportOption.RULES,
+    show_source=False,
+    show_VO_name=False,
+    data_type=None,
+):
     if not items or not data_type:
         return
 
@@ -300,35 +265,87 @@ def html_export2(items: list[ExplorableModel], path, mode=RULES, show_source=Fal
     processed_items = []
     for item in items:
         data = item.to_dict()
-        data['description'] = data['description'].replace('\n', '<br>')
-        if data['description'][-4:] != '<br>':
-            data['description'] += '<br>'
-        if 'at_higher_levels' in data:
-            data['at_higher_levels'] = data.get('at_higher_levels', '').replace('\n', '<br>')
-        if 'components' in data:
-            data['components'] = ', '.join(data['components'])
+        data["description"] = data["description"].replace("\n", "<br>")
+        if data["description"][-4:] != "<br>":
+            data["description"] += "<br>"
+        if "at_higher_levels" in data:
+            data["at_higher_levels"] = data.get("at_higher_levels", "").replace(
+                "\n", "<br>"
+            )
+        if "components" in data:
+            data["components"] = ", ".join(data["components"])
         processed_items.append(data)
     items = processed_items
 
     if data_type == SPELL:
-        if mode == RULES:
+        if mode == ExportOption.RULES:
             template = Template(spell_template_rules)
-        elif mode == GRIMOIRE:
+        elif mode == ExportOption.GRIMOIRE:
             items = sort_by_level(items)
             template = Template(spell_template_grimoire)
-        elif mode == CARDS:
+        elif mode == ExportOption.CARDS:
             items = determine_card_size(items)
             template = Template(spell_template_cards)
     elif data_type == FEAT:
-        if mode == RULES:
+        if mode == ExportOption.RULES:
             template = Template(feat_template_rules)
-        elif mode == CARDS:
+        elif mode == ExportOption.CARDS:
             items = determine_card_size(items)
             template = Template(feat_template_cards)
 
     style_path = f"file:///{getcwd()}/styles/style.css"
     background_image_path = f"file:///{getcwd().replace("\\", "/")}/images/fond-ph.jpg"
 
-    html = template.render(data=items, show_source=show_source, show_VO_name=show_VO_name, style_path=style_path, background_image_path=background_image_path)
-    with open(path, 'w', encoding='utf-8') as f:
+    html = template.render(
+        data=items,
+        show_source=show_source,
+        show_VO_name=show_VO_name,
+        style_path=style_path,
+        background_image_path=background_image_path,
+    )
+    with open(path, "w", encoding="utf-8") as f:
         f.write(html)
+
+
+type_mode_template={
+    (Spell.__name__, ExportOption.RULES): "spell_rules.html",
+    (Spell.__name__, ExportOption.GRIMOIRE): "spell_grimoire.html",
+    (Spell.__name__, ExportOption.CARDS): "spell_cards.html",
+    (Feat.__name__, ExportOption.RULES): "feat_rules.html",
+    (Feat.__name__, ExportOption.CARDS): "generic_cards.html"
+}
+
+def html_export2(
+    items: list[DetailableModel],
+    path,
+    mode=ExportOption.RULES.value,
+    show_source=False,
+    show_VO_name=False,
+    data_type=None,
+):
+    env = Environment(loader=FileSystemLoader('export/html_templates'))
+
+
+    template_path = MODEL_EXPORT_MODE_HTML_FILES[(data_type.__name__.lower(), mode)]
+    template = env.get_template(template_path)
+
+    style_path = f"file:///{getcwd()}/styles/style.css"
+    background_image_path = f"file:///{getcwd().replace("\\", "/")}/images/fond-ph.jpg"
+
+    data = [i.to_html_dict() for i in items]
+
+    if mode == ExportOption.CARDS.value:
+        data = determine_card_size(data)
+
+    html = template.render(
+        data_class=data_type.__name__,
+        data=data,
+        show_VO_name=show_VO_name,
+        show_source=show_source,
+        style_path=style_path,
+        background_image_path=background_image_path
+    )
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
+

@@ -1,0 +1,35 @@
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>List » {{ data_class }} - DnD 5e</title>
+    <link rel="stylesheet" href="{{ style_path }}">
+    <style>
+        body	{background:white url("{{background_image_path}}") repeat}
+        .blocCarte h1	{background-color:#6D0000; color:white}
+        .bloc table tr:nth-child(even) {background-color:#e0e0ff}
+    </style>
+</head>
+<body>
+    <div class="titre1">{{data_class}} D&D 5</div>
+    <div class="cols2">
+        {% for row in data %}
+            <div class="bloc">
+                <h1>{{ row["title"] }}</h1>
+                {% if show_VO_name and row["subtitle"] %}
+                <div class="trad">[ {{ row["subtitle"] }} ]</div>
+                {% endif %}
+                {% for italic in row['italics'] %}
+                <div>{{italic}}</div>
+                {% endfor %}
+                {% for bold in row["bolds"] %}
+                <div>{{bold}}</div>
+                {% endfor %}
+                <div class="description"> {{ row["main_text"] }}</div>
+                {% if show_source %}
+                <div class="source">{{ row["source"] }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</body></html>

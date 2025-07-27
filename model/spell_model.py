@@ -8,7 +8,7 @@ from model.generic_model import (
     ExplorableModel,
     ModelCollection
 )
-from model.detailable_model import DetailableModel
+from model.detailable_model import DetailableModel, MODEL_EXPORT_MODE_HTML_FILES
 from ui.details_windows.spell_detail_window import SpellDetailWindow
 import locale, os, json
 
@@ -83,6 +83,10 @@ class SpellModels(ModelCollection):
         ExportOption.CARDS,
     ]
     load_items_method = load_spells_from_folder
+
+    def __init__(self):
+        for export_option in self.export_options:
+            MODEL_EXPORT_MODE_HTML_FILES[(Spell.__name__, export_option.value)] = f"{Spell.__name__.lower()}_{export_option.name.lower()}.html"
 
 
 @dataclass
@@ -159,3 +163,18 @@ class Spell(DetailableModel):
     def __str__(self):
         """String representation of the Spell."""
         return f"{self.name} ({self.source}) - {self.description[:50]}..."
+
+    def to_html_dict(self):
+        result = {}
+        result['title'] = self.name
+        if self.vo_name:
+            result['subtitle'] = self.vo_name
+            if self.vf_name:
+                result["subtitle"] += " + " + self.vf_name
+        result['italics'] = f"niveau {self.level} - {self.school}{f" (rituel)" if self.ritual else ""}" # full line italic
+        result['bolds'] = [f"<strong>{self.__class__.__dataclass_fields__[field].metadata['label']}</strong> : {self.__getattribute__(field) if not isinstance(self.__getattribute__(field), list) else ", ".join(self.__getattribute__(field))}"
+                           for field in ["casting_time", "range", "components", "duration"]]
+        result['main_text'] = f"{self.description}{f"<br><strong>Aux niveaux supérieurs. </strong>{self.at_higher_levels}" if self.at_higher_levels else ""}"
+        result["footer"] = [f"<div class='classe'>{classe}</div>" for classe in self.classes]
+        result["source"] = self.source
+        return result

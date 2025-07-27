@@ -10,7 +10,6 @@ from model.generic_model import (
 from model.detailable_model import DetailableModel
 import locale, os, json
 
-from ui.details_windows.generic_detail_window import GenericDetailWindow
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")
 
@@ -88,3 +87,21 @@ class Metamagic(DetailableModel):
     def __str__(self):
         """String representation of the Metamagic."""
         return f"{self.name} ({self.source}) - {self.description[:50]}..."
+
+    def to_html_dict(self):
+        result = {}
+        result['title'] = self.name
+        result["subtitle"] = ""
+        if self.vo_name:
+            result['subtitle'] = f"{self.vo_name}"
+            if self.vf_name:
+                result["subtitle"] += f" - {self.vf_name}"
+        result['italics'] = [
+            f"<em>{self.__class__.__dataclass_fields__[field].metadata['label']} : {self.__getattribute__(field) if not isinstance(self.__getattribute__(field), list) else ", ".join(self.__getattribute__(field))}</em>"
+            for field in ["point_cost"]
+        ]
+        result['bolds'] = []
+        result['main_text'] = self.description
+        result['source'] = self.source
+        return result
+
