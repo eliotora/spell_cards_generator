@@ -48,7 +48,7 @@ def load_profiles_from_folder(folder_path: str):
                             details=profile_data.get("détails"),
                             traits=profile_data.get("traits"),
                             actions=profile_data.get("actions"),
-                            bonus_actions=profile_data.get("action bonus"),
+                            bonus_actions=profile_data.get("actions bonus"),
                             reactions=profile_data.get("réactions"),
                             legendary_actions=profile_data.get("actions_leg"),
                             legendary_text=profile_data.get("actions_leg_texte"),

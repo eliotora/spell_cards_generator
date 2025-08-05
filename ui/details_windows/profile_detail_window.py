@@ -166,12 +166,13 @@ class ProfileDetailWindow(GenericDetailWindow):
                 self.sans_serif_layout.addWidget(label)
 
         if self.item.bonus_actions:
+            print("Action bonus, ", self.item.bonus_actions)
             self.bonusaction_section = QLabel("ACTIONS BONUS")
             self.bonusaction_section.setObjectName("rub")
             self.sans_serif_layout.addWidget(self.bonusaction_section)
 
-            for bonusaction in self.item.bonus_action:
-                act = self.item.bonus_action[bonusaction]
+            for bonusaction in self.item.bonus_actions:
+                act = self.item.bonus_actions[bonusaction]
                 text = f"<strong><em>{bonusaction}. </em></strong>{act}"
                 label = QLabel(text)
                 label.setObjectName("p")

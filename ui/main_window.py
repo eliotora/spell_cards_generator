@@ -147,8 +147,15 @@ class MainWindow(QMainWindow):
         if not path:
             return
 
-        ok, t = load_data_if_new(path)
-
+        try:
+            ok, t = load_data_if_new(path)
+        except:
+            error = QMessageBox()
+            error.setWindowTitle("Erreur lors de l'import")
+            error.setText("L'import des données nécessite un accès administrateur à un dossier. Veuillez relancer l'application en mode administrateur pour avoir accès à cette fonctionnalité.")
+            error.exec()
+            return
+        
         text = f"L'import a été réalisé avec succès.{t}" if ok else f"L'import n'a pas été fait pour les sources suivantes:\n{t}"
 
         msg = QMessageBox()
