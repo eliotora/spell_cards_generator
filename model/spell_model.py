@@ -5,7 +5,6 @@ from model.generic_model import (
     ExportOption,
     FilterOption,
     VisibilityOption,
-    ExplorableModel,
     ModelCollection
 )
 from model.detailable_model import DetailableModel, MODEL_EXPORT_MODE_HTML_FILES
@@ -54,7 +53,7 @@ def load_spells_from_folder(folder_path: str) -> list:
                                 vf_name=spell_data.get("nom_VF"),
                                 vo_name=spell_data.get("nom_VO"),
                                 level=spell_data.get("niveau"),
-                                school=spell_data.get("école"),
+                                schools=spell_data.get("école"),
                                 casting_time=spell_data.get("temps_d'incantation"),
                                 range=spell_data.get("portée"),
                                 components=spell_data.get("composantes"),
@@ -107,7 +106,7 @@ class Spell(DetailableModel):
         visibility=VisibilityOption.ALWAYS_HIDDEN,
         filter_type=FilterOption.LIST,
     )
-    school: str = field_metadata(
+    schools: list[str] = field_metadata(
         label="École",
         visibility=VisibilityOption.HIDDABLE,
         cols_to_hide=[5],
@@ -171,7 +170,8 @@ class Spell(DetailableModel):
             result['subtitle'] = self.vo_name
             if self.vf_name:
                 result["subtitle"] += " + " + self.vf_name
-        result['italics'] = f"niveau {self.level} - {self.school}{f" (rituel)" if self.ritual else ""}" # full line italic
+        result['italics'] = [f"niveau {self.level} - {self.schools[0] if len(self.schools) < 2 else f"{self.schools[0]} ({", ".join(self.schools[1:])})" }{f" (rituel)" if self.ritual else ""}"]
+        print(result['italics']) # full line italic
         result['bolds'] = [f"<strong>{self.__class__.__dataclass_fields__[field].metadata['label']}</strong> : {self.__getattribute__(field) if not isinstance(self.__getattribute__(field), list) else ", ".join(self.__getattribute__(field))}"
                            for field in ["casting_time", "range", "components", "duration"]]
         result['main_text'] = f"{self.description}{f"<br><strong>Aux niveaux supérieurs. </strong>{self.at_higher_levels}" if self.at_higher_levels else ""}"

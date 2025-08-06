@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
 )
 from PyQt6.QtCore import Qt
+from model.combat_feat_model import CombatFeat
 from ui.widgets.generic_tab import GenericTabWithList, GenericTab
 from ui.widgets.specificTabs.spell_tab.spell_tab import SpellTab
 from ui.widgets.specificTabs.all_lists_tab.all_lists_tab import AllListsTab
@@ -67,6 +68,11 @@ class MainWindow(QMainWindow):
         self.influx_tab = GenericTabWithList(Influx, self.shared_dict)
         self.tabs[Influx.__name__] = self.influx_tab
         self.tab_widget.addTab(self.influx_tab, "Influx d'artificier")
+
+        self.combat_feat_tab = GenericTabWithList(CombatFeat, self.shared_dict)
+        self.tabs[CombatFeat.__name__] = self.combat_feat_tab
+        self.tab_widget.addTab(self.combat_feat_tab, "Styles de combat")
+        print(self.combat_feat_tab.items().items)
 
         self.all_lists_tab = AllListsTab(self.spell_dict, self.shared_dict)
         self.tabs["All_lists"] = self.all_lists_tab
@@ -155,7 +161,7 @@ class MainWindow(QMainWindow):
             error.setText("L'import des données nécessite un accès administrateur à un dossier. Veuillez relancer l'application en mode administrateur pour avoir accès à cette fonctionnalité.")
             error.exec()
             return
-        
+
         text = f"L'import a été réalisé avec succès.{t}" if ok else f"L'import n'a pas été fait pour les sources suivantes:\n{t}"
 
         msg = QMessageBox()

@@ -51,13 +51,7 @@ class SpellDetailWindow(GenericDetailWindow):
         self.trad.setProperty("class", "trad")
         self.content_layout.addWidget(self.trad)
 
-        ecole = (
-            "niveau "
-            + str(self.item.level)
-            + " - "
-            + self.item.school
-            + (" (rituel)" if self.item.ritual else "")
-        )
+        ecole = f"niveau {self.item.level} - {self.item.schools[0] if len(self.item.schools) < 2 else f"{self.item.schools[0]} ({", ".join(self.item.schools[1:])})"} {'(rituel)' if self.item.ritual else ''}"
         self.ecole = QLabel(ecole)
         self.ecole.setProperty("class", "ecole")
         self.content_layout.addWidget(self.ecole)
