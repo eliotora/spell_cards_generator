@@ -72,7 +72,6 @@ class MainWindow(QMainWindow):
         self.combat_feat_tab = GenericTabWithList(CombatFeat, self.shared_dict)
         self.tabs[CombatFeat.__name__] = self.combat_feat_tab
         self.tab_widget.addTab(self.combat_feat_tab, "Styles de combat")
-        print(self.combat_feat_tab.items().items)
 
         self.all_lists_tab = AllListsTab(self.spell_dict, self.shared_dict)
         self.tabs["All_lists"] = self.all_lists_tab

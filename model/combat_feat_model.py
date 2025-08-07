@@ -40,7 +40,6 @@ def load_combat_feats_from_folder(folder_path: str) -> list:
                                 source=source_folder
                             )
                             combat_feats.append(feat)
-                            print(feat)
                     except (json.JSONDecodeError, IOError) as e:
                         print(f"Erreur lors du chargement de {filename}: {e}")
 
