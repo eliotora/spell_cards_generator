@@ -7,21 +7,13 @@ __pycache__/
 dist/
 build/
 output/
-*.spec
 
 # VS Code settings
 .vscode/
 
 # Data
-data/*/*/*.json
-data/*.json
-data/*.zip
+data/
 SpellViewerInstaller.exe
 error.log
-data/Crooked Moon/version
-data/Player´s Handbook/version
-data/Tasha´s Cauldron of Everything/version
-data/Xanathar´s Guide to Everything/version
-data/data.zip
 SpellViewerInstallerv1.1.exe
 SpellViewerInstallerv1.2.exe
