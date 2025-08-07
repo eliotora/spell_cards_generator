@@ -23,16 +23,18 @@ sys.excepthook = excepthook
 
 
 def main():
-    latest, url = check_for_updates("1.2")
+    app = QApplication(sys.argv)
+    latest, url = check_for_updates("1.2.1")
     if latest:
         reply = QMessageBox.question(
+            None,
             "New Version Available",
             f"A new version {latest} is available. Do you want to download it?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:
             download_and_install(url)
-    app = QApplication(sys.argv)
+
     with open("styles/main_style.qss", "r") as f:
         style = f.read()
         app.setStyleSheet(style)
