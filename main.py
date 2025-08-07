@@ -24,7 +24,11 @@ sys.excepthook = excepthook
 
 def main():
     app = QApplication(sys.argv)
-    latest, url = check_for_updates("1.2.1")
+    with open("version.json", "r") as f:
+        version_info = json.load(f)
+        current_version = version_info.get("version", "unknown")
+    print(f"Current version: {current_version}")
+    latest, url = check_for_updates(current_version)
     if latest:
         reply = QMessageBox.question(
             None,
