@@ -1,0 +1,39 @@
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>List » Spells - DnD 5e</title>
+    <link rel="stylesheet" href="{{ style_path }}">
+    <style>
+        body	{background:white url({{background_image_path}}) repeat}
+        .blocCarte h1	{background-color:#6D0000; color:white}
+        .bloc table tr:nth-child(even) {background-color:#e0e0ff}
+    </style>
+</head>
+<body>
+    <div class="titre1">Grimoire</div>
+    <div class="cols2">
+        {% for row in data %}
+        {% if row['bandeaulvl'] %}<div class="niveau">{{ row['text'] }}</div>
+        {% else %}
+            <div class="bloc">
+                <h1>{{ row['title'] }}</h1>
+                {% if show_VO_name %}
+                <div class="trad">[ {{ row['subtitle'] }} ]</div>
+                {% endif %}
+                <div class="ecole">{{row['italics']}}</div>
+                {% for bold in row['bolds'] %}
+                <div>{{ bold }}</div>
+                {% endfor %}
+                <div class="description"> {{ row['main_text'] }}</div>
+                {% if show_source %}
+                {% for class in row.get('footer', []) %}
+                    {{ class }}
+                {% endfor %}
+                <div class="source">{{ row['source'] }}</div>
+                {% endif %}
+            </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</body></html>

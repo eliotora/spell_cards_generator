@@ -1,6 +1,6 @@
 [Setup]
 AppName=DnD Spell Viewer
-AppVersion=1.0
+AppVersion=1.2
 DefaultDirName={pf}\SpellViewer
 DefaultGroupName=DnD Spell Viewer
 OutputDir=.
@@ -11,15 +11,16 @@ SolidCompression=yes
 
 [Dirs]
 Name: "{app}\data"
+Name: "{userdocs}\DnD Spell Viewer Exports"
 
 [Files]
 Source: "dist\dnd_spell_viewer.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion recursesubdirs
 Source: "dist\images\*"; DestDir: "{app}\images"; Flags: ignoreversion recursesubdirs
-Source: "dist\ms-playwright\*"; DestDir: "{app}\ms-playwright"; Flags: recursesubdirs
+; Source: "dist\ms-playwright\*"; DestDir: "{app}\ms-playwright"; Flags: recursesubdirs
 Source: "dist\_internal\*"; DestDir: "{app}\_internal"; Flags: recursesubdirs
-Source: "dist\output\*"; DestDir: "{app}\output"; Flags: recursesubdirs
+; Source: "dist\output\*"; DestDir: "{app}\output"; Flags: recursesubdirs
 
 [Icons]
 Name: "{group}\DnD Spell Viewer"; Filename: "{app}\dnd_spell_viewer.exe"; IconFilename: "{app}\app.ico"
@@ -33,4 +34,4 @@ Filename: "{app}\dnd_spell_viewer.exe"; Description: "Lancer l'application"; Fla
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\data"
-Type: filesandordirs; Name: "{app}\output"
+; Type: filesandordirs; Name: "{app}\output"

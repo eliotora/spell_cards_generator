@@ -1,22 +1,28 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QSizePolicy
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QScrollArea,
+)
 from PyQt6.QtCore import Qt
 from PyQt6.QtSvgWidgets import QSvgWidget
+from ui.details_windows.generic_detail_window import GenericDetailWindow
 
+class ProfileDetailWindow(GenericDetailWindow):
+    def __init__(self, profile):
+        super().__init__(profile)
 
-class Profile_detail_window(QWidget):
-    def __init__(self, profile, show_VO_name=True):
-        super().__init__()
-        self.setWindowTitle(profile.get("nom", "Détails du profile"))
-        self.resize(330, 600)
+    def setup_layout(self):
+        self.setWindowTitle(self.item.name)
+        self.resize(400, 600)
 
         # Main Layout
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-
+        layout = QVBoxLayout()
         # Scroll area pour le contenu
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-        self.layout.addWidget(self.scroll_area)
+        layout.addWidget(self.scroll_area)
 
         # Bloc
         self.content_widget = QWidget()
@@ -33,22 +39,35 @@ class Profile_detail_window(QWidget):
         self.content_layout.addWidget(self.orange_top)
         self.orange_top.setMinimumHeight(6)
 
-        self.title = QLabel(f"<strong><span style='font-size:18pt;'>{profile["nom"][0]}</span><span style='font-size:16pt;'>{profile["nom"][1:].upper()}</span></strong>")
+        self.title = QLabel(
+            f"<strong><span style='font-size:18pt;'>{self.item.name[0]}</span><span style='font-size:16pt;'>{self.item.name[1:].upper()}</span></strong>"
+        )
         self.title.setObjectName("name")
         self.content_layout.addWidget(self.title)
 
-        if show_VO_name and (
-            "nom_VO" in profile and profile["nom_VO"] != "" and profile["nom_VO"] is not None
-        ) or (
-            "nom_VF" in profile and profile["nom_VF"] != "" and profile["nom-VF"] is not None
+        if (
+            (
+                self.item.vo_name != ""
+                and self.item.vo_name is not None
+            )
+            or (
+                self.item.vf_name != ""
+                and self.item.vf_name is not None
+            )
         ):
             trad = ""
-            if "nom_VO" in profile and profile["nom_VO"] != "" and profile["nom_VO"] is not None:
-                trad += f"[ {profile["nom_VO"]} ]"
-            if "nom_VF" in profile and profile["nom_VF"] != "" and profile["nom-VF"] is not None:
+            if (
+                self.item.vo_name != ""
+                and self.item.vo_name is not None
+            ):
+                trad += f"[ {self.item.vo_name} ]"
+            if (
+                self.item.vf_name != ""
+                and self.item.vf_name is not None
+            ):
                 if trad != "":
                     trad += " - "
-                trad += f"[ {profile["nom_VF"]} ]"
+                trad += f"[ {self.item.vf_name} ]"
             self.trad = QLabel(trad)
             self.trad.setObjectName("trad")
             self.content_layout.addWidget(self.trad)
@@ -59,7 +78,8 @@ class Profile_detail_window(QWidget):
         self.content_layout.addWidget(self.sans_serif_widget)
         self.sans_serif_widget.setObjectName("sans_serif")
 
-        type = profile["type"].capitalize() + " de taille " + profile["taille"] + ", " + profile["alignement"]
+        type = self.item.type.capitalize() + " de taille " + self.item.size
+        type += f", {self.item.alignment}" if self.item.alignment else ""
         self.type = QLabel(f"{type}")
         self.type.setWordWrap(True)
         self.type.setObjectName("type")
@@ -74,15 +94,15 @@ class Profile_detail_window(QWidget):
         svg_sep = QSvgWidget("./images/profile_sep.svg")
         self.red_layout.addWidget(svg_sep)
 
-        ca = QLabel(f"<strong>Classe d'armure </strong>{profile["classe d'armure"]}")
+        ca = QLabel(f"<strong>Classe d'armure </strong>{self.item.ac}")
         ca.setWordWrap(True)
         self.red_layout.addWidget(ca)
 
-        pv = QLabel(f"<strong>Points de vie </strong>{profile["points de vie"]}")
+        pv = QLabel(f"<strong>Points de vie </strong>{self.item.hp}")
         pv.setWordWrap(True)
         self.red_layout.addWidget(pv)
 
-        speed = QLabel(f"<strong>Vitesse </strong>{profile["vitesse"]}")
+        speed = QLabel(f"<strong>Vitesse </strong>{self.item.speed}")
         speed.setWordWrap(True)
         self.red_layout.addWidget(speed)
 
@@ -94,26 +114,27 @@ class Profile_detail_window(QWidget):
         # self.stat.setMaximumWidth(500)
         self.stat_layout = QHBoxLayout()
         self.stat_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.stat_layout.setContentsMargins(0,0,0,0)
+        self.stat_layout.setContentsMargins(0, 0, 0, 0)
         self.stat_layout.setSpacing(0)
         self.stat.setLayout(self.stat_layout)
         self.red_layout.addWidget(self.stat)
-        for stat in ["force", "dextérité", "constitution", "intelligence", "sagesse", "charisme"]:
-            stat_mod = (profile[stat] - 10) // 2
-            l1 = QLabel(f"<strong>{stat[:3].upper()}</strong><br>{profile[stat]} ({"{0:+}".format(stat_mod)})")
+        for stat, value in self.item.stats.items():
+            stat_mod = (value - 10) // 2
+            l1 = QLabel(
+                f"<strong>{stat[:3].upper()}</strong><br>{value} ({"{0:+}".format(stat_mod)})"
+            )
             l1.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            # l1.setContentsMargins(0,0,0,0)
             self.stat_layout.addWidget(l1, stretch=1)
-
-            # print(stat_box.size())
 
         svg_sep = QSvgWidget("./images/profile_sep.svg")
         self.red_layout.addWidget(svg_sep)
 
-        if "détails" in profile and profile["détails"]:
-            for detail in profile["détails"]:
-                if profile["détails"][detail]:
-                    l = QLabel(f"<strong>{detail}. </strong>{", ".join(profile["détails"][detail])}")
+        if self.item.details:
+            for detail in self.item.details:
+                if self.item.details[detail]:
+                    l = QLabel(
+                        f"<strong>{detail}. </strong>{", ".join(self.item.details[detail])}"
+                    )
                     self.red_layout.addWidget(l)
                     l.setWordWrap(True)
 
@@ -121,9 +142,9 @@ class Profile_detail_window(QWidget):
         self.red_layout.addWidget(svg_sep)
 
         # --- Traits ---
-        if "traits" in profile and profile["traits"]:
-            for trait in profile["traits"]:
-                t = profile["traits"][trait]
+        if self.item.traits:
+            for trait in self.item.traits:
+                t = self.item.traits[trait]
                 text = f"<strong><em>{trait}. </em></strong>{t}"
                 label = QLabel(text)
                 label.setObjectName("p")
@@ -131,56 +152,57 @@ class Profile_detail_window(QWidget):
                 self.sans_serif_layout.addWidget(label)
 
         # --- Actions ---
-        if "actions" in profile and profile["actions"]:
+        if self.item.actions:
             self.action_section = QLabel("ACTIONS")
             self.action_section.setObjectName("rub")
             self.sans_serif_layout.addWidget(self.action_section)
 
-            for action in profile["actions"]:
-                act = profile["actions"][action]
-                text = f"<strong><em>{action}. </em></strong><em>{act["type"]}</em>{act["bonus"]}, {act["portée"]} <em>Touché: </em>{act["dégâts"]}"
+            for action in self.item.actions:
+                act = self.item.actions[action]
+                text = f"<strong><em>{action}. </em></strong>{act}"
                 label = QLabel(text)
                 label.setObjectName("p")
                 label.setWordWrap(True)
                 self.sans_serif_layout.addWidget(label)
 
-        if "actions bonus" in profile and profile["actions bonus"]:
+        if self.item.bonus_actions:
+            print("Action bonus, ", self.item.bonus_actions)
             self.bonusaction_section = QLabel("ACTIONS BONUS")
             self.bonusaction_section.setObjectName("rub")
             self.sans_serif_layout.addWidget(self.bonusaction_section)
 
-            for bonusaction in profile["actions bonus"]:
-                act = profile["actions bonus"][bonusaction]
+            for bonusaction in self.item.bonus_actions:
+                act = self.item.bonus_actions[bonusaction]
                 text = f"<strong><em>{bonusaction}. </em></strong>{act}"
                 label = QLabel(text)
                 label.setObjectName("p")
                 label.setWordWrap(True)
                 self.sans_serif_layout.addWidget(label)
 
-        if "réactions" in profile and profile["réactions"]:
+        if self.item.reactions:
             self.reaction_section = QLabel("RÉACTIONS")
             self.reaction_section.setObjectName("rub")
             self.sans_serif_layout.addWidget(self.reaction_section)
 
-            for reaction in profile["réactions"]:
-                act = profile["réactions"][reaction]
+            for reaction in self.item.reactions:
+                act = self.item.reactions[reaction]
                 text = f"<strong><em>{reaction}. </em></strong>{act}"
                 label = QLabel(text)
                 label.setObjectName("p")
                 label.setWordWrap(True)
                 self.sans_serif_layout.addWidget(label)
 
-        if "actions_leg" in profile and profile["actions_leg"]:
+        if self.item.legendary_actions:
             self.leg_action_section = QLabel("ACTIONS LÉGENDAIRES")
             self.leg_action_section.setObjectName("rub")
             self.sans_serif_layout.addWidget(self.leg_action_section)
-            legtext = QLabel(profile["actions_leg_texte"])
+            legtext = QLabel(self.item.legendary_actions)
             legtext.setWordWrap(True)
             legtext.setObjectName("p")
             self.sans_serif_layout.addWidget(legtext)
 
-            for leg_action in profile["actions_leg"]:
-                act = profile["actions_leg"][leg_action]
+            for leg_action in self.item.legendary_actions:
+                act = self.item.legendary_actions[leg_action]
                 text = f"<strong><em>{leg_action}. </em></strong>{act}"
                 label = QLabel(text)
                 label.setObjectName("p")
@@ -191,17 +213,18 @@ class Profile_detail_window(QWidget):
         self.orange_bot.setObjectName("orange")
         self.content_layout.addWidget(self.orange_bot)
         self.orange_bot.setMinimumHeight(6)
-        self.setMinimumWidth(400)
-        self.adjustSize()
+        self.setMinimumWidth(450)
 
         with open("styles/profile_detail.qss", "r", encoding="utf-8") as f:
             stylesheet = f.read()
             self.apply_stylesheet(stylesheet)
 
+        return layout
 
     def apply_stylesheet(self, stylesheet):
         """Applies a custom stylesheet to the widget"""
-        def recusive_applying(widget:QWidget):
+
+        def recusive_applying(widget: QWidget):
             widget.setStyleSheet(stylesheet)
             layout = widget.layout()
             if layout:
@@ -212,4 +235,3 @@ class Profile_detail_window(QWidget):
 
         self.setStyleSheet(stylesheet)
         recusive_applying(self.content_widget)
-

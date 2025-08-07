@@ -13,6 +13,14 @@ output/
 .vscode/
 
 # Data
-*.json
+data/*/*/*.json
+data/*.json
 SpellViewerInstaller.exe
 error.log
+data/Crooked Moon/version
+data/Player´s Handbook/version
+data/Tasha´s Cauldron of Everything/version
+data/Xanathar´s Guide to Everything/version
+data/data.zip
+SpellViewerInstallerv1.1.exe
+SpellViewerInstallerv1.2.exe

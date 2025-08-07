@@ -15,6 +15,9 @@ sys.excepthook = excepthook
 
 def main():
     app = QApplication(sys.argv)
+    with open("styles/main_style.qss", "r") as f:
+        style = f.read()
+        app.setStyleSheet(style)
     app.setWindowIcon(QIcon("app.ico"))
     window = MainWindow()
     window.show()
