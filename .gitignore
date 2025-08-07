@@ -13,7 +13,8 @@ output/
 .vscode/
 
 # Data
-*.json
+data/*/*/*.json
+data/*.json
 SpellViewerInstaller.exe
 error.log
 data/Crooked Moon/version
