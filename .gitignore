@@ -15,6 +15,7 @@ output/
 # Data
 data/*/*/*.json
 data/*.json
+data/*.zip
 SpellViewerInstaller.exe
 error.log
 data/Crooked Moon/version
