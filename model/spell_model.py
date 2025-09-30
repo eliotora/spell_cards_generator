@@ -158,6 +158,7 @@ class Spell(DetailableModel):
     )
     collection = SpellModels
     details_window_class = SpellDetailWindow
+    color = "#6D0000"
 
     def __str__(self):
         """String representation of the Spell."""
@@ -171,10 +172,14 @@ class Spell(DetailableModel):
             if self.vf_name:
                 result["subtitle"] += " + " + self.vf_name
         result['italics'] = [f"niveau {self.level} - {self.schools[0] if len(self.schools) < 2 else f"{self.schools[0]} ({", ".join(self.schools[1:])})" }{f" (rituel)" if self.ritual else ""}"]
-        print(result['italics']) # full line italic
         result['bolds'] = [f"<strong>{self.__class__.__dataclass_fields__[field].metadata['label']}</strong> : {self.__getattribute__(field) if not isinstance(self.__getattribute__(field), list) else ", ".join(self.__getattribute__(field))}"
                            for field in ["casting_time", "range", "components", "duration"]]
         result['main_text'] = f"{self.description}{f"<br><strong>Aux niveaux supérieurs. </strong>{self.at_higher_levels}" if self.at_higher_levels else ""}"
         result["footer"] = [f"<div class='classe'>{classe}</div>" for classe in self.classes]
         result["source"] = self.source
+        result["level"] = self.level
+        result["name"] = self.name
         return result
+
+
+MODEL_EXPORT_MODE_HTML_FILES[(Spell.__name__.lower(), ExportOption.GRIMOIRE.value)] = "spell_grimoire.html"

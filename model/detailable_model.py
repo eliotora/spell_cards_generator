@@ -5,6 +5,7 @@ MODEL_EXPORT_MODE_HTML_FILES = {}
 
 class DetailableModel(ExplorableModel):
     details_window_class = GenericDetailWindow
+    color = None
 
     def to_html_dict(self):
         pass

@@ -21,7 +21,7 @@
                 {% if show_VO_name %}
                 <div class="trad">[ {{ row['subtitle'] }} ]</div>
                 {% endif %}
-                <div class="ecole">{{row['italics']}}</div>
+                <div class="ecole">{{row['italics'][0]}}</div>
                 {% for bold in row['bolds'] %}
                 <div>{{ bold }}</div>
                 {% endfor %}

@@ -84,6 +84,7 @@ class Feat(DetailableModel):
         cols_to_hide=[6],
     )
     collection = FeatModels
+    color = "#C93C0C"
 
     def __str__(self):
         """String representation of the Feat."""

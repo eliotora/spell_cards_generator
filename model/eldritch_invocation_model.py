@@ -88,6 +88,7 @@ class EldritchInvocation(DetailableModel):
         cols_to_hide=[7],
     )
     collection = EldritchInvocationModels
+    color = "#575B80"
 
     def __str__(self):
         """String representation of the Eldritch Invocations."""

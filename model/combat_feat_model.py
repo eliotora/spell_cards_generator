@@ -92,6 +92,7 @@ class CombatFeat(DetailableModel):
         visibility=VisibilityOption.ALWAYS_HIDDEN
     )
     collection = CombatFeatModels
+    color = "#e00909"
 
     export_mode = MODEL_EXPORT_MODE_HTML_FILES
 

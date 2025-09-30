@@ -49,7 +49,6 @@ def load_metamagics_from_folder(folder_path: str):
 class MetamagicModels(ModelCollection):
     export_options: list[ExportOption] = [
         ExportOption.RULES,
-        ExportOption.GRIMOIRE,
         ExportOption.CARDS
     ]
     load_items_method = load_metamagics_from_folder
@@ -83,6 +82,7 @@ class Metamagic(DetailableModel):
         label="Source", visibility=VisibilityOption.HIDDABLE, filter_type=FilterOption.LIST, cols_to_hide=[7]
     )
     collection = MetamagicModels
+    color = "#992E2E"
 
     def __str__(self):
         """String representation of the Metamagic."""

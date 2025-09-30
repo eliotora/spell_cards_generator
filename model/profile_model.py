@@ -126,6 +126,7 @@ class Profile(DetailableModel):
     legendary_text: Optional[str]
     collection = ProfileModels
     details_window_class = ProfileDetailWindow
+    color = "#e69a28"
 
     def __str__(self):
         """String representation of the Profile"""

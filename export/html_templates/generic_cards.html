@@ -13,7 +13,7 @@
     <div class="blocCarteContainer">
     {% for row in data %}
         <div class="blocCarte {{ row['card_size'] }}">
-            <h1>{{ row['title'] }}</h1><br>
+            <h1 style="background-color: {{ color }}">{{ row['title'] }}</h1><br>
             {% for italic in row['italics'] %}
                 <div>{{italic}}</div>
             {% endfor %}

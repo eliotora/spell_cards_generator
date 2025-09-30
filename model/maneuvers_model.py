@@ -82,6 +82,7 @@ class Maneuver(DetailableModel):
         cols_to_hide=[5],
     )
     collection = ManeuversModels
+    color = "#7F513E"
 
     def __str__(self):
         """String representation of the Maneuver."""
