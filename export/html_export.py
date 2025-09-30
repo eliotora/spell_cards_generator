@@ -64,6 +64,8 @@ def html_export(
 
     data = [i.to_html_dict() for i in items]
 
+    color = None
+
     if mode == ExportOption.GRIMOIRE.value:
         data = sort_by_level(data)
 

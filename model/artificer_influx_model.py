@@ -88,7 +88,7 @@ class Influx(DetailableModel):
         cols_to_hide=[7],
     )
     collection = InfluxModels
-    color = "#ffea47"
+    color = "#dec400"
 
     def __str__(self):
         """String representation of the Influx."""
