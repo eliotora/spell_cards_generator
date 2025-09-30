@@ -11,7 +11,9 @@ extra_datas = [
     ('images', 'images'),
     ('styles', 'styles'),
     ('output', 'output'),
-    ('version.json', 'version.json')
+    ('version.json', '.'),
+    ('export/html_templates', 'export/html_templates'),
+    ('app.ico', '.')
     # Chromium Playwright : change le chemin exact ci-dessous si besoin
     # (os.path.expanduser('~\\AppData\\Local\\ms-playwright'), 'ms-playwright')
 ]
@@ -62,5 +64,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='.'
+    name=''
 )

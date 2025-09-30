@@ -1,0 +1,4 @@
+.\build.bat VERSION
+Tests
+Push version file
+Create new release

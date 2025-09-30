@@ -1,6 +1,10 @@
+#ifndef MyAppVersion
+  #define MyAppVersion "0.0.0"
+#endif
+
 [Setup]
 AppName=DnD Spell Viewer
-AppVersion=1.2
+AppVersion={#AppVersion}
 DefaultDirName={pf}\SpellViewer
 DefaultGroupName=DnD Spell Viewer
 OutputDir=.
@@ -18,8 +22,10 @@ Source: "dist\dnd_spell_viewer.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion recursesubdirs
 Source: "dist\images\*"; DestDir: "{app}\images"; Flags: ignoreversion recursesubdirs
+Source: "dist\export\*"; DestDir: "{app}\export"; Flags: ignoreversion recursesubdirs
 ; Source: "dist\ms-playwright\*"; DestDir: "{app}\ms-playwright"; Flags: recursesubdirs
 Source: "dist\_internal\*"; DestDir: "{app}\_internal"; Flags: recursesubdirs
+Source: "dist\version.json"; DestDir: "{app}";
 ; Source: "dist\output\*"; DestDir: "{app}\output"; Flags: recursesubdirs
 
 [Icons]
