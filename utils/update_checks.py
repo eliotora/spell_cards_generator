@@ -8,12 +8,12 @@ import os
 def check_for_updates(current_version):
     try:
         response = requests.get(
-            "https://raw.githubusercontent.com/eliotora/spell_cards_generator/main/version.json"
+            "https://api.github.com/repos/eliotora/spell_cards_generator/releases/latest"
         )
         data = response.json()
         print(data)
-        latest_version = data.get("version")
-        download_url = data.get("url")
+        latest_version = data.get("tag_name")
+        download_url = data.get("assets")[0].get("browser_download_url")
 
         if latest_version and latest_version != current_version:
             return latest_version, download_url
