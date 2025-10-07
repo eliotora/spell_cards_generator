@@ -5,26 +5,24 @@ from PyInstaller.utils.hooks import collect_data_files
 
 block_cipher = None
 
-# Inclure les fichiers "data", "images", "styles", "output"
+# Répertoires racine
+BASE_DIR = os.path.abspath(os.path.dirname(__name__))
+SRC_DIR = os.path.join(BASE_DIR, "src")
+ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+
+# Fichiers et dossiers supplémentaires à inclure
 extra_datas = [
-    ('data', 'data'),              # même s'il est vide
-    ('images', 'images'),
-    ('styles', 'styles'),
-    ('output', 'output'),
-    ('version.json', '.'),
-    ('export/html_templates', 'export/html_templates'),
-    ('app.ico', '.')
-    # Chromium Playwright : change le chemin exact ci-dessous si besoin
-    # (os.path.expanduser('~\\AppData\\Local\\ms-playwright'), 'ms-playwright')
+    (ASSETS_DIR, "assets"),
+    (os.path.join(BASE_DIR, "version.json"), "."),
+    (os.path.join(BASE_DIR, "app.ico"), "."),
 ]
 
-
+# --- Étape 1 : Analyse du script principal ---
 a = Analysis(
-    ['main.py'],
-    pathex=[],
+    [os.path.join(SRC_DIR, "main.py")],
+    pathex=[SRC_DIR],
     binaries=[],
     datas=extra_datas,
-    # hiddenimports=['playwright.sync_api'],
     hiddenimports=[],
     hookspath=[],
     runtime_hooks=[],
@@ -33,8 +31,11 @@ a = Analysis(
     win_private_assemblies=False,
     cipher=block_cipher,
 )
+
+# --- Étape 2 : Création de l’archive Python ---
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
+# --- Étape 3 : Génération de l’exécutable ---
 exe = EXE(
     pyz,
     a.scripts,
@@ -53,9 +54,10 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['app.ico'],
+    icon=os.path.join(BASE_DIR, "app.ico"),
 )
 
+# --- Étape 4 : Assemblage final
 coll = COLLECT(
     exe,
     a.binaries,

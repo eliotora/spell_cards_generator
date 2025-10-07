@@ -20,13 +20,9 @@ Name: "{userdocs}\DnD Spell Viewer Exports"
 [Files]
 Source: "dist\dnd_spell_viewer.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\app.ico"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\styles\*"; DestDir: "{app}\styles"; Flags: ignoreversion recursesubdirs
-Source: "dist\images\*"; DestDir: "{app}\images"; Flags: ignoreversion recursesubdirs
-Source: "dist\export\*"; DestDir: "{app}\export"; Flags: ignoreversion recursesubdirs
-; Source: "dist\ms-playwright\*"; DestDir: "{app}\ms-playwright"; Flags: recursesubdirs
+Source: "dist\assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs
 Source: "dist\_internal\*"; DestDir: "{app}\_internal"; Flags: recursesubdirs
 Source: "dist\version.json"; DestDir: "{app}";
-; Source: "dist\output\*"; DestDir: "{app}\output"; Flags: recursesubdirs
 
 [Icons]
 Name: "{group}\DnD Spell Viewer"; Filename: "{app}\dnd_spell_viewer.exe"; IconFilename: "{app}\app.ico"
@@ -40,4 +36,3 @@ Filename: "{app}\dnd_spell_viewer.exe"; Description: "Lancer l'application"; Fla
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\data"
-; Type: filesandordirs; Name: "{app}\output"

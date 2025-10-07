@@ -34,15 +34,10 @@ echo [OK] PyInstaller terminé
 pause
 
 :: 3. Réorganiser les dossiers
-if exist "%DIST%\images" rmdir /s /q "%DIST%\images"
-if exist "%DIST%\styles" rmdir /s /q "%DIST%\styles"
-if exist "%DIST%\export" rmdir /s /q "%DIST%\export"
+if exist "%DIST%\assets" rmdir /s /q "%DIST%\assets"
 if exist "%INTERNAL%\data" rmdir /s /q "%INTERNAL%\data"
-if exist "%INTERNAL%\output" rmdir /s /q "%INTERNAL%\output"
 
-move "%INTERNAL%\images" "%DIST%\images"
-move "%INTERNAL%\styles" "%DIST%\styles"
-move "%INTERNAL%\export" "%DIST%\export"
+move "%INTERNAL%\assets" "%DIST%\assets"
 
 :: 4. Replacer version.json au bon endroit
 if exist "%INTERNAL%\version.json" (
