@@ -23,29 +23,37 @@ sys.excepthook = excepthook
 
 
 def main():
-    app = QApplication(sys.argv)
-    with open("version.json", "r") as f:
-        version_info = json.load(f)
-        current_version = version_info.get("version", "unknown")
-    print(f"Current version: {current_version}")
-    latest, url = check_for_updates(current_version)
-    if latest:
-        reply = QMessageBox.question(
-            None,
-            "New Version Available",
-            f"A new version {latest} is available. Do you want to download it?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
-            download_and_install(url)
+    desktop_platforms = ["win32", "linux", "darwin", "cygwin"]
+    print(sys.platform)
+    if sys.platform in desktop_platforms:
+        app = QApplication(sys.argv)
+        with open("version.json", "r") as f:
+            version_info = json.load(f)
+            current_version = version_info.get("version", "unknown")
+        print(f"Current version: {current_version}")
+        latest, url = check_for_updates(current_version)
+        if latest:
+            reply = QMessageBox.question(
+                None,
+                "New Version Available",
+                f"A new version {latest} is available. Do you want to download it?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                download_and_install(url)
 
-    with open("assets/styles/main_style.qss", "r") as f:
-        style = f.read()
-        app.setStyleSheet(style)
-    app.setWindowIcon(QIcon("app.ico"))
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
+        with open("assets/styles/main_style.qss", "r") as f:
+            style = f.read()
+            app.setStyleSheet(style)
+        app.setWindowIcon(QIcon("app.ico"))
+        window = MainWindow()
+        window.show()
+        sys.exit(app.exec())
+
+    else:
+        from ui_mobile.main_view import MainView
+        MainView()
+
 
 
 if __name__ == "__main__":

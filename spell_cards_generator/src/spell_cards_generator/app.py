@@ -1,25 +1,26 @@
-"""
-Spell and other DB explorer for Android
-"""
-
 import toga
-from toga.style.pack import COLUMN, ROW
+from toga.style import Pack
+from toga.style.pack import COLUMN, CENTER
+from src.ui_mobile.main_view import MainView
 
 
-class DnDSpellViewer(toga.App):
+class SpellCardsApp(toga.App):
     def startup(self):
-        """Construct and show the Toga application.
-
-        Usually, you would add your application to a main content box.
-        We then create a main window (with a name matching the app), and
-        show the main window.
-        """
-        main_box = toga.Box()
-
+        # Crée ta fenêtre principale
         self.main_window = toga.MainWindow(title=self.formal_name)
-        self.main_window.content = main_box
+
+        # Instancie ta vue principale
+        self.main_view = MainView()
+        self.main_view.startup()
+
+        # Ajoute-la à la fenêtre
+        self.main_window.content = self.main_view
+
+        # Affiche la fenêtre
         self.main_window.show()
+        print("Showing main window")
 
 
 def main():
-    return DnDSpellViewer()
+    # Toga va appeler main() pour obtenir une instance de App
+    return SpellCardsApp('Spell Cards Generator', 'com.eliotora.spell_cards_generator')
