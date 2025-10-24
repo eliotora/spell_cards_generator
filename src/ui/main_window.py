@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from models.combat_feat_model import CombatFeat
 from ui.widgets.generic_tab import GenericTabWithList, GenericTab
+from ui.widgets.specificTabs.character_tab.character_tab import CharacterTab
 from ui.widgets.specificTabs.spell_tab.spell_tab import SpellTab
 from ui.widgets.specificTabs.all_lists_tab.all_lists_tab import AllListsTab
 from models.generic_model import ExplorableModel, MODEL_NAME_MAPPING
@@ -76,6 +77,10 @@ class MainWindow(QMainWindow):
         self.all_lists_tab = AllListsTab(self.spell_dict, self.shared_dict)
         self.tabs["All_lists"] = self.all_lists_tab
         self.tab_widget.addTab(self.all_lists_tab, "Toutes les listes")
+
+        self.char_tab = CharacterTab()
+        self.tabs["Character"] = self.char_tab
+        self.tab_widget.addTab(self.char_tab, "Character")
 
         Profile.get_collection()()
 
