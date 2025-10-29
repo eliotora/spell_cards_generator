@@ -15,7 +15,7 @@ class CharacterIdentity(QWidget):
     def create_layout(self):
         layout = QGridLayout()
         layout.setSpacing(0)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(20,0,20,0)
 
         self.name = UnderlabeledLineEdit("Name".upper())
         self.background = UnderlabeledLineEdit("Background".upper())

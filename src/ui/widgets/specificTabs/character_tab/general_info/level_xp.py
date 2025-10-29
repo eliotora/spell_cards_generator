@@ -12,7 +12,7 @@ class LevelXpWidget(QWidget):
     def create_layout(self):
         layout = QVBoxLayout()
         layout.setSpacing(0)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(20,0,20,0)
 
         self.level = UnderlabeledLineEdit("Level".upper(), label_alignement=Qt.AlignmentFlag.AlignCenter)
         self.xp = UnderlabeledLineEdit("XP".upper(), label_alignement=Qt.AlignmentFlag.AlignCenter)

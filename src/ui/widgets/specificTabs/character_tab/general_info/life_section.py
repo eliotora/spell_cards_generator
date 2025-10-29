@@ -20,7 +20,7 @@ class HitPointsWidget(QWidget):
         self.max_hp = UnderlabeledLineEdit("MAX")
 
 
-        layout.addWidget(self.label, 0, 0, 1, 2)
+        layout.addWidget(self.label, 0, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.current_hp, 1, 0, 2, 1)
         layout.addWidget(self.temp_hp, 1, 1, 1, 1)
         layout.addWidget(self.max_hp, 2, 1, 1, 1)
@@ -43,7 +43,7 @@ class HitDicesWidget(QWidget):
         self.spent_dices = UnderlabeledLineEdit("SPENT")
         self.max_dices = UnderlabeledLineEdit("MAX")
 
-        layout.addWidget(self.label)
+        layout.addWidget(self.label, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.spent_dices)
         layout.addWidget(self.max_dices)
 
@@ -60,23 +60,21 @@ class DeathSavesWidget(QWidget):
         layout.setSpacing(0)
         layout.setContentsMargins(0,0,0,0)
 
-        self.label = QLabel("HIT DICE")
+        self.label = QLabel("DEATH SAVES")
         success_layout = QHBoxLayout()
         self.successes = [QCheckBox() for _ in range(3)]
-        [success_layout.addWidget(box) for box in self.successes]
-        success_layout.addStretch(10)
+        [success_layout.addWidget(box, alignment=Qt.AlignmentFlag.AlignCenter) for box in self.successes]
         self.successes_label = QLabel("SUCCESSES")
         failure_layout = QHBoxLayout()
         self.failures = [QCheckBox() for _ in range(3)]
-        [failure_layout.addWidget(box) for box in self.failures]
-        failure_layout.addStretch(10)
+        [failure_layout.addWidget(box, alignment=Qt.AlignmentFlag.AlignCenter) for box in self.failures]
         self.failures_label = QLabel("FAILURES")
 
-        layout.addWidget(self.label)
+        layout.addWidget(self.label, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addLayout(success_layout)
-        layout.addWidget(self.successes_label)
+        layout.addWidget(self.successes_label, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addLayout(failure_layout)
-        layout.addWidget(self.failures_label)
+        layout.addWidget(self.failures_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
         return layout
 
@@ -89,7 +87,7 @@ class LifeWidget(QWidget):
     def create_layout(self):
         layout = QHBoxLayout()
         layout.setSpacing(0)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(20,0,20,0)
 
         self.hp = HitPointsWidget()
         self.hit_dices = HitDicesWidget()

@@ -19,7 +19,7 @@ class CharacterGeneralInfo(QWidget):
     def create_layout(self):
         layout = QHBoxLayout()
         layout.setSpacing(0)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(0, 0, 0, 10)
 
         self.char_identity = CharacterIdentity()
         self.level = LevelXpWidget()

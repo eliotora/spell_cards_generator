@@ -10,7 +10,7 @@ class ArmorClassWidget(QWidget):
     def create_layout(self):
         layout = QVBoxLayout()
         layout.setSpacing(0)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(20,0,20,0)
 
         self.label = QLabel("ARMOR CLASS")
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
