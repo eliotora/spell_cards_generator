@@ -4,12 +4,15 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QBoxLayout,
     QScrollArea,
-    QSizePolicy
+    QSizePolicy,
+    QTabWidget
 )
 
 from .general_info.general_info import CharacterGeneralInfo
 from .skills.skills_section import SkillsSection, CaracteristicName
 from .combat_capacities.combat_capacities import CombatCapacities
+from .spellcasting.spellcasting_section import SpellcastingSectionWidget
+from .backstory_equipment.backstory_equipment_widget import BackstoryEquipementWidget
 class CharacterTab(QWidget):
     """A tab to hold a character sheet"""
 
@@ -23,6 +26,16 @@ class CharacterTab(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
+        tab_widget = QTabWidget()
+        layout.addWidget(tab_widget)
+
+        tab_char1 = QWidget()
+        tab_widget.addTab(tab_char1, "Front")
+
+        tab1_layout = QVBoxLayout()
+        tab1_layout.setSpacing(0)
+        tab1_layout.setContentsMargins(0, 0, 0, 0)
+        tab_char1.setLayout(tab1_layout)
 
         general_info_widget = CharacterGeneralInfo()
         general_info_widget.setSizePolicy(general_info_widget.sizePolicy().horizontalPolicy(), QSizePolicy.Policy.Fixed)
@@ -37,7 +50,7 @@ class CharacterTab(QWidget):
         combat_capacities.add_info("PASSIVE PERCEPTION")
         skills_section.carac_widgets[CaracteristicName.WISDOM].skills["Perception"][2].textChanged.connect(lambda txt: combat_capacities.infos["PASSIVE PERCEPTION"].update_value(str(10 + int(txt))))
 
-        layout.addWidget(general_info_widget)
+        tab1_layout.addWidget(general_info_widget)
 
         bottom_layout = QHBoxLayout()
         skills_scroll = QScrollArea()
@@ -49,7 +62,21 @@ class CharacterTab(QWidget):
         combat_scroll.setWidget(combat_capacities)
         bottom_layout.addWidget(combat_scroll, stretch=3)
 
-        layout.addLayout(bottom_layout)
+        tab1_layout.addLayout(bottom_layout)
 
+        spell_section_widget = SpellcastingSectionWidget()
+        backstory_equipment = BackstoryEquipementWidget()
+
+        tab2_layout = QHBoxLayout()
+        tab2_layout.addWidget(spell_section_widget, stretch=2)
+        backstory_scroll = QScrollArea()
+        backstory_scroll.setWidgetResizable(True)
+        backstory_scroll.setWidget(backstory_equipment)
+        tab2_layout.addWidget(backstory_scroll, stretch=1)
+
+        tab_char2 = QWidget()
+        tab_char2.setLayout(tab2_layout)
+
+        tab_widget.addTab(tab_char2, "Back")
 
         return layout
