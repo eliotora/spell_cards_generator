@@ -1,1 +1,1 @@
-from .base_collection import BaseCollection
+from src.models.collections.base_collection import *

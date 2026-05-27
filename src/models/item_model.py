@@ -1,16 +1,16 @@
 from dataclasses import dataclass
 from typing import Optional
-from .generic_model import (
+from src.models.generic_model import (
     ExportOption,
     FilterOption,
     VisibilityOption,
     field_metadata,
     ModelCollection
 )
-from .detailable_model import DetailableModel
+from src.models.detailable_model import DetailableModel
 import locale, os, json
 from enum import Enum
-from .conceptual_models import WeaponType, WeaponProperty, Dice
+from src.models.conceptual_models import WeaponType, WeaponProperty, Dice
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")
 

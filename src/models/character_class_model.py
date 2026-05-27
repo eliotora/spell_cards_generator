@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from collections.abc import Callable
 from PySide6.QtCore import Signal
-from .conceptual_models import Dice, Saving_Throw, Ability, Caracteristic
-from .item_model import Item
+from src.models.conceptual_models import Dice, Saving_Throw, Ability, Caracteristic
+from src.models.item_model import Item
 from enum import Enum
 from math import floor
 from pyparsing import Word, alphas, alphanums, Group, Forward, oneOf, Suppress

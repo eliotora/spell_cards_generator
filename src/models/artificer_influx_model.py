@@ -9,7 +9,7 @@ from src.models.detailable_model import DetailableModel
 import locale, os, json
 
 from src.models.base import BaseModel
-from .mixins import ExplorableMixin, JsonMixin, PopupMixin, ExportableMixin, MODEL_EXPORT_MODE_HTML_FILES, ExportOption
+from src.models.mixins import ExplorableMixin, JsonMixin, PopupMixin, ExportableMixin, MODEL_EXPORT_MODE_HTML_FILES, ExportOption
 from src.models.metadata import ExplorerMetadata, JsonMetadata, FilterOption, VisibilityOption
 
 

@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 
-from .proficiency_bonus import ProficiencyBonus
-from .carac_skills import CaracSkillswidget
-from .inspiration import Inspiration
-from .equipment_training import EquipmentTrainingWidget
+from src.ui.widgets.specificTabs.character_tab.skills.proficiency_bonus import ProficiencyBonus
+from src.ui.widgets.specificTabs.character_tab.skills.carac_skills import CaracSkillswidget
+from src.ui.widgets.specificTabs.character_tab.skills.inspiration import Inspiration
+from src.ui.widgets.specificTabs.character_tab.skills.equipment_training import EquipmentTrainingWidget
 from src.models.character_model import Character, Ability, Caracteristic
 
 class SkillsSection(QWidget):

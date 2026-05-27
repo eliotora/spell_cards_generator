@@ -1,5 +1,5 @@
 from playwright.sync_api import sync_playwright
-from export.html_export import html_export
+from src.export.html_export import html_export
 import os
 import random
 from pathlib import Path

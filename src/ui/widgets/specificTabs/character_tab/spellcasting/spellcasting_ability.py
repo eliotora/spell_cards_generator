@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFontMetrics
-from ..underlabeled_edits import UnderlabeledLineEdit
+from src.ui.widgets.specificTabs.character_tab.underlabeled_edits import UnderlabeledLineEdit
 
 class SpellcastingAbilityWidget(QWidget):
     profiency: int = 2

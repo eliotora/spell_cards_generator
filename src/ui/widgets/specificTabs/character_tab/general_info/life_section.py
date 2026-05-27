@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox
 from PySide6.QtCore import Qt
 
-from ..underlabeled_edits import UnderlabeledSpinBox
+from src.ui.widgets.specificTabs.character_tab.underlabeled_edits import UnderlabeledSpinBox
 from src.models.character_model import Character
 
 class HitPointsWidget(QWidget):

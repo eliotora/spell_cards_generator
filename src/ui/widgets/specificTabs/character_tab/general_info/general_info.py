@@ -4,10 +4,10 @@ from PySide6.QtCore import Qt
 from src.ui.widgets.specificTabs.character_tab.underlabeled_edits import (
     UnderlabeledLineEdit,
 )
-from .character_identity import CharacterIdentity
-from .level_xp import LevelXpWidget
-from .armor_class import ArmorClassWidget
-from .life_section import LifeWidget
+from src.ui.widgets.specificTabs.character_tab.general_info.character_identity import CharacterIdentity
+from src.ui.widgets.specificTabs.character_tab.general_info.level_xp import LevelXpWidget
+from src.ui.widgets.specificTabs.character_tab.general_info.armor_class import ArmorClassWidget
+from src.ui.widgets.specificTabs.character_tab.general_info.life_section import LifeWidget
 from src.models.character_model import Character
 
 

@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QLineEdit, QSizePolicy, QSpinBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFontMetrics
-from ..underlabeled_edits import UnderlabeledSpinBox
+from src.ui.widgets.specificTabs.character_tab.underlabeled_edits import UnderlabeledSpinBox
 from src.models.character_model import Caracteristic, signaledProperty, Ability
 
 class CaracSkillswidget(QWidget):

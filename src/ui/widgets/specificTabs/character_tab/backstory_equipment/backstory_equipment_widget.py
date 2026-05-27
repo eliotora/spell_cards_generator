@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QSizePolicy
-from .backstory_widget import BackstoryWidget
-from .coins_widget import CoinWidget
-from .equipement_widget import EquipementWidget
-from ..combat_capacities.text_boxes import SimpleTextBox
+from src.ui.widgets.specificTabs.character_tab.backstory_equipment.backstory_widget import BackstoryWidget
+from src.ui.widgets.specificTabs.character_tab.backstory_equipment.coins_widget import CoinWidget
+from src.ui.widgets.specificTabs.character_tab.backstory_equipment.equipement_widget import EquipementWidget
+from src.ui.widgets.specificTabs.character_tab.combat_capacities.text_boxes import SimpleTextBox
 
 class BackstoryEquipementWidget(QWidget):
     def __init__(self):

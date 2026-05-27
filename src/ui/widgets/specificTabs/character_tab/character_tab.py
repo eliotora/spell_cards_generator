@@ -8,11 +8,11 @@ from PySide6.QtWidgets import (
     QTabWidget
 )
 
-from .general_info.general_info import CharacterGeneralInfo
-from .skills.skills_section import SkillsSection
-from .combat_capacities.combat_capacities import CombatCapacities
-from .spellcasting.spellcasting_section import SpellcastingSectionWidget
-from .backstory_equipment.backstory_equipment_widget import BackstoryEquipementWidget
+from src.ui.widgets.specificTabs.character_tab.general_info.general_info import CharacterGeneralInfo
+from src.ui.widgets.specificTabs.character_tab.skills.skills_section import SkillsSection
+from src.ui.widgets.specificTabs.character_tab.combat_capacities.combat_capacities import CombatCapacities
+from src.ui.widgets.specificTabs.character_tab.spellcasting.spellcasting_section import SpellcastingSectionWidget
+from src.ui.widgets.specificTabs.character_tab.backstory_equipment.backstory_equipment_widget import BackstoryEquipementWidget
 from src.models.character_model import Character
 from src.models.character_class_model import *
 class CharacterTab(QWidget):

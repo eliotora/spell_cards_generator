@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 
-from .info_display import InfoDisplay
-from .attack_table import AttackTableWidget
-from .text_boxes import SimpleTextBox, DoubleTextBox
+from src.ui.widgets.specificTabs.character_tab.combat_capacities.info_display import InfoDisplay
+from src.ui.widgets.specificTabs.character_tab.combat_capacities.attack_table import AttackTableWidget
+from src.ui.widgets.specificTabs.character_tab.combat_capacities.text_boxes import SimpleTextBox, DoubleTextBox
 from src.models.item_model import Weapon, WeaponProperty, Dice, WeaponType
 from src.models.conceptual_models import WeaponPropertyType, Distance
 from src.models.character_model import Character

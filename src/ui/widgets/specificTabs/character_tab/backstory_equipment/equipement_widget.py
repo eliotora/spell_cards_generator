@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QLabel, QCheckBox, QLineEdit, QHBoxLayout, QSizePolicy
 from PySide6.QtCore import Qt
 
-from ..combat_capacities.text_boxes import SimpleTextBox
+from src.ui.widgets.specificTabs.character_tab.combat_capacities.text_boxes import SimpleTextBox
 
 class EquipementWidget(SimpleTextBox):
     def __init__(self):

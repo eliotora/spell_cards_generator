@@ -1,7 +1,9 @@
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QWidget
-from .spellcasting_ability import SpellcastingAbilityWidget
-from .spell_slots import SpellSlotWidget
-from .spell_table import SpellTableWidget, SpellRow
+from src.ui.widgets.specificTabs.character_tab.spellcasting.spellcasting_ability import SpellcastingAbilityWidget
+from src.ui.widgets.specificTabs.character_tab.spellcasting.spell_slots import SpellSlotWidget
+from src.ui.widgets.specificTabs.character_tab.spellcasting.spell_table import SpellTableWidget, SpellRow
+
+from src.models import SpellModel
 
 class SpellcastingSectionWidget(QWidget):
     def __init__(self):
@@ -22,7 +24,7 @@ class SpellcastingSectionWidget(QWidget):
         self.spell_slot_widget = SpellSlotWidget()
         self.spell_table = SpellTableWidget()
 
-        spells = SpellModels.get_items()
+        spells = SpellModel.collection.items()
         for spell in spells[0:10]:
             self.spell_table.add_spell(spell)
 

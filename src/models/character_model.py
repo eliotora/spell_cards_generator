@@ -1,8 +1,8 @@
 from PySide6.QtCore import QObject, Signal
 import enum
-from .conceptual_models import Distance, Caracteristic, Ability, Saving_Throw, MoneyUnit
-from .item_model import Weapon, Item, MagicItem
-from .character_class_model import CharacterClass, ClassFeature
+from src.models.conceptual_models import Distance, Caracteristic, Ability, Saving_Throw, MoneyUnit
+from src.models.item_model import Weapon, Item, MagicItem
+from src.models.character_class_model import CharacterClass, ClassFeature
 
 from src.models.feat_model import FeatModel
 
