@@ -1,0 +1,113 @@
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>List » Monstres D&D 5.5</title>
+    <link rel="stylesheet" href="{{ style_path }}">
+    <style>
+        body	{background:white url("{{background_image_path}}") repeat}
+        .blocCarte h1	{background-color:#6D0000; color:white}
+        .bloc table tr:nth-child(even) {background-color:#e0e0ff}
+    </style>
+</head>
+<body>
+    <div class="colM">
+        <h2>Monstres D&D 5.5</h2>
+        <div class="colM2">
+        {% for row in data %}
+            <div class="bloc">
+                <div class="jaune">
+                    <div>
+                        <h1>{{ row["name"] }}</h1>
+                        <div class="sansSerif">
+                            <div class="red">
+                                <div class="type">{{ row["type"] }}</div>
+                                <div class="init"><strong>Initiative</strong> {{ row["init"] }}</div>
+                                <strong>CA</strong> {{ row["ac"] }}<br>
+                                <strong>Pv</strong> {{ row["hp"] }}<br>
+                                <strong>Vitesse</strong> {{ row["speed"] }}<br>
+                                <div class="car"></div>
+                                <div class="car"></div>
+                                <div class="car">MOD</div>
+                                <div class="car">JdS</div>
+                                <div class="car"></div>
+                                <div class="car"></div>
+                                <div class="car">MOD</div>
+                                <div class="car">JdS</div>
+                                <div class="car"></div>
+                                <div class="car"></div>
+                                <div class="car">MOD</div>
+                                <div class="car">JdS</div>
+                                <div class="car1">{{ row["car"].0.["name"] }}</div>
+                                <div class="car2">{{ row["car"].0.["value"] }}</div>
+                                <div class="car3">{{ row["car"].0.["mod"] }}</div>
+                                <div class="car3">{{ row["car"].0.["save"] }}</div>
+                                <div class="car1">{{ row["car"].1.["name"] }}</div>
+                                <div class="car2">{{ row["car"].1.["value"] }}</div>
+                                <div class="car3">{{ row["car"].1.["mod"] }}</div>
+                                <div class="car3">{{ row["car"].1.["save"] }}</div>
+                                <div class="car1">{{ row["car"].2.["name"] }}</div>
+                                <div class="car2">{{ row["car"].2.["value"] }}</div>
+                                <div class="car3">{{ row["car"].2.["mod"] }}</div>
+                                <div class="car3">{{ row["car"].2.["save"] }}</div>
+                                <br>
+                                <div class="car4">{{ row["car"].3.["name"] }}</div>
+                                <div class="car5">{{ row["car"].3.["value"] }}</div>
+                                <div class="car6">{{ row["car"].3.["mod"] }}</div>
+                                <div class="car6">{{ row["car"].3.["save"] }}</div>
+                                <div class="car4">{{ row["car"].4.["name"] }}</div>
+                                <div class="car5">{{ row["car"].4.["value"] }}</div>
+                                <div class="car6">{{ row["car"].4.["mod"] }}</div>
+                                <div class="car6">{{ row["car"].4.["save"] }}</div>
+                                <div class="car4">{{ row["car"].5.["name"] }}</div>
+                                <div class="car5">{{ row["car"].5.["value"] }}</div>
+                                <div class="car6">{{ row["car"].5.["mod"] }}</div>
+                                <div class="car6">{{ row["car"].5.["save"] }}</div>
+                                <br>
+                                {% for item in row["details"] %}
+                                <strong>{{item.name}} </strong>{{item.value}}<br>
+                                {% endfor %}
+                            </div>
+                            {% if row["traits"]|length > 0 %}
+                                <h2 class="rub">Traits</h2>
+                                {% for trait in row["traits"]%}
+                                <p><strong>{{trait.name}}</strong>. {{trait.value}}</p>
+                                {% endfor %}
+                            {% end if %}
+                            {% if row["actions"]|length > 0 %}
+                                <h2 class="rub">Actions</h2>
+                                {% for action in row["actions"]%}
+                                <p><strong>{{action.name}}</strong>. {{action.value}}</p>
+                                {% endfor %}
+                            {% end if %}
+                            {% if row["bonus_actions"]|length > 0 %}
+                                <h2 class="rub">Actions Bonus</h2>
+                                {% for bonus_action in row["bonus_actions"]%}
+                                <p><strong>{{bonus_action.name}}</strong>. {{bonus_action.value}}</p>
+                                {% endfor %}
+                            {% end if %}
+                            {% if row["reactions"]|length > 0 %}
+                                <h2 class="rub">Réactions</h2>
+                                {% for reaction in row["reactions"]%}
+                                <p><strong>{{reaction.name}}</strong>. {{reaction.value}}</p>
+                                {% endfor %}
+                            {% end if %}
+                            {% if row["legendary"] %}
+                                <h2 class="rub">Actions Légendaires</h2>
+                                {% if row["legendary_text"] %}
+                                <div class="legend">{{row["legendary_text"]}}</div>
+                                {% endif %}
+                                {% for legendary_action in row["legendary_actions"]%}
+                                <p><strong>{{legendary_action.name}}</strong>. {{legendary_action.value}}</p>
+                                {% endfor %}
+                            {% end if %}
+                        </div>
+                    </div>
+                </div>
+                <div class="description">{{row["description"]}}</div>
+                {% if show_source %}<div class="source">{{row["source"]}}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body></html>

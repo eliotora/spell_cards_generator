@@ -14,17 +14,19 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from ui.details_windows.windows_manager import WindowsManager
-from ui.widgets.specificTabs.spell_tab.SpellList import LeveledSpellList
-from models.spell_model import Spell, SpellModels
-from utils.paths import get_export_dir
+from src.ui.details_windows.windows_manager import WindowsManager
+from src.ui.widgets.specificTabs.spell_tab.SpellList import LeveledSpellList
+from src.models.spell_model import SpellModel
+from src.models.collections import BaseCollection
+from src.utils.paths import get_export_dir
 import json
 
 
 class SpellGrimoireWidget(QWidget):
-    spell_models = SpellModels()
+    spell_models: BaseCollection
 
     def __init__(self, shared_dict, parent = ...):
+        self.spell_models = SpellModel.collection
         super().__init__(parent)
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
@@ -119,13 +121,13 @@ class SpellGrimoireWidget(QWidget):
 
     def spell_double_click(self, item):
         spell_name = item.text()
-        self.show_spell_details(self.spell_models.get_item(spell_name))
+        self.show_spell_details(self.spell_models.get_by_field("name",spell_name))
 
-    def show_spell_details(self, spell:Spell):
-        window = WindowsManager().get_window(Spell.__name__.lower(), spell.name)
+    def show_spell_details(self, spell:SpellModel):
+        window = WindowsManager().get_window(SpellModel.modelname.lower(), spell.name)
         if window is None:
-            window = spell.get_detail_windowclass()(spell)
-            WindowsManager().register_window(Spell.__name__.lower(), spell.name, window)
+            window = spell.get_popup_window_class()(spell)
+            WindowsManager().register_window(SpellModel.modelname.lower(), spell.name, window)
         window.show()
         window.activateWindow()
 
@@ -163,7 +165,7 @@ class SpellGrimoireWidget(QWidget):
                 items.append(spell.text())
 
         if items:
-            list = {"nom": self.grimoire_name_field.text(), "spells": items, "model_name": Spell.__name__}
+            list = {"nom": self.grimoire_name_field.text(), "spells": items, "model_name": SpellModel.modelname}
             return list
 
     def load_list(self):
@@ -182,7 +184,7 @@ class SpellGrimoireWidget(QWidget):
 
 
     def load_list_items(self, list:dict):
-        if list["model_name"] != Spell.__name__:
+        if list["model_name"] != SpellModel.modelname:
             QMessageBox.warning(
                 self,
                 "Fichier non valide",
@@ -197,7 +199,7 @@ class SpellGrimoireWidget(QWidget):
             liste.clear()
 
         for spell_name in list["spells"]:
-            spell = SpellModels().get_item(spell_name)
+            spell: SpellModel = self.spell_models.get_by_field("name", spell_name)
             lvl = spell.level
             self.spell_lists[lvl][0].addItem(spell.name)
 
@@ -211,5 +213,5 @@ class SpellGrimoireWidget(QWidget):
         spell_list = []
         for key, item in self.spell_lists.items():
             for i in range(item[0].count()):
-                spell_list.append(SpellModels().get_item(item[0].item(i).text()))
+                spell_list.append(self.spell_models.get_by_field("name", item[0].item(i).text()))
         return spell_list

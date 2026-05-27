@@ -13,6 +13,9 @@ release/
 .vscode/
 
 # Data
+assets/data
+assets/data_old
+assets/change_it.py
 data/
 SpellViewerInstaller.exe
 error.log

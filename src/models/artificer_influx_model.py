@@ -1,14 +1,17 @@
 from dataclasses import dataclass
 from typing import Optional
-from models.generic_model import (
+from src.models.generic_model import (
     field_metadata,
     ExportOption,
-    FilterOption,
-    VisibilityOption,
     ModelCollection
 )
-from models.detailable_model import DetailableModel
+from src.models.detailable_model import DetailableModel
 import locale, os, json
+
+from src.models.base import BaseModel
+from .mixins import ExplorableMixin, JsonMixin, PopupMixin, ExportableMixin, MODEL_EXPORT_MODE_HTML_FILES, ExportOption
+from src.models.metadata import ExplorerMetadata, JsonMetadata, FilterOption, VisibilityOption
+
 
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")

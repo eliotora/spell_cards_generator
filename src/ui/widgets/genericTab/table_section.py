@@ -7,16 +7,21 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
 )
 from PySide6.QtCore import Qt
+from dataclasses import Field
 
-from models.generic_model import ExplorableModel, FilterOption
-from ui.details_windows.windows_manager import WindowsManager
-from ui.widgets.specificTabs.spell_tab.SpellList import DDTable
+from src.models.generic_model import ExplorableModel, FilterOption
+from src.ui.details_windows.windows_manager import WindowsManager
+from src.ui.widgets.specificTabs.spell_tab.SpellList import DDTable
+
+from src.models.base import BaseModel
+from src.models.mixins import ExplorableMixin, PopupMixin
+from src.models.metadata import ExplorerMetadata, FilterOption
 
 
 class GenericTable(QWidget):
     """A generic table class that can be used to display a model with a list."""
 
-    def __init__(self, model: ExplorableModel):
+    def __init__(self, model: ExplorableMixin|BaseModel):
         super().__init__()
         self.model = model
 
@@ -28,9 +33,10 @@ class GenericTable(QWidget):
 
         self.line_filters: dict[str, QLineEdit] = {}
         for fname, field in model.__dataclass_fields__.items():
-            if field.metadata.get("filter_type") == FilterOption.LINE_EDIT:
+            metadata: ExplorerMetadata = field.metadata.get(ExplorableMixin.METADATA_NAMESPACE)
+            if metadata.filter_type == FilterOption.LINE_EDIT:
                 line_filter = QLineEdit()
-                line_filter.setPlaceholderText(field.metadata.get("label", fname))
+                line_filter.setPlaceholderText(metadata.label if metadata.label else fname)
                 line_filter.textChanged.connect(self.live_filter)
                 line_filter.setClearButtonEnabled(True)
                 line_filter.setAcceptDrops(False)
@@ -50,19 +56,16 @@ class GenericTable(QWidget):
     def apply_filters(self, field_filters: dict[str, list[str | int]]):
         """Apply filters to the table based on the provided field filters."""
         self.table.setSortingEnabled(False)
-        items = self.model.get_collection().get_items()
+        items: list[BaseModel] = self.model.collection.items()
 
-        self.filtered_items = [
-            item
-            for item in items
-            if all(
-                field.metadata["filter_type"].value_in_filter(
-                    getattr(item, field.name), field_filters.get(field.name, [])
-                )
-                for field in item.__dataclass_fields__.values()
-                if field.metadata.get("filter_type") is not None
-            )
-        ]
+        self.filtered_items = []
+        filters: dict[Field, FilterOption] = {field: field.metadata.get(ExplorableMixin.METADATA_NAMESPACE).filter_type for field in items[0].__class__.__dataclass_fields__.values() if field.metadata.get(ExplorableMixin.METADATA_NAMESPACE).filter_type is not FilterOption.NONE}
+
+        for item in items:
+            if all(fil.value_in_filter(getattr(item, field.name), field_filters.get(field.name, [])) for field, fil in filters.items()):
+                self.filtered_items.append(item)
+
+
 
     def update_display(self, headers, options):
         """Update the display of the table based on the model."""
@@ -102,11 +105,11 @@ class GenericTable(QWidget):
         for row in range(self.table.rowCount()):
             item = self.filtered_items[row]
             matches = all(
-                field.metadata["filter_type"].value_in_filter(
-                    getattr(item, field.name), field_filters.get(field.name, "")
+                field.metadata.get(ExplorableMixin.METADATA_NAMESPACE).filter_type.value_in_filter(
+                    getattr(item, field.name), [field_filters.get(field.name, "")]
                 )
                 for field in item.__dataclass_fields__.values()
-                if field.metadata.get("filter_type") is FilterOption.LINE_EDIT
+                if field.metadata.get(ExplorableMixin.METADATA_NAMESPACE).filter_type is FilterOption.LINE_EDIT
             )
             self.table.setRowHidden(row, not matches)
 
@@ -142,15 +145,15 @@ class GenericTable(QWidget):
         """Handle double-click on a table cell."""
         item_name = self.table.item(row, 1).text() if self.table.item(row, 1) else ""
         if item_name:
-            item = self.model.get_collection().get_item(item_name)
+            item = self.model.get_collection().get_by_field("name", item_name)
             self.show_item_details(item)
 
-    def show_item_details(self, item):
+    def show_item_details(self, item: PopupMixin|BaseModel):
         """Show details of the selected item in a new window."""
-        window = WindowsManager().get_window(self.model.__class__.__name__.lower(), item.name)
+        window = WindowsManager().get_window(self.model.modelname.lower(), item.name)
         if not window:
-            window_class = self.model.get_detail_windowclass()
+            window_class = item.get_popup_window_class()
             window = window_class(item)
-            WindowsManager().register_window(self.model.__class__.__name__.lower(), item.name, window)
+            WindowsManager().register_window(self.model.modelname.lower(), item.name, window)
         window.show()
         window.activateWindow()

@@ -1,12 +1,12 @@
 from PySide6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy, QMessageBox
-from ui.widgets.generic_tab import GenericTab
-from ui.widgets.specificTabs.spell_tab.spell_grimoire_widget import SpellGrimoireWidget
-from models.spell_model import Spell
+from src.ui.widgets.generic_tab import GenericTab
+from src.ui.widgets.specificTabs.spell_tab.spell_grimoire_widget import SpellGrimoireWidget
+from src.models.spell_model import SpellModel
 
 class SpellTab(GenericTab):
     def __init__(self, shared_dict):
         self._shared_dict = shared_dict
-        super().__init__(Spell)
+        super().__init__(SpellModel)
 
     def create_layout(self):
         layout = QHBoxLayout()

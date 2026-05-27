@@ -1,7 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
 from PySide6.QtCore import Qt
-from ui.details_windows.generic_detail_window import GenericDetailWindow
-
+from src.ui.details_windows.generic_detail_window import GenericDetailWindow
 
 class SpellDetailWindow(GenericDetailWindow):
 
@@ -85,7 +84,7 @@ class SpellDetailWindow(GenericDetailWindow):
         self.description.linkActivated.connect(self.handle_link_click)
         self.content_layout.addWidget(self.description)
 
-        if self.item.at_higher_levels is not None:
+        if self.item.at_higher_levels:
             self.niveau_sup = QLabel(
                 f"<strong><em>À niveau supérieur:</em></strong> {self.item.at_higher_levels}"
             )

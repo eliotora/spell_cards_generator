@@ -8,19 +8,23 @@ from PySide6.QtWidgets import (
     QSizePolicy,
 )
 from PySide6.QtCore import Qt
-from models.generic_model import ExplorableModel, FilterOption, VisibilityOption
+from src.models.generic_model import ExplorableModel, FilterOption, VisibilityOption
+from src.models.base import BaseModel
+from src.models.mixins import ExplorableMixin
+from src.models.metadata import ExplorerMetadata
 from typing import TypeVar, Generic, Type
 
-from ui.widgets.genericTab.genericDDList import SavebleDDList
-from utils.paths import get_export_dir
-from export.html_export import html_export
+from src.ui.widgets.genericTab.genericDDList import SavebleDDList
+from src.utils.paths import get_export_dir
+from src.export.html_export import html_export
 
-from ui.widgets.genericTab.table_section import GenericTable
-from ui.widgets.genericTab.filters_section import GenericFilter
-from ui.widgets.genericTab.export_section import GenericExport
+from src.ui.widgets.genericTab.table_section import GenericTable
+from src.ui.widgets.genericTab.filters_section import GenericFilter
+from src.ui.widgets.genericTab.export_section import GenericExport
 import os
 
-T = TypeVar("T", bound=ExplorableModel)
+# T = TypeVar("T", bound=ExplorableModel)
+T = TypeVar("T", bound=ExplorableMixin|BaseModel)
 
 
 class GenericTab(Generic[T], QWidget):
@@ -28,7 +32,7 @@ class GenericTab(Generic[T], QWidget):
 
     def __init__(self, model: Type[T]):
         self.model = model
-        self.items = model.get_collection()
+        self.items = model.collection
 
         super().__init__()
         layout = self.create_layout()
@@ -67,14 +71,15 @@ class GenericTab(Generic[T], QWidget):
 
         for fname, field in self.model.__dataclass_fields__.items():
             if (
-                field.metadata.get("visibility") == VisibilityOption.HIDDABLE
-                or field.metadata.get("visibility")
+                field.metadata.get(ExplorableMixin.METADATA_NAMESPACE).visibility == VisibilityOption.HIDDABLE
+                or field.metadata.get(ExplorableMixin.METADATA_NAMESPACE).visibility
                 == VisibilityOption.HIDDABLE_WITH_FILTER
             ):
+                metadata: ExplorerMetadata = field.metadata.get(ExplorableMixin.METADATA_NAMESPACE)
                 self.filters_widget.display_checkboxes[fname].checkStateChanged.connect(
                     display_checkbox_factory(
-                        field.metadata.get("cols_to_hide"),
-                        field.metadata.get("visibility"),
+                        metadata.cols_to_hide,
+                        metadata.visibility,
                         fname,
                     )
                 )
@@ -92,11 +97,12 @@ class GenericTab(Generic[T], QWidget):
         return layout
 
     def load_data(self):
-        data = self.items().get_items()
+        data = self.items.items()
 
         options = {}
         for fname, field in self.model.__dataclass_fields__.items():
-            if field.metadata.get("filter_type") == FilterOption.LIST:
+            md: ExplorerMetadata = field.metadata.get(ExplorableMixin.METADATA_NAMESPACE)
+            if md.filter_type == FilterOption.LIST:
                 if field.type == list[str]:
                     options[fname] = sorted(
                         set(
@@ -113,7 +119,7 @@ class GenericTab(Generic[T], QWidget):
         self.filters_widget.load_filter_options(options)
         self.apply_filters()
         self.filters_widget.load_filters(
-            f"{os.getcwd().replace("\\", "/")}/data/{self.model.__name__}_settings.json"
+            f"{os.getcwd().replace("\\", "/")}/assets/data/{self.model.modelname}_settings.json"
         )
         self.apply_filters()
 
@@ -122,14 +128,14 @@ class GenericTab(Generic[T], QWidget):
         self.table_widget.apply_filters(filters)
 
         headers = ["✔"] + [
-            item.metadata.get("label")
+            item.metadata.get(ExplorableMixin.METADATA_NAMESPACE).label
             for key, item in self.model.__dataclass_fields__.items()
-            if item.metadata.get("visibility") != VisibilityOption.ALWAYS_HIDDEN
+            if item.metadata.get(ExplorableMixin.METADATA_NAMESPACE).visibility != VisibilityOption.ALWAYS_HIDDEN
         ]
         cols = ["checkbox"] + [
             key
             for key, item in self.model.__dataclass_fields__.items()
-            if item.metadata.get("visibility") != VisibilityOption.ALWAYS_HIDDEN
+            if item.metadata.get(ExplorableMixin.METADATA_NAMESPACE).visibility != VisibilityOption.ALWAYS_HIDDEN
         ]
         self.table_widget.update_display(headers, cols)
 
@@ -138,8 +144,8 @@ class GenericTab(Generic[T], QWidget):
         if not selected_items:
             QMessageBox.warning(
                 self,
-                f"Aucun {self.model.__name__} sélectionné",
-                f"Veuillez sélectionner au moins un.e {self.model.__name__} à exporter",
+                f"Aucun {self.model.modelname} sélectionné",
+                f"Veuillez sélectionner au moins un.e {self.model.modelname} à exporter",
             )
             return
         self.export_html(selected_items)
@@ -168,7 +174,7 @@ class GenericTab(Generic[T], QWidget):
             QMessageBox.information(
                 self,
                 "Exportation réussie",
-                f"{len(items)} {self.model.__name__} ont été exportés avec succès en HTML.",
+                f"{len(items)} {self.model.modelname} ont été exportés avec succès en HTML.",
             )
 
     def update_selected_count(self, item):

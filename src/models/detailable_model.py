@@ -1,11 +1,12 @@
-from models.generic_model import ExplorableModel, MODEL_NAME_MAPPING, ExportOption
-from ui.details_windows.generic_detail_window import GenericDetailWindow
+from src.models.generic_model import ExplorableModel, MODEL_NAME_MAPPING, ExportOption
+from src.ui.details_windows.generic_detail_window import GenericDetailWindow
 
 MODEL_EXPORT_MODE_HTML_FILES = {}
 
 class DetailableModel(ExplorableModel):
     details_window_class = GenericDetailWindow
     color = None
+    folder:str = None
 
     def to_html_dict(self):
         pass

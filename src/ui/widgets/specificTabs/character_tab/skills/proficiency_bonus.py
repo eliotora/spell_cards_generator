@@ -1,19 +1,24 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QSizePolicy
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QSpinBox, QSizePolicy
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFontMetrics
+from src.models.character_model import Character
 
 class ProficiencyBonus(QWidget):
-    def __init__(self):
+    def __init__(self, character:Character):
         super().__init__()
         layout = self.create_layout()
         self.setLayout(layout)
+
+        character.proficiency_bonus.changed.connect(self.mod.setValue)
 
     def create_layout(self):
         layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0, 10, 0, 10)
         label = QLabel("PROFICIENCY BONUS")
-        self.mod = QLineEdit()
+        self.mod = QSpinBox(minimum=2, maximum=10, alignment=Qt.AlignmentFlag.AlignRight)
+        self.mod.setReadOnly(True)
+        self.mod.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
         fm = QFontMetrics(self.mod.font())
         char_width = fm.horizontalAdvance("M")
         char_height = fm.height()

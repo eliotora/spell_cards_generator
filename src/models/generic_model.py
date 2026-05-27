@@ -1,5 +1,5 @@
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, MISSING
 from typing import Callable, Type
 import enum, locale
 
@@ -46,10 +46,12 @@ class FilterOption(enum.IntEnum):
                 return filters[0] <= value <= filters[1]
             return False
         elif self == FilterOption.LINE_EDIT:
+            if value == None:
+                value = ""
             if isinstance(value, str):
                 if all([filter.lower() == "" for filter in filters]):
                     return True
-                return filters.lower() in value.lower()
+                return any(filter.lower() in value.lower() for filter in filters)
             return False
 
 class VisibilityOption(enum.IntEnum):
@@ -68,9 +70,12 @@ class VisibilityOption(enum.IntEnum):
         """String representation of the enum."""
         return self.name.lower()
 
-def field_metadata(label=None, filter_type: FilterOption = None, visibility: VisibilityOption = VisibilityOption.ALWAYS_VISIBLE, cols_to_hide: list[int] = None):
+def field_metadata(label=None, filter_type: FilterOption = None, visibility: VisibilityOption = VisibilityOption.ALWAYS_VISIBLE, cols_to_hide: list[int] = None, default=MISSING, default_factory=MISSING):
     """Helper function to create field metadata."""
-    return field(metadata={"label": label, "filter_type": filter_type, "visibility": visibility, "cols_to_hide": cols_to_hide})
+    meta = {"label": label, "filter_type": filter_type, "visibility": visibility, "cols_to_hide": cols_to_hide}
+    if default_factory is not MISSING: return field(metadata=meta, default_factory=default_factory)
+    if default is not MISSING: return field(metadata=meta, default=default)
+    else: return field(metadata=meta)
 
 class ModelCollection:
     export_options: list[ExportOption] = [

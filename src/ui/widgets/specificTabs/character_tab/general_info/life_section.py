@@ -1,13 +1,20 @@
-from PySide6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox
+from PySide6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox
 from PySide6.QtCore import Qt
 
-from ..underlabeled_line_edit import UnderlabeledLineEdit
+from ..underlabeled_edits import UnderlabeledSpinBox
+from src.models.character_model import Character
 
 class HitPointsWidget(QWidget):
-    def __init__(self):
+    def __init__(self, character:Character):
         super().__init__()
         layout = self.create_layout()
         self.setLayout(layout)
+        self.current_hp.spinbox.valueChanged.connect(character.setCurrentHitPoints)
+        self.temp_hp.spinbox.valueChanged.connect(character.setTempHitPoints)
+        self.max_hp.spinbox.valueChanged.connect(character.setMaxHitPoints)
+        character.current_hit_points.changed.connect(self.current_hp.setValue)
+        character.temp_hit_points.changed.connect(self.temp_hp.setValue)
+        character.max_hit_points.changed.connect(self.max_hp.setValue)
 
     def create_layout(self):
         layout = QGridLayout()
@@ -15,9 +22,9 @@ class HitPointsWidget(QWidget):
         layout.setContentsMargins(0,0,0,0)
 
         self.label = QLabel("HIT POINTS")
-        self.current_hp = UnderlabeledLineEdit("CURRENT")
-        self.temp_hp = UnderlabeledLineEdit("TEMP")
-        self.max_hp = UnderlabeledLineEdit("MAX")
+        self.current_hp = UnderlabeledSpinBox("CURRENT", -200, 200, 1)
+        self.temp_hp = UnderlabeledSpinBox("TEMP", min=0, max=100, value=0)
+        self.max_hp = UnderlabeledSpinBox("MAX", min=1, max=200, value=6)
 
 
         layout.addWidget(self.label, 0, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -29,10 +36,14 @@ class HitPointsWidget(QWidget):
 
 
 class HitDicesWidget(QWidget):
-    def __init__(self):
+    def __init__(self, character:Character):
         super().__init__()
         layout = self.create_layout()
         self.setLayout(layout)
+        self.spent_dices.spinbox.valueChanged.connect(character.setSpentHitDice)
+        self.max_dices.spinbox.valueChanged.connect(character.setMaxHitDice)
+        character.spent_hit_dice.changed.connect(self.spent_dices.setValue)
+        character.max_hit_dice.changed.connect(self.max_dices.setValue)
 
     def create_layout(self):
         layout = QVBoxLayout()
@@ -40,8 +51,8 @@ class HitDicesWidget(QWidget):
         layout.setContentsMargins(0,0,0,0)
 
         self.label = QLabel("HIT DICE")
-        self.spent_dices = UnderlabeledLineEdit("SPENT")
-        self.max_dices = UnderlabeledLineEdit("MAX")
+        self.spent_dices = UnderlabeledSpinBox("SPENT", 0, 1, 0)
+        self.max_dices = UnderlabeledSpinBox("MAX", 1, 20, 1)
 
         layout.addWidget(self.label, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.spent_dices)
@@ -50,7 +61,7 @@ class HitDicesWidget(QWidget):
         return layout
 
 class DeathSavesWidget(QWidget):
-    def __init__(self):
+    def __init__(self, character:Character):
         super().__init__()
         layout = self.create_layout()
         self.setLayout(layout)
@@ -79,19 +90,19 @@ class DeathSavesWidget(QWidget):
         return layout
 
 class LifeWidget(QWidget):
-    def __init__(self):
+    def __init__(self, character:Character):
         super().__init__()
-        layout = self.create_layout()
+        layout = self.create_layout(character)
         self.setLayout(layout)
 
-    def create_layout(self):
+    def create_layout(self, character: Character):
         layout = QHBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(20,0,20,0)
 
-        self.hp = HitPointsWidget()
-        self.hit_dices = HitDicesWidget()
-        self.death_saves = DeathSavesWidget()
+        self.hp = HitPointsWidget(character)
+        self.hit_dices = HitDicesWidget(character)
+        self.death_saves = DeathSavesWidget(character)
 
         layout.addWidget(self.hp, stretch=2)
         layout.addWidget(self.hit_dices, stretch=1)

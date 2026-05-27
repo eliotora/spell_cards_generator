@@ -1,10 +1,11 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtGui import QIcon
-from ui.main_window import MainWindow
+from src.ui.main_window import MainWindow
 import traceback
 import json
-from utils.update_checks import check_for_updates, download_and_install
+from src.utils.update_checks import check_for_updates, download_and_install
+from src.models.repositories.data_repository import DataRepository
 
 with open("version.json", "r") as f:
     version_info = json.load(f)
@@ -38,6 +39,8 @@ def main():
         )
         if reply == QMessageBox.StandardButton.Yes:
             download_and_install(url)
+
+    DataRepository.set_data_path("assets/data")
 
     with open("assets/styles/main_style.qss", "r") as f:
         style = f.read()

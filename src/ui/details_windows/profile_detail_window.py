@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from PySide6.QtSvgWidgets import QSvgWidget
-from ui.details_windows.generic_detail_window import GenericDetailWindow
+from src.ui.details_windows.generic_detail_window import GenericDetailWindow
 
 class ProfileDetailWindow(GenericDetailWindow):
     def __init__(self, profile):
@@ -91,14 +91,14 @@ class ProfileDetailWindow(GenericDetailWindow):
         self.red_widget.setObjectName("red")
         self.sans_serif_layout.addWidget(self.red_widget)
 
-        svg_sep = QSvgWidget("./images/profile_sep.svg")
+        svg_sep = QSvgWidget("./assets/images/profile_sep.svg")
         self.red_layout.addWidget(svg_sep)
 
-        ca = QLabel(f"<strong>Classe d'armure </strong>{self.item.ac}")
+        ca = QLabel(f"<strong>CA </strong>{self.item.ac}")
         ca.setWordWrap(True)
         self.red_layout.addWidget(ca)
 
-        pv = QLabel(f"<strong>Points de vie </strong>{self.item.hp}")
+        pv = QLabel(f"<strong>Pv </strong>{self.item.hp}")
         pv.setWordWrap(True)
         self.red_layout.addWidget(pv)
 
@@ -106,39 +106,82 @@ class ProfileDetailWindow(GenericDetailWindow):
         speed.setWordWrap(True)
         self.red_layout.addWidget(speed)
 
-        svg_sep = QSvgWidget("./images/profile_sep.svg")
+        svg_sep = QSvgWidget("./assets/images/profile_sep.svg")
         self.red_layout.addWidget(svg_sep)
 
         self.stat = QWidget()
-        self.stat.setObjectName("carac")
+        # self.stat.setObjectName("carac")
         # self.stat.setMaximumWidth(500)
-        self.stat_layout = QHBoxLayout()
-        self.stat_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.stat_layout.setContentsMargins(0, 0, 0, 0)
-        self.stat_layout.setSpacing(0)
-        self.stat.setLayout(self.stat_layout)
-        self.red_layout.addWidget(self.stat)
-        for stat, value in self.item.stats.items():
-            stat_mod = (value - 10) // 2
-            l1 = QLabel(
-                f"<strong>{stat[:3].upper()}</strong><br>{value} ({"{0:+}".format(stat_mod)})"
-            )
-            l1.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.stat_layout.addWidget(l1, stretch=1)
+        self.lines_layout = QVBoxLayout()
+        self.lines_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.lines_layout.setContentsMargins(0, 0, 0, 0)
+        self.lines_layout.setSpacing(0)
 
-        svg_sep = QSvgWidget("./images/profile_sep.svg")
+        line1 = QWidget()
+        line1_layout = QHBoxLayout()
+        line1_layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        line1.setLayout(line1_layout)
+        line1_layout.setContentsMargins(0,0,0,0)
+        line1_layout.setSpacing(0)
+        self.lines_layout.addWidget(line1)
+        for i in range(3):
+            for j in range(4):
+                widget = QLabel()
+                widget.setObjectName("car")
+                if j == 2:
+                    widget.setText("MOD")
+                if j == 3:
+                    widget.setText("JdS")
+                line1_layout.addWidget(widget)
+
+        for i, sv in enumerate(self.item.stats.items()):
+            if i % 3 == 0:
+                line = QWidget()
+                line_layout = QHBoxLayout()
+                line_layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
+                line_layout.setContentsMargins(0,0,0,0)
+                line_layout.setSpacing(0)
+                line.setLayout(line_layout)
+                self.lines_layout.addWidget(line)
+
+            stat, value = sv
+            stat_mod = (value - 10) // 2
+            save_proficiency = self.item.proficiencies.get(f"JS_{stat[:3].upper()}", None)
+            save_mod = stat_mod
+            if save_proficiency == "P": save_mod += int(self.item.pb)
+            elif save_proficiency == "E": save_mod += 2 * int(self.item.pb)
+
+            stat_label = QLabel(f"{stat[:3].upper()}")
+            stat_label.setObjectName(f"car{i // 3 * 3 + 1}")
+            value_label = QLabel(f"{value}")
+            value_label.setObjectName(f"car{i // 3 * 3 + 2}")
+            mod_label = QLabel(f"{"{0:+}".format(stat_mod)}")
+            mod_label.setObjectName(f"car{i // 3 * 3 + 3}")
+            save_label = QLabel(f"{"{0:+}".format(save_mod)}")
+            save_label.setObjectName(f"car{i // 3 * 3 + 3}")
+
+
+            line_layout.addWidget(stat_label)
+            line_layout.addWidget(value_label)
+            line_layout.addWidget(mod_label)
+            line_layout.addWidget(save_label)
+
+        self.stat.setLayout(self.lines_layout)
+        self.red_layout.addWidget(self.stat)
+
+        svg_sep = QSvgWidget("./assets/images/profile_sep.svg")
         self.red_layout.addWidget(svg_sep)
 
         if self.item.details:
             for detail in self.item.details:
                 if self.item.details[detail]:
                     l = QLabel(
-                        f"<strong>{detail}. </strong>{", ".join(self.item.details[detail])}"
+                        f"<strong>{detail}. </strong>{self.item.details[detail]}"
                     )
                     self.red_layout.addWidget(l)
                     l.setWordWrap(True)
 
-        svg_sep = QSvgWidget("./images/profile_sep.svg")
+        svg_sep = QSvgWidget("./assets/images/profile_sep.svg")
         self.red_layout.addWidget(svg_sep)
 
         # --- Traits ---
@@ -166,7 +209,6 @@ class ProfileDetailWindow(GenericDetailWindow):
                 self.sans_serif_layout.addWidget(label)
 
         if self.item.bonus_actions:
-            print("Action bonus, ", self.item.bonus_actions)
             self.bonusaction_section = QLabel("ACTIONS BONUS")
             self.bonusaction_section.setObjectName("rub")
             self.sans_serif_layout.addWidget(self.bonusaction_section)
@@ -215,7 +257,7 @@ class ProfileDetailWindow(GenericDetailWindow):
         self.orange_bot.setMinimumHeight(6)
         self.setMinimumWidth(450)
 
-        with open("styles/profile_detail.qss", "r", encoding="utf-8") as f:
+        with open("assets/styles/profile_detail.qss", "r", encoding="utf-8") as f:
             stylesheet = f.read()
             self.apply_stylesheet(stylesheet)
 

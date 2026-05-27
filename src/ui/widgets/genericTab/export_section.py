@@ -1,14 +1,15 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, QRadioButton, QButtonGroup, QLabel, QPushButton
 from PySide6.QtCore import Qt
-from models.generic_model import ExplorableModel
-from typing import Type
+from src.models.mixins.explorable_mixin import ExplorableMixin
+from src.models.mixins.exportable_mixin import ExportableMixin
+from src.models.base import BaseModel
+from typing import Type, Union
 
 
 class GenericExport(QWidget):
-    def __init__(self, model: Type[ExplorableModel]):
+    def __init__(self, model: Union[ExplorableMixin |ExportableMixin | BaseModel]):
         super().__init__()
         self.model = model
-        model_collection =model.get_collection()
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -32,7 +33,7 @@ class GenericExport(QWidget):
         export_mode_layout.addWidget(export_mode_label)
         self.format_group = QButtonGroup()
         self.export_mode_rbuttons = {}
-        for export_mode in model_collection.export_options:
+        for export_mode in model.export_options:
             rbutton = QRadioButton(export_mode.name)
             self.format_group.addButton(rbutton, id=export_mode)
             self.export_mode_rbuttons[export_mode] = rbutton
@@ -47,7 +48,7 @@ class GenericExport(QWidget):
 
         # Adding export buttons
         export_buttons_layout = QHBoxLayout()
-        self.selected_count_label = QLabel(f"{model.__name__} sélectionnés: 0")
+        self.selected_count_label = QLabel(f"{model.modelname} sélectionnés: 0")
 
         # Export buttons
         self.export_pdf_btn = QPushButton("Exporter en PDF")
@@ -62,7 +63,7 @@ class GenericExport(QWidget):
         layout.addLayout(export_buttons_layout)
 
     def change_selected_count_label(self, nbr:int, all: bool):
-        self.selected_count_label.setText(f"{self.model.__name__} sélectionnés: {nbr}")
+        self.selected_count_label.setText(f"{self.model.modelname} sélectionnés: {nbr}")
         self.select_everything_checkbox.blockSignals(True)
         self.select_everything_checkbox.setChecked(all)
         self.select_everything_checkbox.blockSignals(False)

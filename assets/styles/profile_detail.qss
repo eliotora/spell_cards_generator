@@ -11,7 +11,7 @@ QWidget#content {
     background-color: #fdf1dc;
     padding: 10 8 5 8;
     margin: 0 2 0 2;
-    background-image: url("./images/fond-ph.jpg");
+    background-image: url("./assets/images/fond-ph.jpg");
     background-repeat: repeat-xy;
 }
 
@@ -63,11 +63,76 @@ QWidget#carac QLabel{
 
 QLabel#rub {
     color: #6D0000;
-    margin: 6 0 4 0;
+    margin: 6px 0px 4px 0px;
     border-bottom: 1px solid #B30303;
+    border-top: none;
+    border-left: none;
+    border-right: none;
     font-size: 19px;
 }
 
 QLabel#p {
     padding-bottom: 6px;
+}
+
+#car {
+    margin: 0px 1px;
+    padding: 0px 2px;
+    font-size: 13px;
+    color: #666666;
+    width: 8%;
+    min-width: 28px;
+    max-height: 20px;
+    min-height: 20px;
+    text-align:center;
+}
+
+#car1 , #car4 {
+    margin: 1px;
+    padding: 2px 4px;
+    width: 8%;
+    min-width: 28px;
+    max-height: 20px;
+    min-height: 20px;
+    text-align:left;
+    font-weight:bold;
+}
+
+#car2, #car5 {
+    margin: 1px;
+    padding: 2px 4px;
+    width: 8%;
+    min-width: 28px;
+    max-height: 20px;
+    min-height: 20px;
+    text-align:center;
+    font-weight:bold;
+}
+
+#car3, #car6 {
+    margin: 1px;
+    padding: 2px 4px;
+    width: 8%;
+    min-width: 28px;
+    max-height: 20px;
+    min-height: 20px;
+    text-align:center;
+}
+
+#car1, #car2 {
+    background-color: #e8e6da;
+}
+
+#car3 {
+    background-color: #dad1ca;
+}
+
+#car4, #car5 {
+    background-color: #dddad5;
+    margin-bottom: 8px
+}
+
+#car6 {
+    background-color: #cecac9;
+    margin-bottom: 8px
 }

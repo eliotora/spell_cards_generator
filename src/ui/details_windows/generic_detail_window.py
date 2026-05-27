@@ -1,7 +1,10 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QScrollArea, QMessageBox
 from PySide6.QtCore import Qt
-from utils.show_details import create_and_register_window
+from src.utils.show_details import create_and_register_window
 import re
+
+from src.models.mixins import ExplorableMixin
+from src.models.metadata import ExplorerMetadata
 
 
 class GenericDetailWindow(QWidget):
@@ -16,7 +19,7 @@ class GenericDetailWindow(QWidget):
 
     def setup_layout(self) -> QVBoxLayout:
         self.setStyleSheet("")
-        with open("styles/spell_detail.qss", "r") as f:
+        with open("assets/styles/spell_detail.qss", "r") as f:
             style = f.read()
             self.setStyleSheet(style)
         self.setWindowTitle(self.item.name)
@@ -69,7 +72,8 @@ class GenericDetailWindow(QWidget):
             ]:
                 f = self.item.__getattribute__(fname)
                 if f:
-                    label = QLabel(f"<em>{field.metadata.get("label")}: {f}</em>")
+                    metadata: ExplorerMetadata = field.metadata.get(ExplorableMixin.METADATA_NAMESPACE)
+                    label = QLabel(f"<em>{metadata.label}: {f}</em>")
                     label.setWordWrap(True)
                     self.content_layout.addWidget(label)
 
@@ -94,7 +98,7 @@ class GenericDetailWindow(QWidget):
         self.content_layout.addWidget(self.footer)
         self.footer_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        with open("styles/spell_detail.qss", "r", encoding="utf-8") as f:
+        with open("assets/styles/spell_detail.qss", "r", encoding="utf-8") as f:
             stylesheet = f.read()
             self.apply_stylesheet(stylesheet)
 
@@ -163,7 +167,13 @@ class GenericDetailWindow(QWidget):
         return description
 
     def handle_link_click(self, link):
-        self.windows.append(create_and_register_window(link))
+        window = create_and_register_window(link)
+        if window is None:
+            QMessageBox.critical(
+                self, "Not found", f"This item was not found. Please inform your administrator that the link \"{link}\" doesn't work in the object {self.item.source+" / "+self.item.modelname+" / "+self.item.name}", buttons=QMessageBox.StandardButton.Ok
+            )
+            return
+        self.windows.append(window)
 
     def closeEvent(self, event):
         for w in self.windows:

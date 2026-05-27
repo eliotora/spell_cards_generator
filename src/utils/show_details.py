@@ -1,10 +1,13 @@
-from models.generic_model import MODEL_NAME_MAPPING
-from ui.details_windows.windows_manager import WindowsManager
+from PySide6.QtWidgets import QMessageBox
+
+from src.models.base.base_model import MODEL_NAME_MAPPING
+from src.models.collections import BaseCollection
+from src.ui.details_windows.windows_manager import WindowsManager
 
 def get_item_from_path(path:str):
     path_items = path.split("/")
-    collection = MODEL_NAME_MAPPING[path_items[0].lower()].get_collection()
-    item = collection.get_item(path_items[1])
+    collection: BaseCollection = MODEL_NAME_MAPPING.get(path_items[0].lower()).collection
+    item = collection.get_by_field("name", path_items[1])
     return item
 
 def create_and_register_window(path: str):
@@ -14,7 +17,7 @@ def create_and_register_window(path: str):
         return
     window = WindowsManager().get_window(path_items[0], item.name)
     if window is None:
-        window = item.get_detail_windowclass()(item)
+        window = item.get_popup_window_class()(item)
         WindowsManager().register_window(path_items[0], item.name, window)
     window.show()
     window.activateWindow()

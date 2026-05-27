@@ -1,14 +1,14 @@
 from PySide6.QtWidgets import QTableWidget
 from PySide6.QtCore import QMimeData, Qt
 from PySide6.QtGui import QDrag, QDragEnterEvent, QDragMoveEvent
-from models.spell_model import SpellModels, Spell
-from ui.widgets.genericTab.genericDDList import DDList
+from src.models.spell_model import SpellModel
+from src.ui.widgets.genericTab.genericDDList import DDList
 
 
 class LeveledSpellList(DDList):
     def __init__(self, level: int, shared_dict):
         self.level = level
-        super().__init__(Spell, shared_dict)
+        super().__init__(SpellModel, shared_dict)
 
     def _register_list(self):
         self._key = str(self.level)
@@ -16,7 +16,7 @@ class LeveledSpellList(DDList):
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasText():
-            spell = SpellModels().get_item(event.mimeData().text())
+            spell = SpellModel.collection.get_by_field("name", event.mimeData().text())
             if (
                 spell
                 and spell.level == self.level
@@ -25,7 +25,7 @@ class LeveledSpellList(DDList):
                 event.acceptProposedAction()
 
     def dragMoveEvent(self, event: QDragMoveEvent):
-        spell = SpellModels().get_item(event.mimeData().text())
+        spell = SpellModel.collection.get_by_field("name", event.mimeData().text())
         if (
             event.mimeData().hasText()
             and spell.level == self.level

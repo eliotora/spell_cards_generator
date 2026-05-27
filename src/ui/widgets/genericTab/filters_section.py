@@ -11,12 +11,15 @@ from PySide6.QtWidgets import (
     QSpinBox,
 )
 from PySide6.QtCore import Qt
-from ui.widgets.multi_selection_list import MultiSelectionListWidget
+from src.ui.widgets.multi_selection_list import MultiSelectionListWidget
 import os, json
 from typing import Type, Generic, TypeVar
-from models.generic_model import ExplorableModel, FilterOption, VisibilityOption
+from src.models.generic_model import ExplorableModel, FilterOption, VisibilityOption
+from src.models.mixins.explorable_mixin import ExplorableMixin
+from src.models.metadata.explorer_metadata import ExplorerMetadata
+from src.models.base import BaseModel
 
-T = TypeVar("T", bound=ExplorableModel)
+T = TypeVar("T", bound=ExplorableMixin|BaseModel)
 
 
 class GenericFilter(QWidget, Generic[T]):
@@ -36,9 +39,11 @@ class GenericFilter(QWidget, Generic[T]):
             str, MultiSelectionListWidget | tuple[QSpinBox, QSpinBox]
         ] = {}
         for fname, field in model.__dataclass_fields__.items():
-            filter_type = field.metadata.get("filter_type")
+            metadata: ExplorerMetadata = field.metadata.get(ExplorableMixin.METADATA_NAMESPACE)
+
+            filter_type = metadata.filter_type
             if filter_type == FilterOption.LIST:
-                filter = MultiSelectionListWidget(field.metadata.get("label"))
+                filter = MultiSelectionListWidget(metadata.label)
                 self.filters[fname] = filter
                 layout.addWidget(filter)
             elif filter_type == FilterOption.INT_RANGE:
@@ -51,9 +56,9 @@ class GenericFilter(QWidget, Generic[T]):
                 max.setRange(0, 9)
                 max.setValue(9)
 
-                vbox.addWidget(QLabel(f"{field.metadata.get("label")} min:"))
+                vbox.addWidget(QLabel(f"{metadata.label} min:"))
                 vbox.addWidget(min)
-                vbox.addWidget(QLabel(f"{field.metadata.get("label")} max:"))
+                vbox.addWidget(QLabel(f"{metadata.label} max:"))
                 vbox.addWidget(max)
 
                 layout.addLayout(vbox)
@@ -65,8 +70,9 @@ class GenericFilter(QWidget, Generic[T]):
         self.display_column.addWidget(QLabel("Affichage"))
         self.display_checkboxes: dict[str, QCheckBox] = {}
         for fname, field in model.__dataclass_fields__.items():
-            if field.metadata.get("visibility") == VisibilityOption.HIDDABLE or field.metadata.get("visibility") == VisibilityOption.HIDDABLE_WITH_FILTER:
-                checkbox = QCheckBox(field.metadata.get("label"))
+            metadata = field.metadata.get(ExplorableMixin.METADATA_NAMESPACE)
+            if metadata.visibility == VisibilityOption.HIDDABLE or metadata.visibility == VisibilityOption.HIDDABLE_WITH_FILTER:
+                checkbox = QCheckBox(metadata.label)
                 checkbox.setChecked(True)
                 self.display_column.addWidget(checkbox)
                 self.display_checkboxes[fname] = checkbox
@@ -115,7 +121,7 @@ class GenericFilter(QWidget, Generic[T]):
             filters[f"{fname}_checkbox"] = checkbox.isChecked()
 
         with open(
-            f"{os.getcwd().replace("\\", "/")}/data/{self.model.__name__}_settings.json",
+            f"{os.getcwd().replace("\\", "/")}/assets/data/{self.model.modelname}_settings.json",
             "w",
             encoding="utf-8",
         ) as f:

@@ -1,44 +1,36 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QLineEdit, QSizePolicy
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QLineEdit, QSizePolicy, QSpinBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFontMetrics
-from ..underlabeled_line_edit import UnderlabeledLineEdit
-import enum
-from copy import copy
-
-class CaracteristicName(enum.StrEnum):
-    """Enum for the caracteristics of the character"""
-    STRENGTH = "STRENGTH"
-    DEXTERITY = "DEXTERITY"
-    CONSITUTION = "CONSTITUTION"
-    INTELLIGENCE = "INTELLIGENCE"
-    WISDOM = "WISDOM"
-    CHARISMA = "CHARISMA"
-
-    @classmethod
-    def from_string(cls, value: str) -> 'CaracteristicName':
-        """Convert a string to an CaracteristicName enum."""
-        return cls[value.upper()]
+from ..underlabeled_edits import UnderlabeledSpinBox
+from src.models.character_model import Caracteristic, signaledProperty, Ability
 
 class CaracSkillswidget(QWidget):
-    def __init__(self, carac:CaracteristicName, saving_throw:bool = True, skills: list[str] = [], profiency_bonus:int = 2):
+    def __init__(self, carac:Caracteristic, skills: list[Ability] = [], profiency_bonus:signaledProperty[int] = 2):
         super().__init__()
-        self.skills: dict[str, tuple[QHBoxLayout, QCheckBox, QLineEdit, QLabel]] = {}
-        layout = self.create_layout(carac, saving_throw, skills)
+        self.skills: dict[Ability, tuple[QHBoxLayout, QCheckBox, QLineEdit, QLabel]] = {}
+        layout = self.create_layout(carac, skills)
         self.setLayout(layout)
-        self.profiency_bonus = profiency_bonus
+        self.profiency_bonus: int = profiency_bonus.value
 
-    def create_layout(self, carac:CaracteristicName, saving_throw:bool, skills: list[str]):
+    def create_layout(self, carac:Caracteristic, skills: list[Ability]):
         layout = QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        carac_label = QLabel(carac.value)
+        carac_label = QLabel(carac.name)
 
-        self.modifier = UnderlabeledLineEdit("MODIFIER", "0", Qt.AlignmentFlag.AlignCenter)
-        self.modifier.setFixedCharSize(2)
-        self.score = UnderlabeledLineEdit("SCORE", "10", Qt.AlignmentFlag.AlignCenter)
-        self.score.setFixedCharSize(2)
-        self.score.line_edit.textChanged.connect(self.on_value_changed)
+        self.modifier = UnderlabeledSpinBox("MODIFIER", -5, 10, label_alignment=Qt.AlignmentFlag.AlignCenter)
+        self.score = UnderlabeledSpinBox("SCORE", 0, 30, 10, label_alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.score.spinbox.valueChanged.connect(carac.setValue)
+        carac.valueChanged.connect(lambda: (
+            self.score.spinbox.setValue(carac.getValue()),
+            self.modifier.spinbox.setValue(carac.getMod())
+        ))
+        self.modifier.spinbox.setReadOnly(True)
+        self.modifier.spinbox.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
+        self.score.spinbox.wheelEvent = lambda event: event.ignore()
+
 
         carac_layout = QHBoxLayout()
         carac_layout.setSpacing(0)
@@ -47,20 +39,28 @@ class CaracSkillswidget(QWidget):
         carac_layout.addWidget(self.modifier)
         carac_layout.addWidget(self.score)
 
-        lines = copy(skills)
-        if saving_throw: lines.insert(0, "Saving Throw")
+        def spinbox_update_factory(spinbox:QSpinBox, ability:Ability):
+            return lambda: spinbox.setValue(ability.get_mod(self.profiency_bonus))
 
+        def checkbox_update_factory(ability:Ability):
+            return lambda state: ability.setProficient(state == Qt.CheckState.Checked)
 
-        for line in lines:
+        for line in skills:
             line_layout = QHBoxLayout()
             line_layout.setSpacing(0)
             line_layout.setContentsMargins(0, 0, 0, 0)
 
             check_box = QCheckBox()
-            bonus = QLineEdit(alignment=Qt.AlignmentFlag.AlignRight)
+            bonus = QSpinBox(minimum=-10, maximum=30, alignment=Qt.AlignmentFlag.AlignRight)
             fm = QFontMetrics(bonus.font())
             bonus.setFixedSize(fm.horizontalAdvance("M") * 3, fm.height()+6)
-            label = QLabel(line)
+            label = QLabel(line.name)
+
+            check_box.checkStateChanged.connect(checkbox_update_factory(line))
+            bonus.setReadOnly(True)
+            bonus.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
+            line.onModifierChanged.connect(spinbox_update_factory(bonus, line))
+
 
             line_layout.addWidget(check_box, alignment=Qt.AlignmentFlag.AlignLeft)
             line_layout.addWidget(bonus, alignment=Qt.AlignmentFlag.AlignLeft)
@@ -68,11 +68,10 @@ class CaracSkillswidget(QWidget):
             line_layout.addStretch()
 
             self.skills[line] = (line_layout, check_box, bonus, label)
-            check_box.checkStateChanged.connect(self.checkbox_update_factory(bonus, check_box))
 
         layout.addWidget(carac_label, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addLayout(carac_layout)
-        for line in lines:
+        for line in skills:
             layout.addLayout(self.skills[line][0])
 
         layout.addStretch()
@@ -80,36 +79,9 @@ class CaracSkillswidget(QWidget):
 
         return layout
 
-    def checkbox_update_factory(self, line_edit:QLineEdit, checkbox:QCheckBox):
-        return lambda state: self.update_bonus(line_edit, checkbox, int(self.modifier.get_value() if self.modifier.get_value() else 0))
-
-    def on_value_changed(self):
-        new_value = self.score.get_value()
-
-        try:
-            new_value = int(new_value)
-        except:
-            return
-
-        new_modifier = (new_value - 10) // 2
-
-        self.modifier.set_value(f"+{new_modifier}" if new_modifier >= 0 else f"{new_modifier}")
-
-        for key, item in self.skills.items():
-            self.update_bonus(item[2], item[1], new_modifier)
-
-    def update_bonus(self, line_edit:QLineEdit, checkbox:QCheckBox, modifier:int):
-        final_score = modifier
-        if checkbox.isChecked(): final_score += self.profiency_bonus
-        line_edit.setText(f"+{final_score}" if final_score >= 0 else f"{final_score}")
-
     def changeProfiency(self, value:int=2):
-        try:
-            value = int(value)
-        except:
-            return
         self.profiency_bonus = value
         for key, item in self.skills.items():
-            self.update_bonus(item[2], item[1], int(self.modifier.get_value() if self.modifier.get_value() else 0))
+            key.onModifierChanged.emit()
 
 

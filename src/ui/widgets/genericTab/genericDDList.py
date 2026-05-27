@@ -1,18 +1,21 @@
-from models.generic_model import ExplorableModel
+from src.models.generic_model import ExplorableModel
 from PySide6.QtWidgets import QListWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSizePolicy, QPushButton, QSpacerItem, QFileDialog, QMessageBox
 from PySide6.QtGui import QDrag, QDragEnterEvent, QDragMoveEvent, QIcon
 from PySide6.QtCore import Qt, QMimeData
 from typing import Type
 import json
 
-from ui.details_windows.windows_manager import WindowsManager
-from utils.shared_dict import SharedDict
-from utils.paths import get_export_dir
+from src.ui.details_windows.windows_manager import WindowsManager
+from src.utils.shared_dict import SharedDict
+from src.utils.paths import get_export_dir
+
+from src.models.mixins import ExplorableMixin, PopupMixin
+from src.models.base import BaseModel
 
 
 
 class DDList(QListWidget):
-    def __init__(self, model: Type[ExplorableModel], shared_dict: SharedDict):
+    def __init__(self, model: Type[ExplorableMixin|PopupMixin|BaseModel], shared_dict: SharedDict):
         super().__init__()
         self.item_model = model
         self._shared_dict = shared_dict
@@ -23,7 +26,7 @@ class DDList(QListWidget):
         self.setDefaultDropAction(Qt.DropAction.MoveAction)
 
     def _register_list(self):
-        self._key = self.item_model.__name__
+        self._key = self.item_model.modelname
         self._shared_dict.add_list(self._key, [])
 
     def dragEnterEvent(self, e: QDragEnterEvent):
@@ -40,9 +43,9 @@ class DDList(QListWidget):
 
     def dropEvent(self, event):
         self.addItem(
-            self.item_model.get_collection().get_item(event.mimeData().text()).name
+            self.item_model.get_collection().get_by_field("name", event.mimeData().text()).name
         )
-        self._shared_dict.add_item(self._key, self.item_model.get_collection().get_item(event.mimeData().text()).name)
+        self._shared_dict.add_item(self._key, self.item_model.get_collection().get_by_field("name", event.mimeData().text()).name)
         event.acceptProposedAction()
         self.adjustSizeToContents()
         self.sortItems()
@@ -105,7 +108,7 @@ class DDList(QListWidget):
         # self._shared_dict.blockSignals(False)
 
 class SavebleDDList(QWidget):
-    def __init__(self, model: Type[ExplorableModel], shared_dict: SharedDict):
+    def __init__(self, model: Type[ExplorableMixin|PopupMixin|BaseModel], shared_dict: SharedDict):
         super().__init__()
         self.model = model
         main_layout = QVBoxLayout()
@@ -114,7 +117,7 @@ class SavebleDDList(QWidget):
         main_layout.setContentsMargins(0,0,0,0)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        list_label = QLabel(f"Liste de {self.model.__name__}")
+        list_label = QLabel(f"Liste de {self.model.modelname}")
         list_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(list_label)
 
@@ -138,7 +141,7 @@ class SavebleDDList(QWidget):
         self.list.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.list.itemDoubleClicked.connect(self.item_double_click)
 
-        label = QLabel(f"{self.model.__name__}")
+        label = QLabel(f"{self.model.modelname}")
         self.lock_button = QPushButton()
         self.lock_button.setIcon(QIcon("assets/images/unlock-48.png"))
         self.lock_button.setCheckable(True)
@@ -177,13 +180,13 @@ class SavebleDDList(QWidget):
         self.list.adjustSizeToContents()
 
     def item_double_click(self, item):
-        self.show_details(self.model.get_collection.get_item(item.text()))
+        self.show_details(self.model.get_collection().get_by_field("name", item.text()))
 
-    def show_details(self, item: ExplorableModel):
-        window = WindowsManager().get_window(self.model.__name__.lower(), item.name)
+    def show_details(self, item: PopupMixin):
+        window = WindowsManager().get_window(self.model.modelname.lower(), item.name)
         if window is None:
-            window = item.get_detail_windowclass()(item)
-            WindowsManager().register_window(self.model.__name__.lower(), item.name, window)
+            window = item.__class__.get_popup_window_class()(item)
+            WindowsManager().register_window(self.model.modelname.lower(), item.name, window)
         window.show()
         window.activateWindow()
 
@@ -209,7 +212,7 @@ class SavebleDDList(QWidget):
             items.append(item.text())
 
         if items:
-            list = {"nom": self.list_name_field.text(), f"items": items, "model_name": self.model.__name__}
+            list = {"nom": self.list_name_field.text(), f"items": items, "model_name": self.model.modelname}
             return list
 
     def load_list(self):
@@ -227,7 +230,7 @@ class SavebleDDList(QWidget):
         self.load_list_items(list)
 
     def load_list_items(self, list:dict):
-        if self.model.__name__ != list["model_name"]:
+        if self.model.modelname != list["model_name"]:
             QMessageBox.warning(
                 self,
                 "Fichier non valide",
@@ -239,7 +242,7 @@ class SavebleDDList(QWidget):
 
         self.list.clear()
         for item_name in list["items"]:
-            item:ExplorableModel = self.model.get_collection().get_item(item_name)
+            item:ExplorableMixin = self.model.get_collection().get_by_field("name", item_name)
             self.list.addItem(item.name)
 
         self.lock_button.click()

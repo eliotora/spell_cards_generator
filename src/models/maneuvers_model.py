@@ -1,103 +1,90 @@
-from dataclasses import dataclass
-from typing import Optional
-from models.generic_model import (
-    ExportOption,
-    FilterOption,
-    VisibilityOption,
-    field_metadata,
-    ModelCollection
-)
-from models.detailable_model import DetailableModel
-import locale, os, json
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import ClassVar, Optional
+import locale
+
+from src.models.base import BaseModel
+from src.models.mixins import ExplorableMixin, JsonMixin, PopupMixin, ExportableMixin, MODEL_EXPORT_MODE_HTML_FILES, ExportOption
+from src.models.metadata import ExplorerMetadata, JsonMetadata, FilterOption, VisibilityOption
+
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")
 
-
-def load_maneuvers_from_folder(folder_path: str):
-    maneuvers = []
-
-    for source_folder in os.listdir(folder_path):
-        full_source_path = os.path.join(folder_path, source_folder)
-        if not os.path.isdir(full_source_path):
-            continue
-
-        maneuvers_folder = os.path.join(full_source_path, "maneuvers")
-        if not os.path.exists(maneuvers_folder):
-            continue
-        for filename in os.listdir(maneuvers_folder):
-            if filename.endswith(".json"):
-                file_path = os.path.join(maneuvers_folder, filename)
-                try:
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        maneuver_data = json.load(file)
-                        maneuver = Maneuver(
-                            name=maneuver_data.get("nom", ""),
-                            vo_name=maneuver_data.get("nom_vo", ""),
-                            vf_name=maneuver_data.get("nom_vf", ""),
-                            description=maneuver_data.get("description", ""),
-                            short_description=maneuver_data.get("description_short", ""),
-                            source=source_folder
-                        )
-                        maneuvers.append(maneuver)
-                except (json.JSONDecodeError, IOError) as e:
-                    print(f"Erreur lors du chargement de {filename}: {e}")
-
-    return maneuvers
-
-class ManeuversModels(ModelCollection):
-    export_options: list[ExportOption] = [
-        ExportOption.RULES,
-        ExportOption.CARDS,
-    ]
-    load_items_method = load_maneuvers_from_folder
-
 @dataclass
-class Maneuver(DetailableModel):
-    name: str = field_metadata(
-        label="Nom",
-        filter_type=FilterOption.LINE_EDIT,
-        visibility=VisibilityOption.ALWAYS_VISIBLE,
+class ManeuverModel(BaseModel, ExplorableMixin, JsonMixin, ExportableMixin, PopupMixin):
+    name: str = field(
+        metadata={
+            ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
+                label="Nom",
+                filter_type=FilterOption.LINE_EDIT,
+                visibility=VisibilityOption.ALWAYS_VISIBLE
+            ),
+            JsonMixin.METADATA_NAMESPACE: JsonMetadata()
+        }
     )
-    vf_name: Optional[str] = field_metadata(
-        label="Nom VF", visibility=VisibilityOption.HIDDABLE, cols_to_hide=[2]
+    description: str = field(
+        metadata={
+            ExplorableMixin.METADATA_NAMESPACE:
+            ExplorerMetadata(
+                label="Description",
+                visibility=VisibilityOption.ALWAYS_HIDDEN
+            ),
+            JsonMixin.METADATA_NAMESPACE: JsonMetadata()
+        }
     )
-    vo_name: Optional[str] = field_metadata(
-        label="Nom VO", visibility=VisibilityOption.HIDDABLE, cols_to_hide=[3]
+    vf_name: Optional[str] = field(
+        metadata={
+            ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
+                label="Nom VF",
+                visibility=VisibilityOption.HIDDABLE,
+                cols_to_hide=(2,)
+            ),
+            JsonMixin.METADATA_NAMESPACE: JsonMetadata()
+        },
+        default=""
     )
-    description: str = field_metadata(
-        label="Description", visibility=VisibilityOption.ALWAYS_HIDDEN
+    vo_name: Optional[str] = field(
+        metadata={
+            ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
+                label="Nom VO",
+                visibility=VisibilityOption.HIDDABLE,
+                cols_to_hide=(3,)
+            ),
+            JsonMixin.METADATA_NAMESPACE: JsonMetadata()
+        },
+        default=""
     )
-    short_description: Optional[str] = field_metadata(
-        label="Description",
-        filter_type=FilterOption.LINE_EDIT,
-        visibility=VisibilityOption.HIDDABLE_WITH_FILTER,
-        cols_to_hide=[4],
+    short_description: Optional[str] = field(
+        metadata={
+            ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
+                label="Description",
+                filter_type=FilterOption.LINE_EDIT,
+                visibility=VisibilityOption.HIDDABLE_WITH_FILTER,
+                cols_to_hide=(4,),
+            ),
+            JsonMixin.METADATA_NAMESPACE: JsonMetadata()
+        },
+        default=None
     )
-    source: str = field_metadata(
-        label="Source",
-        filter_type=FilterOption.LIST,
-        visibility=VisibilityOption.HIDDABLE,
-        cols_to_hide=[5],
+    source: str = field(
+        metadata={
+            ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
+                label="Source",
+                filter_type=FilterOption.LIST,
+                visibility=VisibilityOption.HIDDABLE,
+                cols_to_hide=(5,)
+            ),
+            JsonMixin.METADATA_NAMESPACE: JsonMetadata(
+                in_file=False
+            )
+        },
+        default=None
     )
-    collection = ManeuversModels
+
+    DATA_FOLDER = Path("maneuvers")
     color = "#7F513E"
-
-    def __str__(self):
-        """String representation of the Maneuver."""
-        return f"{self.name} ({self.source}) - {self.description[:50]}"
-
-    @classmethod
-    def from_dict(cls, data: dict) -> "Maneuver":
-        """Create a Maneuver instance from a dictionary."""
-        return cls(
-            name=data.get("nom", ""),
-            vo_name=data.get("nom_vo"),
-            vf_name=data.get("nom_vf"),
-            prerequisite=data.get("prérequis", ""),
-            description=data.get("description", ""),
-            short_description=data.get("description_short"),
-            source=data.get("source", ""),
-        )
+    modelname = "Maneuver"
+    export_options = [ExportOption.RULES, ExportOption.CARDS]
 
     def to_html_dict(self):
         result = {}
@@ -108,11 +95,10 @@ class Maneuver(DetailableModel):
             if self.vf_name:
                 result["subtitle"] += f" - {self.vf_name}"
         result['italics'] = [
-            f"<em>{self.__class__.__dataclass_fields__[field].metadata['label']} : {self.__getattribute__(field) if not isinstance(self.__getattribute__(field), list) else ", ".join(self.__getattribute__(field))}</em>"
+            f"<em>{self.__class__.__dataclass_fields__[field].metadata.get(ExplorableMixin.METADATA_NAMESPACE).label} : {self.__getattribute__(field) if not isinstance(self.__getattribute__(field), list) else ", ".join(self.__getattribute__(field))}</em>"
             for field in []
         ]
         result['bolds'] = []
         result['main_text'] = self.description
         result['source'] = self.source
         return result
-

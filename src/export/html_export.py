@@ -1,7 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 from os import getcwd
-from models.detailable_model import DetailableModel, MODEL_EXPORT_MODE_HTML_FILES
-from models.generic_model import ExportOption
+from src.models.mixins import ExportableMixin, MODEL_EXPORT_MODE_HTML_FILES
+from src.models.generic_model import ExportOption
 
 def sort_by_level(spells):
     """
@@ -47,20 +47,19 @@ def determine_card_size(spells):  # TODO: A refaire
 
 
 def html_export(
-    items: list[DetailableModel],
+    items: list[ExportableMixin],
     path,
     mode=ExportOption.RULES.value,
     show_source=False,
     show_VO_name=False,
-    data_type=DetailableModel,
+    data_type=ExportableMixin,
 ):
     env = Environment(loader=FileSystemLoader("assets/export/html_templates"))
-
     template_path = MODEL_EXPORT_MODE_HTML_FILES[(data_type.__name__.lower(), mode)]
     template = env.get_template(template_path)
 
-    style_path = f"file:///{getcwd()}/styles/style.css"
-    background_image_path = f"file:///{getcwd().replace("\\", "/")}/images/fond-ph.jpg"
+    style_path = f"file:///{getcwd()}/assets/styles/style.css"
+    background_image_path = f"file:///{getcwd().replace("\\", "/")}/assets/images/fond-ph.jpg"
 
     data = [i.to_html_dict() for i in items]
 

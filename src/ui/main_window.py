@@ -11,22 +11,24 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from PySide6.QtCore import Qt
-from models.combat_feat_model import CombatFeat
-from ui.widgets.generic_tab import GenericTabWithList, GenericTab
-from ui.widgets.specificTabs.character_tab.character_tab import CharacterTab
-from ui.widgets.specificTabs.spell_tab.spell_tab import SpellTab
-from ui.widgets.specificTabs.all_lists_tab.all_lists_tab import AllListsTab
-from models.generic_model import ExplorableModel, MODEL_NAME_MAPPING
-from models.spell_model import Spell
-from models.feat_model import Feat
-from models.maneuvers_model import Maneuver
-from models.metamagic_model import Metamagic
-from models.artificer_influx_model import Influx
-from models.eldritch_invocation_model import EldritchInvocation
-from models.profile_model import Profile
-from utils.paths import get_export_dir, load_data_if_new
-from utils.shared_dict import SharedDict
-from ui.details_windows.windows_manager import WindowsManager
+from src.ui.widgets.generic_tab import GenericTabWithList, GenericTab
+from src.ui.widgets.specificTabs.character_tab.character_tab import CharacterTab
+from src.ui.widgets.specificTabs.spell_tab.spell_tab import SpellTab
+from src.ui.widgets.specificTabs.all_lists_tab.all_lists_tab import AllListsTab
+from src.models.generic_model import ExplorableModel, MODEL_NAME_MAPPING
+from src.models.feat_model import FeatModel
+from src.models.maneuvers_model import ManeuverModel
+from src.models.metamagic_model import MetamagicModel
+from src.models.artificer_influx_model import Influx
+from src.models.eldritch_invocation_model import EldritchInvocationModel
+from src.models.profile_model import ProfileModel
+from src.utils.paths import get_export_dir, load_data_if_new
+from src.utils.shared_dict import SharedDict
+from src.ui.details_windows.windows_manager import WindowsManager
+
+from src.models.spell_model import SpellModel
+from src.models.collections import BaseCollection
+from src.models.repositories.data_repository import DataRepository
 
 
 class MainWindow(QMainWindow):
@@ -46,43 +48,31 @@ class MainWindow(QMainWindow):
         self.tab_widget = QTabWidget()
         layout.addWidget(self.tab_widget)
 
+        spells = DataRepository.load_all(SpellModel)
+        spell_collection = BaseCollection(spells)
+        SpellModel.collection = spell_collection
+
         self.spell_tab = SpellTab(self.spell_dict)
-        self.tabs[Spell.__name__] = self.spell_tab
+        self.tabs[SpellModel.__name__] = self.spell_tab
         self.tab_widget.addTab(self.spell_tab, "Sorts")
 
-        self.feat_tab = GenericTabWithList(Feat, self.shared_dict)
-        self.tabs[Feat.__name__] = self.feat_tab
-        self.tab_widget.addTab(self.feat_tab, "Dons")
+        self.createModelTab(FeatModel, "Dons")
+        self.createModelTab(EldritchInvocationModel, "Invocations occultes")
+        self.createModelTab(ManeuverModel, "Manœuvres")
+        self.createModelTab(MetamagicModel, "Métamagies")
+        self.createModelTab(ProfileModel, "Profiles")
 
-        self.eldritch_invocation_tab = GenericTabWithList(EldritchInvocation, self.shared_dict)
-        self.tabs[EldritchInvocation.__name__] = self.eldritch_invocation_tab
-        self.tab_widget.addTab(self.eldritch_invocation_tab, "Invocations occultes")
+        # self.influx_tab = GenericTabWithList(Influx, self.shared_dict)
+        # self.tabs[Influx.__name__] = self.influx_tab
+        # self.tab_widget.addTab(self.influx_tab, "Influx d'artificier")
 
-        self.maneuver_tab = GenericTabWithList(Maneuver, self.shared_dict)
-        self.tabs[Maneuver.__name__] = self.maneuver_tab
-        self.tab_widget.addTab(self.maneuver_tab, "Manœuvres")
+        # self.all_lists_tab = AllListsTab(self.spell_dict, self.shared_dict)
+        # self.tabs["All_lists"] = self.all_lists_tab
+        # self.tab_widget.addTab(self.all_lists_tab, "Toutes les listes")
 
-        self.metamagic_tab = GenericTabWithList(Metamagic, self.shared_dict)
-        self.tabs[Metamagic.__name__] = self.metamagic_tab
-        self.tab_widget.addTab(self.metamagic_tab, "Métamagie")
-
-        self.influx_tab = GenericTabWithList(Influx, self.shared_dict)
-        self.tabs[Influx.__name__] = self.influx_tab
-        self.tab_widget.addTab(self.influx_tab, "Influx d'artificier")
-
-        self.combat_feat_tab = GenericTabWithList(CombatFeat, self.shared_dict)
-        self.tabs[CombatFeat.__name__] = self.combat_feat_tab
-        self.tab_widget.addTab(self.combat_feat_tab, "Styles de combat")
-
-        self.all_lists_tab = AllListsTab(self.spell_dict, self.shared_dict)
-        self.tabs["All_lists"] = self.all_lists_tab
-        self.tab_widget.addTab(self.all_lists_tab, "Toutes les listes")
-
-        self.char_tab = CharacterTab()
-        self.tabs["Character"] = self.char_tab
-        self.tab_widget.addTab(self.char_tab, "Character")
-
-        Profile.get_collection()()
+        # self.char_tab = CharacterTab()
+        # self.tabs["Character"] = self.char_tab
+        # self.tab_widget.addTab(self.char_tab, "Character")
 
         load_layout = QHBoxLayout()
 
@@ -130,7 +120,6 @@ class MainWindow(QMainWindow):
             with open(path, "w", encoding="utf-8") as file:
                 json.dump(file_content, file)
 
-
     def load_all_lists(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
@@ -148,7 +137,7 @@ class MainWindow(QMainWindow):
             if list:
                 tab.list_widget.load_list_items(list)
 
-    def load_new_data(self):
+    def load_new_data(self): #TODO: Redo
         path = QFileDialog.getExistingDirectory(
             self,
             "Sélectionnez les données à charger",
@@ -175,10 +164,19 @@ class MainWindow(QMainWindow):
 
         self.reload_data()
 
-    def reload_data(self):
+    def reload_data(self): #TODO: Redo
         for key, element in MODEL_NAME_MAPPING.items():
             element.get_collection().reload_data()
         for i in range(self.tab_widget.count()):
             tab = self.tab_widget.widget(i)
             if isinstance(tab, GenericTab):
                 tab.reload_data()
+
+    def createModelTab(self, model: ExplorableModel, tab_name: str):
+        models = DataRepository.load_all(model)
+        model_collection = BaseCollection(models)
+        model.collection = model_collection
+
+        model_tab = GenericTabWithList(model, self.shared_dict)
+        self.tabs[model.__name__] = model_tab
+        self.tab_widget.addTab(model_tab,tab_name)
