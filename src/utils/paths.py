@@ -22,11 +22,11 @@ def check_import_validity(path, source_name):
                 if not file.endswith(".json"): # should only contain json files
                     return False, f"{source_name}: One of the files is not a json file"
         else: # Version file
-            if not source_name in os.listdir("data") or not "version" in os.listdir(f"data/{source_name}"):
+            if not source_name in os.listdir("assets/data") or not "version" in os.listdir(f"assets/data/{source_name}"):
                 continue
             with open(f"{path}//{file_or_dir}", "r", encoding="utf-8") as f:
                 new_content = json.load(f)
-            with open(f"data/{source_name}/version", "r", encoding="utf-8") as f:
+            with open(f"assets/data/{source_name}/version", "r", encoding="utf-8") as f:
                 old_content = json.load(f)
 
             if new_content["source_name"] != old_content["source_name"]:
@@ -40,7 +40,7 @@ def check_import_validity(path, source_name):
     return True, None
 
 def import_data(path, source_name):
-    copytree(path, f"data/{source_name}", dirs_exist_ok=True)
+    copytree(path, f"assets/data/{source_name}", dirs_exist_ok=True)
 
 def load_data_if_new(path):
     text = ""
@@ -61,6 +61,9 @@ def load_data_if_new(path):
                     import_data(f"{path}/{dir}", dir)
                 else:
                     text += "\n" + t
+
+        else:
+            return False, "Il y a un fichier dans le dossier"
     else:
         return False, "Le chemin n'existe pas ou n'est pas un dossier"
 

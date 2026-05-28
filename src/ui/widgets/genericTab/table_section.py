@@ -59,6 +59,10 @@ class GenericTable(QWidget):
         items: list[BaseModel] = self.model.collection.items()
 
         self.filtered_items = []
+        
+        if len(items) == 0:
+            return
+
         filters: dict[Field, FilterOption] = {field: field.metadata.get(ExplorableMixin.METADATA_NAMESPACE).filter_type for field in items[0].__class__.__dataclass_fields__.values() if field.metadata.get(ExplorableMixin.METADATA_NAMESPACE).filter_type is not FilterOption.NONE}
 
         for item in items:

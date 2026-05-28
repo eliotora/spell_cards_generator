@@ -97,6 +97,7 @@ class GenericTab(Generic[T], QWidget):
         return layout
 
     def load_data(self):
+        self.items = self.model.collection
         data = self.items.items()
 
         options = {}

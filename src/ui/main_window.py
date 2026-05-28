@@ -15,7 +15,6 @@ from src.ui.widgets.generic_tab import GenericTabWithList, GenericTab
 from src.ui.widgets.specificTabs.character_tab.character_tab import CharacterTab
 from src.ui.widgets.specificTabs.spell_tab.spell_tab import SpellTab
 from src.ui.widgets.specificTabs.all_lists_tab.all_lists_tab import AllListsTab
-from src.models.generic_model import ExplorableModel, MODEL_NAME_MAPPING
 from src.models.feat_model import FeatModel
 from src.models.maneuvers_model import ManeuverModel
 from src.models.metamagic_model import MetamagicModel
@@ -26,9 +25,11 @@ from src.utils.paths import get_export_dir, load_data_if_new
 from src.utils.shared_dict import SharedDict
 from src.ui.details_windows.windows_manager import WindowsManager
 
-from src.models.spell_model import SpellModel
 from src.models.collections import BaseCollection
 from src.models.repositories.data_repository import DataRepository
+from src.models import SpellModel
+from src.models.mixins import ExplorableMixin
+from src.models.base.base_model import MODEL_NAME_MAPPING
 
 
 class MainWindow(QMainWindow):
@@ -112,7 +113,7 @@ class MainWindow(QMainWindow):
         if not path:
             return
 
-        file_content: dict[ExplorableModel, dict] = {}
+        file_content: dict[ExplorableMixin, dict] = {}
         for model, tab in self.tabs.items():
             file_content[model] = tab.list_widget.list_to_dict()
 
@@ -148,7 +149,8 @@ class MainWindow(QMainWindow):
 
         try:
             ok, t = load_data_if_new(path)
-        except:
+        except Exception as e:
+            print(e)
             error = QMessageBox()
             error.setWindowTitle("Erreur lors de l'import")
             error.setText("L'import des données nécessite un accès administrateur à un dossier. Veuillez relancer l'application en mode administrateur pour avoir accès à cette fonctionnalité.")
@@ -166,13 +168,14 @@ class MainWindow(QMainWindow):
 
     def reload_data(self): #TODO: Redo
         for key, element in MODEL_NAME_MAPPING.items():
-            element.get_collection().reload_data()
+            element: ExplorableMixin = element
+            element.collection = BaseCollection(DataRepository.load_all(element))
         for i in range(self.tab_widget.count()):
             tab = self.tab_widget.widget(i)
             if isinstance(tab, GenericTab):
                 tab.reload_data()
 
-    def createModelTab(self, model: ExplorableModel, tab_name: str):
+    def createModelTab(self, model: ExplorableMixin, tab_name: str):
         models = DataRepository.load_all(model)
         model_collection = BaseCollection(models)
         model.collection = model_collection

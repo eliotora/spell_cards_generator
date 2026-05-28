@@ -14,7 +14,7 @@ Compression=lzma
 SolidCompression=yes
 
 [Dirs]
-Name: "{app}\data"
+Name: "{app}\assets\data"
 Name: "{userdocs}\DnD Spell Viewer Exports"
 
 [Files]

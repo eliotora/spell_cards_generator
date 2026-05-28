@@ -15,6 +15,7 @@ release/
 # Data
 assets/data
 assets/data_old
+assets/data_save
 assets/change_it.py
 data/
 SpellViewerInstaller.exe
