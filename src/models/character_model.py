@@ -1,7 +1,7 @@
 from PySide6.QtCore import QObject, Signal
 import enum
 from src.models.conceptual_models import Distance, Caracteristic, Ability, Saving_Throw, MoneyUnit
-from src.models.item_model import Weapon, Item, MagicItem
+from src.models.item_model import ItemModel
 from src.models.character_class_model import CharacterClass, ClassFeature
 
 from src.models.feat_model import FeatModel
@@ -85,8 +85,8 @@ class Character(QObject):
         appearance: str = "",
         backstory_personnality: str = "",
         languages: list[str] = [],
-        equipement: list[Item] = [],
-        attunements: list[MagicItem] = [],
+        equipement: list[ItemModel] = [],
+        attunements: list[ItemModel] = [],
         money: dict[MoneyUnit, int] = {m : 0 for m in MoneyUnit}
     ):
         super().__init__()
@@ -150,10 +150,10 @@ class Character(QObject):
         self.appearance: signaledProperty[str] = appearance
         self.backstory_personnality: signaledProperty[str] = backstory_personnality
         self.languages: signaledProperty[list[str]] = languages
-        self.equipement: signaledProperty[list[Item]] = equipement
+        self.equipement: signaledProperty[list[ItemModel]] = equipement
 
         self.maximum_attunements: signaledProperty[int] = 3
-        self.attunements: signaledProperty[list[MagicItem]] = attunements
+        self.attunements: signaledProperty[list[ItemModel]] = attunements
 
 
         money = {k: signaledProperty(i) for k, i in money.items()}
@@ -238,7 +238,7 @@ class Character(QObject):
         if self.shield.value == True: ac += 2
         self.setArmorClass(ac)
 
-    def isProficientWith(self, item:Weapon): #TODO: Tools and Armor
+    def isProficientWith(self, item:ItemModel): #TODO: Tools and Armor
         types = item.type
         for t in types:
             if t in self.trainings:

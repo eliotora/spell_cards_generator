@@ -1,3 +1,5 @@
+import enum
+
 from PySide6.QtWidgets import (
     QWidget,
     QHBoxLayout,
@@ -132,7 +134,8 @@ class GenericFilter(QWidget, Generic[T]):
             if type(filter) == MultiSelectionListWidget:
                 filter.clear()
                 for element in options[fname]:
-                    item = QListWidgetItem(element)
+                    item = QListWidgetItem(str(element))
+                    item.setData(Qt.ItemDataRole.UserRole, element)
                     filter.addItem(item)
                     item.setSelected(True)
                 filter.adjustSize()

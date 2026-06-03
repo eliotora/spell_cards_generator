@@ -2,7 +2,7 @@ import pytest, json
 
 from src.models.spell_model import SpellModel
 from src.models.base import BaseModel
-from src.models.mixins import JsonMixin, ExplorableMixin, PopupMixin
+from src.models.mixins import JsonMixin, ExplorableMixin, PopupMixin, ExportableMixin
 
 # === TestSpellModel ===
 class TestSpellModel:
@@ -38,6 +38,9 @@ class TestSpellModel:
 
     def test_is_subclass_of_PopupMixin(self):
         assert issubclass(SpellModel, PopupMixin)
+
+    def test_is_subclass_of_ExportableMixin(self):
+        assert issubclass(SpellModel, ExportableMixin)
 
     # Test: JsonMixin
     def test_json_mixin_to_json_returns_a_string(self):

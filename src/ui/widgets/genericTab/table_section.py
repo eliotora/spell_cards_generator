@@ -59,7 +59,7 @@ class GenericTable(QWidget):
         items: list[BaseModel] = self.model.collection.items()
 
         self.filtered_items = []
-        
+
         if len(items) == 0:
             return
 
@@ -68,6 +68,8 @@ class GenericTable(QWidget):
         for item in items:
             if all(fil.value_in_filter(getattr(item, field.name), field_filters.get(field.name, [])) for field, fil in filters.items()):
                 self.filtered_items.append(item)
+
+        print(len(items), items[0].__class__.__name__, len(self.filtered_items))
 
 
 

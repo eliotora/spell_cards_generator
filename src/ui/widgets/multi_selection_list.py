@@ -46,7 +46,7 @@ class MultiSelectionListWidget(QWidget):
         self.checkbox.blockSignals(False)
 
     def get_selected_item_texts(self) -> list[str]:
-        return [item.text() for item in self.list.selectedItems()]
+        return [item.data(Qt.ItemDataRole.UserRole) for item in self.list.selectedItems()]
 
     def clear(self):
         self.list.clear()

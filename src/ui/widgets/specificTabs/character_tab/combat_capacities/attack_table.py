@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QPushButton, QTableWidgetItem
 from PySide6.QtCore import Qt
-from src.models.item_model import Weapon, WeaponType
+from src.models.item_model import ItemModel, ItemType
 from src.models.character_model import Character, signaledProperty
 from src.models.conceptual_models import Caracteristic, WeaponPropertyType
 from src.models.spell_model import SpellModel
@@ -38,7 +38,7 @@ class AttackTableWidget(QWidget):
 
         return layout
 
-    def add_attack(self, attack_source:Weapon|SpellModel, char:Character):
+    def add_attack(self, attack_source:ItemModel|SpellModel, char:Character):
         attack_row = AttackRow(attack_source, char)
         self.attacks.append(attack_row)
         row = self.table.rowCount()
@@ -49,7 +49,7 @@ class AttackTableWidget(QWidget):
 
         self.table.resizeColumnsToContents()
 
-    def attack_in_table(self, attack_source:Weapon|SpellModel):
+    def attack_in_table(self, attack_source:ItemModel|SpellModel):
         for r in range(self.table.rowCount()):
             attack_name = self.table.item(r, 1).text()
             if attack_name == attack_source.name:
@@ -57,7 +57,7 @@ class AttackTableWidget(QWidget):
 
 
 class AttackRow:
-    def __init__(self, attack_source:Weapon|SpellModel, char:Character):
+    def __init__(self, attack_source:ItemModel|SpellModel, char:Character):
         self.char = char
         self.items: list[QTableWidgetItem] = []
         self.attack_source = attack_source
@@ -75,27 +75,27 @@ class AttackRow:
         self.create_items(name, attack_bonus, dmg, note)
 
     def makeConnections(self):
-        if isinstance(self.attack_source, Weapon):
-            if self.attack_source.weapon_type == WeaponType.MELEE:
+        if isinstance(self.attack_source, ItemModel):
+            if self.attack_source.weapon_type == ItemType.MELEE:
                 if any([p.type==WeaponPropertyType.FINESSE for p in self.attack_source.properties]):
                     self.char.caracs.value[Caracteristic.Caracteristics.STRENGTH].connectOnValueChanged(self.onCaracChanged)
                     self.char.caracs.value[Caracteristic.Caracteristics.DEXTERITY].connectOnValueChanged(self.onCaracChanged)
                 else:
                     self.char.caracs.value[Caracteristic.Caracteristics.STRENGTH].connectOnValueChanged(self.onCaracChanged)
-            elif self.attack_source.weapon_type == WeaponType.RANGED:
+            elif self.attack_source.weapon_type == ItemType.RANGED:
                 self.char.caracs.value[Caracteristic.Caracteristics.DEXTERITY].connectOnValueChanged(self.onCaracChanged)
 
     def get_bonus_dmg(self) -> tuple[str, str]:
-        if isinstance(self.attack_source, Weapon):
+        if isinstance(self.attack_source, ItemModel):
             proficient = True # TODO: Chercher les maîtrises correspondantes
-            if self.attack_source.weapon_type == WeaponType.MELEE:
+            if self.attack_source.weapon_type == ItemType.MELEE:
                 if any([p.type==WeaponPropertyType.FINESSE for p in self.attack_source.properties]):
                     strengh = self.char.caracs.value[Caracteristic.Caracteristics.STRENGTH]
                     dex = self.char.caracs.value[Caracteristic.Caracteristics.DEXTERITY]
                     carac = strengh if strengh.getValue() > dex.getValue() else dex
                 else:
                     carac = self.char.caracs.value[Caracteristic.Caracteristics.STRENGTH]
-            elif self.attack_source.weapon_type == WeaponType.RANGED:
+            elif self.attack_source.weapon_type == ItemType.RANGED:
                 carac = self.char.caracs.value[Caracteristic.Caracteristics.DEXTERITY]
 
             attack_bonus = carac.getMod()

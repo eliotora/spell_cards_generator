@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from PySide6.QtCore import Qt
+from src.models.item_model import ItemModel
 from src.ui.widgets.generic_tab import GenericTabWithList, GenericTab
 from src.ui.widgets.specificTabs.character_tab.character_tab import CharacterTab
 from src.ui.widgets.specificTabs.spell_tab.spell_tab import SpellTab
@@ -62,6 +63,7 @@ class MainWindow(QMainWindow):
         self.createModelTab(ManeuverModel, "Manœuvres")
         self.createModelTab(MetamagicModel, "Métamagies")
         self.createModelTab(ProfileModel, "Profiles")
+        self.createModelTab(ItemModel, "Objets")
 
         # self.influx_tab = GenericTabWithList(Influx, self.shared_dict)
         # self.tabs[Influx.__name__] = self.influx_tab

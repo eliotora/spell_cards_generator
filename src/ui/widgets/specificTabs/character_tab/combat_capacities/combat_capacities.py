@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from src.ui.widgets.specificTabs.character_tab.combat_capacities.info_display import InfoDisplay
 from src.ui.widgets.specificTabs.character_tab.combat_capacities.attack_table import AttackTableWidget
 from src.ui.widgets.specificTabs.character_tab.combat_capacities.text_boxes import SimpleTextBox, DoubleTextBox
-from src.models.item_model import Weapon, WeaponProperty, Dice, WeaponType
+from src.models.item_model import ItemType
 from src.models.conceptual_models import WeaponPropertyType, Distance
 from src.models.character_model import Character
 
@@ -31,26 +31,26 @@ class CombatCapacities(QWidget):
 
         self.attack_table_widget = AttackTableWidget()
 
-        weapon = Weapon(
-            name="Trident",
-            vf_name="",
-            vo_name="Trident",
-            type=["Arme", "Arme de guerre", "Arme de corps à corps"],
-            weight="2 kg",
-            description="",
-            short_description="",
-            cost="5 po",
-            damage_dice=(1, Dice.D6),
-            damage_type="Perforant",
-            properties=[
-                WeaponProperty(WeaponPropertyType.THROWN, range_normal=Distance(6, "m"), range_max=Distance(18, "m")),
-                WeaponProperty(WeaponPropertyType.VERSATILE, versatile_damage=Dice.D8)
-            ],
-            source="PHB",
-            weapon_type=WeaponType.MELEE
-        )
+        # weapon = ItemType(
+        #     name="Trident",
+        #     vf_name="",
+        #     vo_name="Trident",
+        #     type=["Arme", "Arme de guerre", "Arme de corps à corps"],
+        #     weight="2 kg",
+        #     description="",
+        #     short_description="",
+        #     cost="5 po",
+        #     damage_dice=(1, Dice.D6),
+        #     damage_type="Perforant",
+        #     properties=[
+        #         WeaponProperty(WeaponPropertyType.THROWN, range_normal=Distance(6, "m"), range_max=Distance(18, "m")),
+        #         WeaponProperty(WeaponPropertyType.VERSATILE, versatile_damage=Dice.D8)
+        #     ],
+        #     source="PHB",
+        #     weapon_type=WeaponType.MELEE
+        # )
 
-        self.attack_table_widget.add_attack(weapon, char=self.char)
+        # self.attack_table_widget.add_attack(weapon, char=self.char)
 
         layout.addWidget(self.attack_table_widget)
 

@@ -6,6 +6,7 @@ class BaseModel:
     modelname: ClassVar[str]
 
     def __init_subclass__(cls):
+        cls.modelname = cls.__name__
         MODEL_NAME_MAPPING[cls.modelname.lower()] = cls
         super().__init_subclass__()
 

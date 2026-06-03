@@ -7,6 +7,7 @@ from src.models.mixins.json_mixin import JsonMixin
 # === Fixture ===
 class MockModel(BaseModel, JsonMixin):
     """Mock model for tests"""
+    modelname = "MockModel"
     def __init__(self, name:str = "test"):
         self.name = name
 

@@ -40,3 +40,6 @@ class DataRepository(BaseRepository[T]):
                 result.append(item)
 
         return result
+
+
+DataRepository.set_data_path("assets/data")

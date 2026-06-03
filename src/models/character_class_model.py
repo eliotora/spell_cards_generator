@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from collections.abc import Callable
 from PySide6.QtCore import Signal
 from src.models.conceptual_models import Dice, Saving_Throw, Ability, Caracteristic
-from src.models.item_model import Item
+from src.models.item_model import ItemModel
 from enum import Enum
 from math import floor
 from pyparsing import Word, alphas, alphanums, Group, Forward, oneOf, Suppress
@@ -210,7 +210,7 @@ class CharacterClass:
     profiencies: list[str]
     saving_throws_profiencies: list[Caracteristic.Caracteristics]
     skills_profiencies_choice: tuple[int, list[Ability]]
-    starting_equipement: list[list[Item]]
+    starting_equipement: list[list[ItemModel]]
     class_features: dict[int, list[ClassFeature]]
 
 
