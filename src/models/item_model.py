@@ -763,7 +763,7 @@ class ToolModel(ItemModel):
 
     def __post_init__(self):
         if len(self.tags) == 0:
-            self.tags.add(str(self.item_type).capitalize())
+            self.tags.add(*[str(t).capitalize() for t in self.item_type])
         super().__post_init__()
 
     @classmethod

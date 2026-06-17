@@ -104,7 +104,7 @@ class GenericTab(Generic[T], QWidget):
         for fname, field in self.model.__dataclass_fields__.items():
             md: ExplorerMetadata = field.metadata.get(ExplorableMixin.METADATA_NAMESPACE)
             if md.filter_type == FilterOption.LIST:
-                if field.type == list[str]:
+                if field.type == list[str] or field.type == set[str]:
                     options[fname] = sorted(
                         set(
                             item

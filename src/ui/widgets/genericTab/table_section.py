@@ -90,7 +90,7 @@ class GenericTable(QWidget):
                     self.table.setItem(row, col, item_widget)
                     continue
                 value = item.__getattribute__(key)
-                if isinstance(value, list):
+                if isinstance(value, list) or isinstance(value, set):
                     values = [v.split("(")[0].strip() for v in value if v]
                     value = ", ".join(values)
                 elif isinstance(value, bool):
