@@ -8,7 +8,7 @@ class ExplorableMixin:
     METADATA_NAMESPACE = "explorer"
     REQUIRED_METADATA = "explorer"
 
-    collection: ClassVar[BaseCollection]
+    collection: ClassVar[BaseCollection] = None
 
     @classmethod
     def explorer_fields(cls) -> list[tuple[Field, dict]]:
@@ -30,4 +30,5 @@ class ExplorableMixin:
 
     @classmethod
     def get_collection(cls) -> BaseCollection:
-        return cls.collection
+        if cls.collection: return cls.collection
+        else: return None

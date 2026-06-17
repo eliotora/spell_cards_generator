@@ -24,7 +24,7 @@ class FilterOption(enum.IntEnum):
     def value_in_filter(self, value: str|int, filters: list[str|int]) -> bool:
         """Check if a value is in the filter options"""
         if self == FilterOption.LIST:
-            if type(value) == list:
+            if type(value) == list or type(value) == set:
                 return any(v in filters for v in value)
 
             return value in filters

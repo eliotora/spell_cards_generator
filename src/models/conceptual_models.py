@@ -78,6 +78,16 @@ class MoneyUnit(enum.Enum):
                 return u
         return None
 
+class MoneyQuantity:
+    def __init__(self, quantity: float, base_unit: MoneyUnit = MoneyUnit.COPPER):
+        self.quantity = int(quantity * base_unit.value[1])
+
+    def __str__(self) -> str:
+        for unit in sorted(MoneyUnit, key=lambda x: x.value[1], reverse=True):
+            if self.quantity % unit.value[1] == 0:
+                return f"{self.quantity // unit.value[1]} {unit.value[0]["fr"]}"
+        return f"{self.quantity} {MoneyUnit.COPPER.value[0]["fr"]}"
+
 class Caracteristic(QObject):
     class Caracteristics(enum.StrEnum):
         STRENGTH = "STRENGTH"

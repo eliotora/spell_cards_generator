@@ -32,6 +32,8 @@ from src.models import SpellModel
 from src.models.mixins import ExplorableMixin
 from src.models.base.base_model import MODEL_NAME_MAPPING
 
+from src.ui.details_windows.item_popup_window import *
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -178,9 +180,10 @@ class MainWindow(QMainWindow):
                 tab.reload_data()
 
     def createModelTab(self, model: ExplorableMixin, tab_name: str):
-        models = DataRepository.load_all(model)
-        model_collection = BaseCollection(models)
-        model.collection = model_collection
+        if model.get_collection() is None:
+            models = DataRepository.load_all(model)
+            model_collection = BaseCollection(models)
+            model.collection = model_collection
 
         model_tab = GenericTabWithList(model, self.shared_dict)
         self.tabs[model.__name__] = model_tab

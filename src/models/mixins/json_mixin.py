@@ -62,19 +62,23 @@ class JsonMixin:
     def from_json(cls, text):
         try:
             data = json.loads(text)
-            # Récupérer les type hints de la classe
-            hints = get_type_hints(cls)
+            return cls.from_dict(data)
 
-            # Reconstruire les champs avec les bons types
-            for field_name, value in data.items():
-                if field_name in hints:
-                    data[field_name] = _deserialize_field(value, hints[field_name])
-
-            return cls(**data)
         except Exception as e:
             print(cls.__name__, text)
             raise e
 
+    @classmethod
+    def from_dict(cls, data: dict[str: Any]):
+        # Récupérer les type hints de la classe
+        hints = get_type_hints(cls)
+
+        # Reconstruire les champs avec les bons types
+        for field_name, value in data.items():
+            if field_name in hints:
+                data[field_name] = _deserialize_field(value, hints[field_name])
+
+        return cls(**data)
 
     @classmethod
     def json_fields(cls):

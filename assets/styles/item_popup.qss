@@ -1,0 +1,38 @@
+QWidget {
+    background: none;
+    color: black;
+}
+
+#container {
+    background: white url("./assets/images/fond-ph.jpg") repeat;
+}
+
+#container QLabel {
+    font-family: "Georgia","Times New Roman", serif;
+    font-size: 12pt;
+}
+
+QLabel#title {
+    color: #6D0000;
+    font-size:18pt;
+    margin: 0 0 0 0;
+    font-family: "Georgia", sans-serif;
+    font-weight: bold;
+}
+
+QLabel#type {
+    font-style: italic;
+}
+
+QLabel#subtype {
+    font-style: italic;
+    color: #696969;
+}
+
+QWidget#orange {
+    border: 1px black solid;
+    background-color: #e69a28;
+    width: 100%;
+    height: 6px;
+    min-height: 6px;
+}

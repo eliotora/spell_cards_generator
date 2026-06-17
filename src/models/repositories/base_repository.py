@@ -4,7 +4,7 @@ import os
 from src.models.base.base_model import BaseModel
 from src.models.mixins.json_mixin import JsonMixin
 
-T = TypeVar("T", bound=BaseModel)
+T = TypeVar("T", bound=BaseModel|JsonMixin)
 
 class BaseRepository(Generic[T]):
     @classmethod
