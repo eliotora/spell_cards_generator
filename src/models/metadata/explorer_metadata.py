@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from src.utils import normalize_text
 import enum
+from typing import Callable
 
 class FilterOption(enum.IntEnum):
     """Enum for filter options."""
@@ -59,6 +60,19 @@ class VisibilityOption(enum.IntEnum):
         """String representation of the enum."""
         return self.name.lower()
 
+def str_bool(element):
+    if isinstance(element, bool):
+        return (0, element)
+    else:
+        return (1, element)
+
+class SortingKeys(enum.Enum):
+    DEFAULT = None
+    STR_BOOL = str_bool
+
+
+
+
 
 @dataclass(frozen=True)
 class ExplorerMetadata:
@@ -66,3 +80,4 @@ class ExplorerMetadata:
     visibility: VisibilityOption
     filter_type: FilterOption = FilterOption.NONE
     cols_to_hide: tuple[int] = ()
+    sorting_key: Callable = None

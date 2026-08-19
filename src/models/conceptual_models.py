@@ -1,7 +1,7 @@
 from PySide6.QtCore import Signal, QObject
 import enum
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 class Dice(enum.StrEnum):
     D4 = "d4"
@@ -87,6 +87,17 @@ class MoneyQuantity:
             if self.quantity % unit.value[1] == 0:
                 return f"{self.quantity // unit.value[1]} {unit.value[0]["fr"]}"
         return f"{self.quantity} {MoneyUnit.COPPER.value[0]["fr"]}"
+
+    def __eq__(self, other: 'MoneyQuantity'):
+        return self.quantity == other.quantity
+
+    def __add__(self, other: Union[int,'MoneyQuantity']):
+        if isinstance(other, MoneyQuantity):
+            return MoneyQuantity(self.quantity + other.quantity)
+        elif isinstance(other, int):
+            return MoneyQuantity(self.quantity + other)
+        else:
+            raise TypeError(f"unsupported operand type(s) for +: {self.__class__.__name__} and {other.__class__.__name__}")
 
 class Caracteristic(QObject):
     class Caracteristics(enum.StrEnum):

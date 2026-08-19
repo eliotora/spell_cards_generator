@@ -1,9 +1,25 @@
-from typing import Generic, TypeVar, Iterator, Callable
+from typing import Any, Generic, TypeVar, Iterator, Callable
 from copy import deepcopy
+import operator
 
 from src.models.base import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
+Predicate = Callable[[Any], bool]
+
+OPS: dict[str, Callable] = {
+    "eq":           operator.eq,
+    "neq":          operator.ne,
+    "gt":           operator.gt,
+    "gte":          operator.ge,
+    "lt":           operator.lt,
+    "lte":          operator.le,
+    "in":           lambda a, b: a in b,
+    "not_in":       lambda a, b: a not in b,
+    "contains":     lambda a, b: b in a,
+    "startswith":   lambda a, b: a.startswith(b),
+}
+
 
 class BaseCollection(Generic[T]):
     """Base for all collection classes"""
@@ -49,7 +65,8 @@ class BaseCollection(Generic[T]):
             if predicate(item) is True:
                 return item
 
-    def filter(self, predicate) -> 'BaseCollection[T]':
+    def filter(self, rule: dict) -> 'BaseCollection[T]':
+        predicate = self.build_predicate(rule)
         return self.__class__([i for i in self._items if predicate(i)])
 
     def get_by_field(self, field_name, value) -> T|None:
@@ -67,5 +84,36 @@ class BaseCollection(Generic[T]):
                 return i
 
         return None
+
+    def _get_field(self, obj: Any, field: str) -> Any:
+        for part in field.split("."):
+            if isinstance(obj, dict):
+                obj = obj[part]
+            else:
+                obj = getattr(obj, part)
+        return obj
+
+    def build_predicate(self, rule: dict) -> Predicate:
+        if "and" in rule:
+            subs = [self.build_predicate(r) for r in rule["and"]]
+            return lambda obj: all(p(obj) for p in subs)
+
+        if "or" in rule:
+            subs = [self.build_predicate(r) for r in rule["or"]]
+            return lambda obj: any(p(obj) for p in subs)
+
+        if "not" in rule:
+            sub = self.build_predicate(rule["not"])
+            return lambda obj: not sub(obj)
+
+        field = rule["field"]
+        op = rule["op"]
+        value = rule["value"]
+
+        if not op in OPS:
+            raise ValueError(f"Unknown operator: {op!r}")
+
+        fn = OPS[op]
+        return lambda obj: fn(self._get_field(obj, field), value)
 
 

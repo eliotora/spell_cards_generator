@@ -1,8 +1,13 @@
-from dataclasses import asdict, fields
+from dataclasses import asdict, fields, Field
 from typing import Any, ClassVar, get_type_hints, get_origin, get_args
 from pathlib import Path
 from enum import Enum
+from typing import get_args, get_origin, Union
+from types import UnionType
+from enum import Enum
 import json
+
+from src.models.metadata import JsonMetadata
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -49,7 +54,6 @@ def _deserialize_field(value: Any, field_type: Any) -> Any:
 
 class JsonMixin:
     """Mixing for models that either have to be saved to JSON or loaded from a JSON file"""
-    METADATA_NAMESPACE = "json"
     REQUIRED_METADATA = "json"
 
     DATA_FOLDER: ClassVar[Path]
@@ -81,11 +85,11 @@ class JsonMixin:
         return cls(**data)
 
     @classmethod
-    def json_fields(cls):
+    def json_fields(cls) -> list[tuple[Field[Any], JsonMetadata]]:
         result = []
 
         for f in fields(cls):
-            meta = f.metadata.get(cls.METADATA_NAMESPACE)
+            meta = f.metadata.get(JsonMetadata.METADATA_NAMESPACE)
 
             if meta and meta.in_file:
                 result.append((f, meta))
@@ -103,3 +107,53 @@ class JsonMixin:
     @classmethod
     def data_folder(cls) -> Path:
         return Path(cls.DATA_FOLDER)
+
+    @classmethod
+    def data_to_field(cls, value, expected_type:type):
+        origin = get_origin(expected_type)
+        if origin is Union or origin is UnionType: # Multiple possible types
+            args = get_args(expected_type)
+
+            for t in args:
+                if get_origin(t) is None and isinstance(t, type) and type(value) is t:
+                    return value
+            errors: list[tuple[Exception, Any, type]] = []
+            for t in args: # Each possible type
+                try:
+                    v = cls.data_to_field(value, t) # We try to convert
+                    return v
+                except Exception as e:
+                    errors.append((e, value, t))
+            raise ValueError(f"Could not convert value {value} to any {args} from arguments of {expected_type}.\nGot the following errors: {"\n".join([f"{str(e)} ; {v} ; {t}" for e,v,t in errors])}") # If none work we raise an error
+        elif origin is list or origin is set: # The expected type is a list or a set
+            args = get_args(expected_type)
+            if isinstance(value, list) or isinstance(value, set) or isinstance(value, dict): # And the type of the value is too
+                value = list(value)
+                for i,v in enumerate(value): # We transform each element of the list or set
+                    tv = cls.data_to_field(v, args[0])
+                    value[i] = tv
+                return origin(value) # Then we transform the value iterable to the origin type
+            else:
+                return origin([cls.data_to_field(value, args[0])])
+        elif origin is None:
+            if isinstance(value, expected_type):
+                return value
+            if issubclass(expected_type, Enum):
+                return expected_type[value]
+            if expected_type is None:
+                return None
+            else:
+                return expected_type(value)
+        elif origin is dict:
+            args = get_args(expected_type)
+            if isinstance(value, dict):
+                res = {}
+                for key, val in value.items():
+                    k = cls.data_to_field(key, args[0])
+                    v = cls.data_to_field(val, args[1])
+                    res[k] = v
+                return res
+            else:
+                raise ValueError(f"Could not convert value {value} to {expected_type}")
+        else:
+            raise(ValueError(f"Unexpected origin was {origin}"))

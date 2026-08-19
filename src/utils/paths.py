@@ -16,11 +16,12 @@ def check_import_validity(path, source_name):
     for file_or_dir in content:
         if not (os.path.isdir(os.path.join(path, file_or_dir)) or file_or_dir == "version"):
             return False, f"{source_name}: One file is not version nor a directory"
-        elif os.path.isdir(os.path.join(path, file_or_dir)): # directory on the level of spell of spell_list...
-            dir_content = os.listdir(os.path.join(path, file_or_dir))
-            for file in dir_content:
-                if not file.endswith(".json"): # should only contain json files
-                    return False, f"{source_name}: One of the files is not a json file"
+        elif os.path.isdir(os.path.join(path, file_or_dir)): # directory on the level of spell...
+            # All file in there should be a .json
+            intruder = [p for p in Path(os.path.join(path, file_or_dir)).rglob("*") if p.is_file() and p.suffix.lower() != ".json"]
+            print(source_name, intruder)
+            if intruder:
+                return False, f"{source_name}: One of the files is not a json file"
         else: # Version file
             if not source_name in os.listdir("assets/data") or not "version" in os.listdir(f"assets/data/{source_name}"):
                 continue

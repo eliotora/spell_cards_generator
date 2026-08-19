@@ -12,7 +12,7 @@ from src.models.generic_model import ExplorableModel, FilterOption, VisibilityOp
 from src.models.base import BaseModel
 from src.models.mixins import ExplorableMixin
 from src.models.metadata import ExplorerMetadata
-from typing import TypeVar, Generic, Type
+from typing import TypeVar, Generic, Type, get_origin
 
 from src.ui.widgets.genericTab.genericDDList import SavebleDDList
 from src.utils.paths import get_export_dir
@@ -104,7 +104,7 @@ class GenericTab(Generic[T], QWidget):
         for fname, field in self.model.__dataclass_fields__.items():
             md: ExplorerMetadata = field.metadata.get(ExplorableMixin.METADATA_NAMESPACE)
             if md.filter_type == FilterOption.LIST:
-                if field.type == list[str] or field.type == set[str]:
+                if get_origin(field.type) is list or get_origin(field.type) is set:
                     options[fname] = sorted(
                         set(
                             item
@@ -113,9 +113,13 @@ class GenericTab(Generic[T], QWidget):
                         )
                     )
                 else:
-                    options[fname] = sorted(
-                        set(item.__getattribute__(fname) for item in data)
-                    )
+                    try:
+                        options[fname] = sorted(
+                            set(item.__getattribute__(fname) for item in data), key=md.sorting_key
+                        )
+                    except Exception as e:
+                        print(sorted(item.__getattribute__(fname) for item in data), key=md.sorting_key)
+                        raise e
 
         self.filters_widget.load_filter_options(options)
         self.apply_filters()

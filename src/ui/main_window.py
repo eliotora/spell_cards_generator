@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from src.models.item_model import ItemModel
+from src.models.magic_item_model import MagicItemModel
 from src.ui.widgets.generic_tab import GenericTabWithList, GenericTab
 from src.ui.widgets.specificTabs.character_tab.character_tab import CharacterTab
 from src.ui.widgets.specificTabs.spell_tab.spell_tab import SpellTab
@@ -66,6 +67,7 @@ class MainWindow(QMainWindow):
         self.createModelTab(MetamagicModel, "Métamagies")
         self.createModelTab(ProfileModel, "Profiles")
         self.createModelTab(ItemModel, "Objets")
+        self.createModelTab(MagicItemModel, "Objets magiques")
 
         # self.influx_tab = GenericTabWithList(Influx, self.shared_dict)
         # self.tabs[Influx.__name__] = self.influx_tab
@@ -170,7 +172,7 @@ class MainWindow(QMainWindow):
 
         self.reload_data()
 
-    def reload_data(self): #TODO: Redo
+    def reload_data(self): #TODO: Redo -> Cannot load magic item before item (because of Base)
         for key, element in MODEL_NAME_MAPPING.items():
             element: ExplorableMixin = element
             element.collection = BaseCollection(DataRepository.load_all(element))
