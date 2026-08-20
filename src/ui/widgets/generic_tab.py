@@ -97,6 +97,7 @@ class GenericTab(Generic[T], QWidget):
         return layout
 
     def load_data(self):
+        self.table_widget.table.blockSignals(True)
         self.items = self.model.collection
         data = self.items.items()
 
@@ -127,6 +128,7 @@ class GenericTab(Generic[T], QWidget):
             f"{os.getcwd().replace("\\", "/")}/assets/data/{self.model.modelname}_settings.json"
         )
         self.apply_filters()
+        self.table_widget.table.blockSignals(False)
 
     def apply_filters(self):
         filters = self.filters_widget.get_filters()
