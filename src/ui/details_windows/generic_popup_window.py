@@ -160,6 +160,5 @@ class GenericPopupWindow(QWidget):
         self.windows.append(window)
 
     def closeEvent(self, event):
-        print(len(self.windows))
         for w in self.windows:
             w.close()

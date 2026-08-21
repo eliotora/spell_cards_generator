@@ -284,7 +284,6 @@ class BaseData:
         ]
 
         if any([f.name not in data for f in mendatory_fields]):
-            print(mendatory_fields)
             raise ValueError(
                 f"Field missing for item {data} in initialization of {cls.__name__}"
             )
@@ -908,10 +907,17 @@ class AmmunitionModel(ItemModel):
         return super().from_dict(data)
 
 
+import time
+
+start = time.time()
+print(f"Start loading weapon metadata")
 WeaponProperty.collection = BaseCollection(DataRepository.load_all(WeaponProperty))
 WeaponMastery.collection = BaseCollection(DataRepository.load_all(WeaponMastery))
+print(f"Weapon metadata loaded in {time.time() - start} seconds")
 
 # Items
+start = time.time()
+print(f"Start loading items")
 WeaponModel.collection = BaseCollection(DataRepository.load_all(WeaponModel))
 GearModel.collection = BaseCollection(DataRepository.load_all(GearModel))
 ArmorModel.collection = BaseCollection(DataRepository.load_all(ArmorModel))
@@ -930,4 +936,6 @@ ItemModel.collection = BaseCollection(
     )
     + other_item_collection.items()
 )
+print(f"Items loaded in {time.time() - start} seconds")
+
 # ItemModel.collection = BaseCollection(DataRepository.load_all(ItemModel))

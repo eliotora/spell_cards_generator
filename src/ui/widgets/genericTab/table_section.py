@@ -55,6 +55,8 @@ class GenericTable(QWidget):
 
     def apply_filters(self, field_filters: dict[str, list[str | int]]):
         """Apply filters to the table based on the provided field filters."""
+        import time
+        start = time.time()
         self.table.setSortingEnabled(False)
         items: list[BaseModel] = self.model.collection.items()
 
@@ -68,8 +70,8 @@ class GenericTable(QWidget):
         for item in items:
             if all(fil.value_in_filter(getattr(item, field.name), field_filters.get(field.name, [])) for field, fil in filters.items()):
                 self.filtered_items.append(item)
-
-        print(len(items), items[0].__class__.__name__, len(self.filtered_items))
+        end = time.time()
+        print(len(items), self.model.__name__, len(self.filtered_items), f"{end - start} seconds")
 
 
 

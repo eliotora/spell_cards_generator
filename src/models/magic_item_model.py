@@ -404,7 +404,9 @@ class MagicItemModel(ItemModel):
         return res
 
 
-
+import time
+start = time.time()
+print(f"Start loading magic item")
 magic_item_collection = BaseCollection(DataRepository.load_all(MagicItemModel))
 for magic_item in magic_item_collection.items():
     if MagicItemType.GENERIC_VARIANT in magic_item.item_type and magic_item.variants:
@@ -412,5 +414,6 @@ for magic_item in magic_item_collection.items():
             for name, item in magic_item.variants.items():
                 if isinstance(item, MagicItemModel):
                     magic_item_collection.add(item)
+print(f"Magic item loaded in {time.time() -start} seconds")
 
 MagicItemModel.collection = magic_item_collection

@@ -6,6 +6,7 @@ import traceback
 import json
 from src.utils.update_checks import check_for_updates, download_and_install
 from src.models.repositories.data_repository import DataRepository
+from src.models.source_model import *
 
 with open("version.json", "r") as f:
     version_info = json.load(f)
