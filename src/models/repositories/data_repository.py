@@ -35,7 +35,7 @@ class DataRepository(BaseRepository[T]):
             for file in folder.glob("*.json"):
                 item = cls.get_instance_from_file(file, model_cls)
 
-                if hasattr(item, "source"):
+                if hasattr(item, "source") and getattr(item, "source") is None:
                     setattr(item, "source", source_folder.name)
 
                 result.append(item)

@@ -18,6 +18,7 @@ from src.models.metadata import (
     FilterOption,
     VisibilityOption,
 )
+from src.models.source_model import SourceModel
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")
 
@@ -92,7 +93,7 @@ class EldritchInvocationModel(
         },
         default=False,
     )
-    source: str = field(
+    source: SourceModel = field(
         metadata={
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Source",

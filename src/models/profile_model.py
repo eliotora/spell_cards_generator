@@ -12,6 +12,7 @@ from src.models.metadata import (
     VisibilityOption,
 )
 
+from src.models.source_model import SourceModel
 from src.ui.details_windows.profile_detail_window import ProfileDetailWindow
 
 locale.setlocale(locale.LC_COLLATE, "French_France.1252")
@@ -144,7 +145,7 @@ class ProfileModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin, Exportable
         },
         default="+0",
     )
-    source: str = field(
+    source: SourceModel = field(
         metadata={
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Source", visibility=VisibilityOption.HIDDABLE, cols_to_hide=(12,)

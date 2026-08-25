@@ -119,7 +119,7 @@ class GenericTab(Generic[T], QWidget):
                             set(item.__getattribute__(fname) for item in data), key=md.sorting_key
                         )
                     except Exception as e:
-                        print(sorted(item.__getattribute__(fname) for item in data), key=md.sorting_key)
+                        print(sorted([item.__getattribute__(fname) for item in data], key=md.sorting_key))
                         raise e
 
         self.filters_widget.load_filter_options(options)

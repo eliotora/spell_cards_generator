@@ -31,12 +31,22 @@ class BookCategory(Enum):
 
 @dataclass
 class SourceModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin):
+    id: int = field(
+        metadata={
+            ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
+                label="Id",
+                filter_type=FilterOption.LINE_EDIT,
+                visibility=VisibilityOption.HIDDABLE
+            ),
+            JsonMetadata.METADATA_NAMESPACE: JsonMetadata()
+        }
+    )
     editor: str = field(
         metadata={
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Éditeur",
-                filter_type=FilterOption.LINE_EDIT,
-                visibility=VisibilityOption.ALWAYS_VISIBLE
+                filter_type=FilterOption.LIST,
+                visibility=VisibilityOption.HIDDABLE
             ),
             JsonMetadata.METADATA_NAMESPACE: JsonMetadata()
         }
@@ -45,7 +55,7 @@ class SourceModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin):
         metadata={
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Abréviation",
-                filter_type=FilterOption.LINE_EDIT,
+                filter_type=FilterOption.NONE,
                 visibility=VisibilityOption.ALWAYS_VISIBLE
             ),
             JsonMetadata.METADATA_NAMESPACE: JsonMetadata()
@@ -66,8 +76,8 @@ class SourceModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin):
         metadata={
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Publication",
-                filter_type=FilterOption.LINE_EDIT,
-                visibility=VisibilityOption.ALWAYS_VISIBLE
+                filter_type=FilterOption.LIST,
+                visibility=VisibilityOption.HIDDABLE
             ),
             JsonMetadata.METADATA_NAMESPACE: JsonMetadata()
         },
@@ -77,8 +87,8 @@ class SourceModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin):
         metadata={
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Publication",
-                filter_type=FilterOption.LINE_EDIT,
-                visibility=VisibilityOption.ALWAYS_VISIBLE
+                filter_type=FilterOption.LIST,
+                visibility=VisibilityOption.HIDDABLE
             ),
             JsonMetadata.METADATA_NAMESPACE: JsonMetadata()
         },
@@ -92,6 +102,15 @@ class SourceModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin):
     def from_dict(cls, data:dict[str, Any]) -> "SourceModel":
         data["category"] = BookCategory[data.pop("category")]
         return super().from_dict(data)
+
+    def __str__(self) -> str:
+        return self.name.for_lang("fr")
+
+    def __lt__(self, other: "SourceModel"):
+        return self.name.for_lang("en") < other.name.for_lang("en")
+
+    def __hash__(self):
+        return hash(self.name.for_lang("en"))
 
 
 

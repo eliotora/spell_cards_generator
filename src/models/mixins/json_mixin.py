@@ -8,6 +8,7 @@ from enum import Enum
 import json
 
 from src.models.metadata import JsonMetadata
+from src.models.mixins.explorable_mixin import ExplorableMixin
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -29,28 +30,6 @@ def _convert_to_serializable(obj: Any) -> Any:
         return [_convert_to_serializable(item) for item in obj]
     return obj
 
-def _deserialize_field(value: Any, field_type: Any) -> Any:
-    """Reconstruit un champ à partir de sa valeur JSON et son type hint."""
-    if value is None:
-        return None
-
-    # Gérer Optional[T] et Union
-    origin = get_origin(field_type)
-    if origin is not None:
-        args = get_args(field_type)
-        # Pour Optional et Union, prendre le premier type non-None
-        field_type = next((t for t in args if t is not type(None)), args[0])
-
-    # Converter les Enums
-    if isinstance(field_type, type) and issubclass(field_type, Enum):
-        return field_type(value)
-
-    # Converter les nested dataclasses
-    if isinstance(field_type, type) and hasattr(field_type, "__dataclass_fields__"):
-        if isinstance(value, dict):
-            return field_type(**value)
-
-    return value
 
 class JsonMixin:
     """Mixing for models that either have to be saved to JSON or loaded from a JSON file"""
@@ -80,7 +59,7 @@ class JsonMixin:
         # Reconstruire les champs avec les bons types
         for field_name, value in data.items():
             if field_name in hints:
-                data[field_name] = _deserialize_field(value, hints[field_name])
+                data[field_name] = cls.data_to_field(value, hints[field_name])
 
         return cls(**data)
 
@@ -140,6 +119,10 @@ class JsonMixin:
                 return value
             if issubclass(expected_type, Enum):
                 return expected_type[value]
+            if issubclass(expected_type, ExplorableMixin):
+                return expected_type.collection.get_by_field("id", value)
+            if hasattr(expected_type, "__dataclass_fields__"):
+                return expected_type(**value)
             if expected_type is None:
                 return None
             else:

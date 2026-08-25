@@ -18,6 +18,7 @@ from src.models.metadata import (
     FilterOption,
     VisibilityOption,
 )
+from src.models.source_model import SourceModel
 
 from src.ui.details_windows.spell_detail_window import SpellDetailWindow
 
@@ -31,7 +32,7 @@ class SpellModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin, ExportableMi
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Nom",
                 filter_type=FilterOption.LINE_EDIT,
-                visibility=VisibilityOption.ALWAYS_VISIBLE,
+                visibility=VisibilityOption.ALWAYS_VISIBLE
             ),
             JsonMetadata.METADATA_NAMESPACE: JsonMetadata(),
         }
@@ -157,13 +158,14 @@ class SpellModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin, ExportableMi
         },
         default=None,
     )
-    source: str = field(
+    source: SourceModel = field(
         metadata={
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Source",
                 filter_type=FilterOption.LIST,
                 visibility=VisibilityOption.HIDDABLE,
                 cols_to_hide=(12,),
+                sorting_key=lambda x: str(x)
             ),
             JsonMetadata.METADATA_NAMESPACE: JsonMetadata(in_file=False),
         },
@@ -206,7 +208,7 @@ class SpellModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin, ExportableMi
         result["footer"] = [
             f"<div class='classe'>{classe}</div>" for classe in self.classes
         ]
-        result["source"] = self.source
+        result["source"] = self.source.id
         result["level"] = self.level
         result["name"] = self.name
         return result

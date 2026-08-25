@@ -18,6 +18,7 @@ from src.models.mixins import ExplorableMixin, ExportableMixin, PopupMixin, Json
 from src.models.mixins.exportable_mixin import ExportOption
 from src.models.repositories.data_repository import DataRepository
 from src.models.conceptual_models import MoneyQuantity
+from src.models.source_model import SourceModel
 from src.ui.details_windows.generic_popup_window import GenericPopupWindow
 from src.ui.rich_text_editor import RichTextEditor
 
@@ -50,7 +51,7 @@ class WeaponMastery(BaseModel, PopupMixin, JsonMixin, ExplorableMixin):
         },
         default_factory=list,
     )
-    source: str = field(
+    source: SourceModel = field(
         metadata={
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Source",
@@ -159,7 +160,7 @@ class WeaponProperty(BaseModel, PopupMixin, JsonMixin, ExplorableMixin):
         },
         default_factory=list,
     )
-    source: str = field(
+    source: SourceModel = field(
         metadata={
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Source",
@@ -582,7 +583,7 @@ class ItemModel(BaseModel, ExplorableMixin, ExportableMixin, PopupMixin, JsonMix
         },
         default_factory=set,
     )
-    source: str = field(
+    source: SourceModel = field(
         metadata={
             ExplorableMixin.METADATA_NAMESPACE: ExplorerMetadata(
                 label="Source",

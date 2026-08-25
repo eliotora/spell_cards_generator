@@ -30,6 +30,7 @@ from src.ui.details_windows.windows_manager import WindowsManager
 from src.models.collections import BaseCollection
 from src.models.repositories.data_repository import DataRepository
 from src.models import SpellModel
+from src.models.source_model import SourceModel
 from src.models.mixins import ExplorableMixin
 from src.models.base.base_model import MODEL_NAME_MAPPING
 
@@ -53,7 +54,11 @@ class MainWindow(QMainWindow):
         self.tab_widget = QTabWidget()
         layout.addWidget(self.tab_widget)
 
-        spells = DataRepository.load_all(SpellModel)
+        spells: list[SpellModel] = DataRepository.load_all(SpellModel)
+        # for spell in spells:
+            # source = SourceModel.collection.get_by_field("abreviation", spell.source)
+            # print(source, spell.source, len(SourceModel.collection.items()))
+            # spell.source = source
         spell_collection = BaseCollection(spells)
         SpellModel.collection = spell_collection
 
