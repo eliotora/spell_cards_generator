@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QListWidget, QListWidgetItem, QGridLayout
 from src.utils.shared_dict import SharedDict
-from src.models.generic_model import MODEL_NAME_MAPPING
+from src.models.base import MODEL_NAME_MAPPING
 from src.ui.widgets.detailled_item_list import DetailledItemList
 from math import sqrt, ceil
 

@@ -14,13 +14,12 @@ from PySide6.QtCore import Qt
 from src.models.item_model import ItemModel
 from src.models.magic_item_model import MagicItemModel
 from src.ui.widgets.generic_tab import GenericTabWithList, GenericTab
-from src.ui.widgets.specificTabs.character_tab.character_tab import CharacterTab
+# from src.ui.widgets.specificTabs.character_tab.character_tab import CharacterTab
 from src.ui.widgets.specificTabs.spell_tab.spell_tab import SpellTab
 from src.ui.widgets.specificTabs.all_lists_tab.all_lists_tab import AllListsTab
 from src.models.feat_model import FeatModel
 from src.models.maneuvers_model import ManeuverModel
 from src.models.metamagic_model import MetamagicModel
-from src.models.artificer_influx_model import Influx
 from src.models.eldritch_invocation_model import EldritchInvocationModel
 from src.models.profile_model import ProfileModel
 from src.utils.paths import get_export_dir, load_data_if_new

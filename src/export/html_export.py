@@ -1,7 +1,6 @@
 from jinja2 import Environment, FileSystemLoader
 from os import getcwd
-from src.models.mixins import ExportableMixin, MODEL_EXPORT_MODE_HTML_FILES
-from src.models.generic_model import ExportOption
+from src.models.mixins import ExportOption, ExportableMixin, MODEL_EXPORT_MODE_HTML_FILES
 
 def sort_by_level(spells):
     """

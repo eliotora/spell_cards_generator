@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import Optional
 import locale
 
 from src.models.base import BaseModel
@@ -9,7 +9,6 @@ from src.models.mixins import (
     JsonMixin,
     PopupMixin,
     ExportableMixin,
-    MODEL_EXPORT_MODE_HTML_FILES,
     ExportOption,
 )
 from src.models.metadata import (

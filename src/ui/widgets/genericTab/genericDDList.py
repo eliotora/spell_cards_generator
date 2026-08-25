@@ -1,4 +1,3 @@
-from src.models.generic_model import ExplorableModel
 from PySide6.QtWidgets import QListWidget, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSizePolicy, QPushButton, QSpacerItem, QFileDialog, QMessageBox
 from PySide6.QtGui import QDrag, QDragEnterEvent, QDragMoveEvent, QIcon
 from PySide6.QtCore import Qt, QMimeData

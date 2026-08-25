@@ -1,7 +1,8 @@
-from PySide6.QtCore import Signal, QObject
-import enum
 from dataclasses import dataclass
-from typing import Optional, Union
+import enum
+from typing import Union
+
+from src.models.base.translated_text import TranslatedText
 
 class Dice(enum.StrEnum):
     D4 = "d4"
@@ -11,59 +12,6 @@ class Dice(enum.StrEnum):
     D12 = "d12"
     D20 = "d20"
     D100 = "d100"
-
-@dataclass
-class Distance:
-    value: float
-    unit: str
-
-    def __str__(self) -> str:
-        if int(self.value) == self.value:
-            return f"{self.value} {self.unit}"
-        else:
-            return f"{round(self.value, 3)} {self.unit}"
-
-class WeaponPropertyType(enum.Enum):
-    AMMUNITION = enum.auto()
-    FINESSE = enum.auto()
-    HEAVY = enum.auto()
-    LIGHT = enum.auto()
-    LOADING = enum.auto()
-    REACH = enum.auto()
-    SPECIAL = enum.auto()
-    THROWN = enum.auto()
-    TWO_HANDED = enum.auto()
-    VERSATILE = enum.auto()
-
-class WeaponType(enum.Enum):
-    MELEE = enum.auto()
-    RANGED = enum.auto()
-
-@dataclass
-class WeaponProperty:
-    type: WeaponPropertyType
-    ammunition_type: Optional[str] = None
-    range_normal: Optional[Distance] = None
-    range_max: Optional[Distance] = None
-    special_text: Optional[str] = None
-    versatile_damage: Optional[Dice] = None
-
-    def describe(self) -> str:
-        """Return a textual description of the property"""
-        match self.type:
-            case WeaponPropertyType.AMMUNITION:
-                return f"munitions (portée {self.range_normal}/{self.range_max})"
-            case WeaponPropertyType.SPECIAL:
-                return f"spécial"
-            case WeaponPropertyType.THROWN:
-                return f"lancer (portée {self.range_normal}/{self.range_max})"
-            case WeaponPropertyType.VERSATILE:
-                return f"versatile ({self.versatile_damage})"
-            case _:
-                return f"{self.type.name.lower()}"
-
-    def __str__(self) -> str:
-        return self.describe()
 
 class MoneyUnit(enum.Enum):
     PLATINIUM=({"en":"pp", "fr":"pp"},1000)
@@ -99,128 +47,63 @@ class MoneyQuantity:
         else:
             raise TypeError(f"unsupported operand type(s) for +: {self.__class__.__name__} and {other.__class__.__name__}")
 
-class Caracteristic(QObject):
-    class Caracteristics(enum.StrEnum):
-        STRENGTH = "STRENGTH"
-        DEXTERITY = "DEXTERITY"
-        CONSTITUTION = "CONSTITUTION"
-        INTELLIGENCE = "INTELLIGENCE"
-        WISDOM = "WISDOM"
-        CHARISMA = "CHARISMA"
 
-    valueChanged = Signal(int, int)
+class Caracteristic(enum.Enum):
+    STR = TranslatedText(by_lang={"fr": "Force", "en": "Strength"})
+    DEX = TranslatedText(by_lang={"fr": "Dextérité", "en": "Dexterity"})
+    CON = TranslatedText(by_lang={"fr": "Constitution", "en": "Constitution"})
+    INT = TranslatedText(by_lang={"fr": "Intelligence", "en": "Intelligence"})
+    WIS = TranslatedText(by_lang={"fr": "Sagesse", "en": "Wisdom"})
+    CHA = TranslatedText(by_lang={"fr": "Charisme", "en": "Strength"})
 
-    def __init__(self, name: str, val: int):
-        super().__init__()
-        self.name: str = name
-        self.score: int = val
-        self.mod: int = self.modificator_from_stat(val)
+@dataclass
+class CaracteristicInstance:
+    carac: Caracteristic
+    value: int
 
-    def modificator_from_stat(self, val: int):
-        return (val - 10) // 2
+    def __str__(self) -> str:
+        return f"{self.carac.value.for_lang("fr")}: {self.value}"
 
-    def setValue(self, value: int) -> None:
-        self.score = value
-        self.mod = self.modificator_from_stat(self.score)
-        self.valueChanged.emit(self.score, self.mod)
+    def __lt__(self, other: Union["CaracteristicInstance", int]):
+        if isinstance(other, self.__class__):
+            other_v = other.value
+        else:
+            other_v = other
 
-    def getValue(self) -> int:
-        return self.score
+        return self.value < other_v
 
-    def getMod(self) -> int:
-        return self.mod
+    def get_value(self) -> int:
+        return self.value
 
-    def connectOnValueChanged(self, fct):
-        self.valueChanged.connect(fct)
+    def carac_text(self) -> str:
+        return self.carac.value.for_lang("fr")
 
-class Ability(QObject):
-    class Abilities(enum.Enum):
-        Athletics = (Caracteristic.Caracteristics.STRENGTH, "Athletics")
-        Acrobatics = (Caracteristic.Caracteristics.DEXTERITY, "Acrobatics")
-        Sleight_of_Hand = (Caracteristic.Caracteristics.DEXTERITY, "Sleight of Hand")
-        Stealth = (Caracteristic.Caracteristics.DEXTERITY, "Stealth")
-        Arcana = (Caracteristic.Caracteristics.INTELLIGENCE, "Arcana")
-        History = (Caracteristic.Caracteristics.INTELLIGENCE, "History")
-        Investigation = (Caracteristic.Caracteristics.INTELLIGENCE, "Investigation")
-        Nature = (Caracteristic.Caracteristics.INTELLIGENCE, "Nature")
-        Religion = (Caracteristic.Caracteristics.INTELLIGENCE, "Religion")
-        Animal_Handling = (Caracteristic.Caracteristics.WISDOM, "Animal Handling")
-        Insight = (Caracteristic.Caracteristics.WISDOM, "Insight")
-        Medicine = (Caracteristic.Caracteristics.WISDOM, "Medicine")
-        Perception = (Caracteristic.Caracteristics.WISDOM, "Perception")
-        Survival = (Caracteristic.Caracteristics.WISDOM, "Survival")
-        Deception = (Caracteristic.Caracteristics.CHARISMA, "Deception")
-        Intimidation = (Caracteristic.Caracteristics.CHARISMA, "Intimidation")
-        Perfomance = (Caracteristic.Caracteristics.CHARISMA, "Perfomance")
-        Persuasion = (Caracteristic.Caracteristics.CHARISMA, "Persuasion")
-
-        @classmethod
-        def abilities_by_carac(cls, carac: Caracteristic.Caracteristics):
-            return [a for a in cls if a.value[0] == carac]
-
-    onModifierChanged = Signal()
-
-    def __init__(self, name: str, carac: Caracteristic, proficient: bool):
-        super().__init__()
-        self.name: str = name
-        self.carac: Caracteristic = carac
-        self.proficient: bool = proficient
-        self.carac.valueChanged.connect(lambda value: self.onModifierChanged.emit())
-
-    def get_mod(self, profiency_bonus) -> int:
-        return self.carac.mod + profiency_bonus if self.proficient else self.carac.mod
-
-    def get_passive_value(self, proficency_bonus) -> int:
-        return 10 + self.get_mod(proficency_bonus)
-
-    def setProficient(self, proficient: bool) -> None:
-        self.proficient = proficient
-        self.onModifierChanged.emit()
-
-class Saving_Throw(Ability):
-    def __init__(self, carac: Caracteristic, proficient: bool):
-        super().__init__(f"Saving Throw", carac, proficient)
+    @property
+    def mod(self) -> int:
+        return (self.value - 10) // 2
 
 
-if __name__ == "__main__":
-    dist = Distance(7.50, "m")
-    print(f"Distance test: {dist}")
-    assert dist.__str__() == "7.5 m"
+class Skills(enum.Enum): # TODO: Rendre dynamique? Ajout sourcé de Skill?
+    @dataclass
+    class Skill:
+        name: TranslatedText
+        carac: Caracteristic
 
-    dist2 = Distance(3, "m")
-    print(f"Distance test 2: {dist2}")
-    assert dist2.__str__() == "3 m"
-
-    w_prop = WeaponProperty(
-        type=WeaponPropertyType.AMMUNITION,
-        ammunition_type="arrows"
-    )
-    for type in WeaponPropertyType:
-        ammunition_type = None
-        range_normal = None
-        range_max = None
-        special_text = None
-        versatile_damage = None
-
-        match type:
-            case WeaponPropertyType.AMMUNITION:
-                ammunition_type = "arrows"
-                range_normal = Distance(30, "m")
-                range_max = Distance(90, "m")
-            case WeaponPropertyType.SPECIAL:
-                special_text = "Text spéciale pour arme"
-            case WeaponPropertyType.THROWN:
-                range_normal = Distance(6, "m")
-                range_max = Distance(18, "m")
-            case WeaponPropertyType.VERSATILE:
-                versatile_damage = Dice.D10
-        w_prop = WeaponProperty(
-            type=type,
-            ammunition_type=ammunition_type,
-            range_normal=range_normal,
-            range_max=range_max,
-            special_text=special_text,
-            versatile_damage=versatile_damage
-        )
-        print(w_prop)
-
+    Acrobatics=Skill(name=TranslatedText(by_lang={"fr": "Acrobaties", "en": "Acrobatics"}), carac=Caracteristic.DEX)
+    AnimalHandling=Skill(name=TranslatedText(by_lang={"fr": "Dressage", "en": "Animal Handling"}), carac=Caracteristic.WIS)
+    Arcana=Skill(name=TranslatedText(by_lang={"fr": "Arcane", "en": "Arcana"}), carac=Caracteristic.INT)
+    Athletics=Skill(name=TranslatedText(by_lang={"fr": "Athlétisme", "en": "Athletics"}), carac=Caracteristic.STR)
+    Deception=Skill(name=TranslatedText(by_lang={"fr": "Tromperie", "en": "Deception"}), carac=Caracteristic.CHA)
+    History=Skill(name=TranslatedText(by_lang={"fr": "Histoire", "en": "History"}), carac=Caracteristic.INT)
+    Insight=Skill(name=TranslatedText(by_lang={"fr": "Intuition", "en": "Insight"}), carac=Caracteristic.WIS)
+    Intimidation=Skill(name=TranslatedText(by_lang={"fr": "Intimidation", "en": "Intimidation"}), carac=Caracteristic.CHA)
+    Investigation=Skill(name=TranslatedText(by_lang={"fr": "Investigation", "en": "Investigation"}), carac=Caracteristic.INT)
+    Medicine=Skill(name=TranslatedText(by_lang={"fr": "Médecine", "en": "Medicine"}), carac=Caracteristic.WIS)
+    Nature=Skill(name=TranslatedText(by_lang={"fr": "Nature", "en": "Nature"}), carac=Caracteristic.INT)
+    Perception=Skill(name=TranslatedText(by_lang={"fr": "Perception", "en": "Perception"}), carac=Caracteristic.WIS)
+    Performance=Skill(name=TranslatedText(by_lang={"fr": "Performance", "en": "Performance"}), carac=Caracteristic.CHA)
+    Persuasion=Skill(name=TranslatedText(by_lang={"fr": "Persuasion", "en": "Persuasion"}), carac=Caracteristic.CHA)
+    Religion=Skill(name=TranslatedText(by_lang={"fr": "Religion", "en": "Religion"}), carac=Caracteristic.INT)
+    SleightofHand=Skill(name=TranslatedText(by_lang={"fr": "Escamotage", "en": "Sleight of Hand"}), carac=Caracteristic.DEX)
+    Stealth=Skill(name=TranslatedText(by_lang={"fr": "Discrétion", "en": "Stealth"}), carac=Caracteristic.DEX)
+    Survival=Skill(name=TranslatedText(by_lang={"fr": "Survie", "en": "Survival"}), carac=Caracteristic.WIS)

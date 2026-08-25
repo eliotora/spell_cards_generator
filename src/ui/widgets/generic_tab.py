@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
 )
 from PySide6.QtCore import Qt
-from src.models.generic_model import ExplorableModel, FilterOption, VisibilityOption
+from src.models.metadata import FilterOption, VisibilityOption
 from src.models.base import BaseModel
 from src.models.mixins import ExplorableMixin
 from src.models.metadata import ExplorerMetadata

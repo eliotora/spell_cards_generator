@@ -1,6 +1,5 @@
 from typing import Type
 from PySide6.QtWidgets import QListWidget, QListWidgetItem
-from src.models.detailable_model import DetailableModel
 from src.ui.details_windows.windows_manager import WindowsManager
 
 from src.models.mixins import PopupMixin, ExplorableMixin

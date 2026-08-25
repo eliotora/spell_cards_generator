@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from dataclasses import Field
 
-from src.models.generic_model import ExplorableModel, FilterOption
+from src.models.metadata import FilterOption
 from src.ui.details_windows.windows_manager import WindowsManager
 from src.ui.widgets.specificTabs.spell_tab.SpellList import DDTable
 

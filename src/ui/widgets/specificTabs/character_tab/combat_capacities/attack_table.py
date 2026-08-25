@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QPushB
 from PySide6.QtCore import Qt
 from src.models.item_model import ItemModel, ItemType
 from src.models.character_model import Character, signaledProperty
-from src.models.conceptual_models import Caracteristic, WeaponPropertyType
+from src.models.conceptual_models import Caracteristic
 from src.models.spell_model import SpellModel
 class AttackTableWidget(QWidget):
     def __init__(self):
@@ -77,7 +77,7 @@ class AttackRow:
     def makeConnections(self):
         if isinstance(self.attack_source, ItemModel):
             if self.attack_source.weapon_type == ItemType.MELEE:
-                if any([p.type==WeaponPropertyType.FINESSE for p in self.attack_source.properties]):
+                if any(True):
                     self.char.caracs.value[Caracteristic.Caracteristics.STRENGTH].connectOnValueChanged(self.onCaracChanged)
                     self.char.caracs.value[Caracteristic.Caracteristics.DEXTERITY].connectOnValueChanged(self.onCaracChanged)
                 else:
@@ -89,7 +89,7 @@ class AttackRow:
         if isinstance(self.attack_source, ItemModel):
             proficient = True # TODO: Chercher les maîtrises correspondantes
             if self.attack_source.weapon_type == ItemType.MELEE:
-                if any([p.type==WeaponPropertyType.FINESSE for p in self.attack_source.properties]):
+                if any([True]):
                     strengh = self.char.caracs.value[Caracteristic.Caracteristics.STRENGTH]
                     dex = self.char.caracs.value[Caracteristic.Caracteristics.DEXTERITY]
                     carac = strengh if strengh.getValue() > dex.getValue() else dex

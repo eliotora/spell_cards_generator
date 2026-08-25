@@ -16,7 +16,7 @@ from PySide6.QtCore import Qt
 from src.ui.widgets.multi_selection_list import MultiSelectionListWidget
 import os, json
 from typing import Type, Generic, TypeVar
-from src.models.generic_model import ExplorableModel, FilterOption, VisibilityOption
+from src.models.metadata import FilterOption, VisibilityOption
 from src.models.mixins.explorable_mixin import ExplorableMixin
 from src.models.metadata.explorer_metadata import ExplorerMetadata
 from src.models.base import BaseModel
