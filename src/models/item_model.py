@@ -18,7 +18,7 @@ from src.models.mixins import ExplorableMixin, ExportableMixin, PopupMixin, Json
 from src.models.mixins.exportable_mixin import ExportOption
 from src.models.repositories.data_repository import DataRepository
 from src.models.conceptual_models import MoneyQuantity
-from src.models.source_model import SourceModel
+from src.models.source_model import SourceModel, WeaponCategory, ArmorCategory
 from src.ui.details_windows.generic_popup_window import GenericPopupWindow
 from src.ui.rich_text_editor import RichTextEditor
 
@@ -299,7 +299,7 @@ class BaseData:
 class WeaponData(BaseData):
     damage_dice: str
     damage_type: str
-    category: str
+    category: WeaponCategory
     ranged: bool
     properties: list[PropertyData] = field(default_factory=list)
     mastery: Optional[MasteryData] = None
@@ -316,7 +316,7 @@ class WeaponData(BaseData):
 
     @property
     def weapontype(self) -> str:
-        return f"{self.category.capitalize()} {"à distance" if self.ranged else "de corps à corps"}"
+        return f"{str(self.category).capitalize()} {"à distance" if self.ranged else "de corps à corps"}"
 
     def get_entries(self) -> list[tuple[str, str]]:
         res = []
@@ -341,6 +341,11 @@ class WeaponData(BaseData):
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "WeaponData":
+        # Link weapon category
+        cat_name = data.pop("category")
+        cat_res = WeaponCategory.get(cat_name)
+        data["category"] = cat_res
+
         # Link mastery instance
         mastery_name = data.pop("mastery")
         if mastery_name:
@@ -371,7 +376,7 @@ class WeaponData(BaseData):
 
     def add_tags(self, tags):
         tags = tags | {
-            self.category,
+            str(self.category),
             "Arme à distance" if self.ranged else "Arme de corps à corps",
         }
 
@@ -379,7 +384,7 @@ class WeaponData(BaseData):
 @dataclass
 class ArmorData(BaseData):
     ac_base: int
-    category: str
+    category: ArmorCategory
     stealth_disadvantage: bool = False
     min_strength: Optional[int] = None
     dex_ac_mod_cap: Optional[int] = None
@@ -397,14 +402,15 @@ class ArmorData(BaseData):
             res.append(
                 (
                     None,
-                    "L'armure réduit la Vitesse du porteur de 3 m si celui-ci n'est pas doté d'une valeur de Force au moins égale au nombre indiqué",
+                    f"L'armure réduit la Vitesse du porteur de 3 m si celui-ci n'est pas doté d'une valeur de Force au moins égale au nombre indiqué ({self.min_strength})",
                 )
             )
         return res
 
     def get_data_text(self) -> str:
-        res = f"CA {"{0:+}".format(self.ac_base) if self.category.lower() == "bouclier" else self.ac_base}"
-        if self.category.lower() != "bouclier":
+        is_shield = self.category == ArmorCategory.get("SHIELD")
+        res = f"CA {"{0:+}".format(self.ac_base) if is_shield else self.ac_base}"
+        if not is_shield:
             if self.dex_ac_mod_cap is None:
                 res += " + Dex"
             elif self.dex_ac_mod_cap > 0:
@@ -412,7 +418,15 @@ class ArmorData(BaseData):
         return res
 
     def add_tags(self, tags):
-        tags.add(self.category)
+        tags.add(str(self.category))
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ArmorCategory":
+        armor_cat = data.pop("category")
+        ac = ArmorCategory.get(armor_cat)
+        data["category"] = ac
+
+        return super().from_dict(data)
 
 
 @dataclass
@@ -765,7 +779,7 @@ class WeaponModel(ItemModel):
     DATA_FOLDER = Path("items") / Path("weapons")
 
     def __post_init__(self):
-        self.tags.add(self.weapon_data.category.capitalize())
+        self.tags.add(str(self.weapon_data.category).capitalize())
         self.tags.add(
             f"Arme {"à distance" if self.weapon_data.ranged else "de corps à corps"}"
         )
@@ -773,6 +787,11 @@ class WeaponModel(ItemModel):
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "WeaponModel":
+        # Link weapon category
+        cat_name = data.pop("category")
+        cat_res = WeaponCategory.get(cat_name)
+        data["category"] = cat_res
+
         # Link mastery instance
         mastery_name = data.pop("mastery")
         if isinstance(mastery_name, str):
@@ -820,11 +839,13 @@ class ArmorModel(ItemModel):
     DATA_FOLDER = Path("items") / Path("armors")
 
     def __post_init__(self):
-        self.tags.add(self.armor_data.category.capitalize())
+        self.tags.add(str(self.armor_data.category))
         super().__post_init__()
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]):
+        armor_cat = data.pop("category")
+        data["category"] = ArmorCategory.get(armor_cat)
         armor_data = ArmorData(
             ac_base=data.pop("ac_base"),
             category=data.pop("category"),

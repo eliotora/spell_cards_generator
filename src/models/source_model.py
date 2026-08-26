@@ -5,7 +5,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from src.models.base import BaseModel, TranslatedText
+from src.models.base import BaseModel, TranslatedText, RegisteredModel, REGISTERED_MODELS
 from src.models.collections.base_collection import BaseCollection
 from src.models.mixins import (
     ExplorableMixin,
@@ -100,8 +100,16 @@ class SourceModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin):
 
     @classmethod
     def from_dict(cls, data:dict[str, Any]) -> "SourceModel":
+        extras: dict[str, list[dict]] = data.pop("extras", {})
         data["category"] = BookCategory[data.pop("category")]
-        return super().from_dict(data)
+        res = super().from_dict(data)
+        for c, vs in extras.items():
+            extra_class = REGISTERED_MODELS[c]
+            for v in vs:
+                v["source"] = res
+                val:RegisteredModel = extra_class.from_dict(v)
+                extra_class.register(val.key, val)
+        return res
 
     def __str__(self) -> str:
         return self.name.for_lang("fr")
@@ -112,6 +120,12 @@ class SourceModel(BaseModel, ExplorableMixin, JsonMixin, PopupMixin):
     def __hash__(self):
         return hash(self.name.for_lang("en"))
 
+@dataclass(frozen=True)
+class WeaponCategory(RegisteredModel, JsonMixin):
+    source: SourceModel
 
+@dataclass(frozen=True)
+class ArmorCategory(RegisteredModel, JsonMixin):
+    source: SourceModel
 
 SourceModel.collection = BaseCollection(DataRepository.load_all(SourceModel))

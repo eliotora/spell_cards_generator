@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 
-@dataclass
+@dataclass(frozen=True)
 class TranslatedText:
     by_lang: dict[str, str] = field(default_factory=dict)
 
